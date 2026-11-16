@@ -1,0 +1,10 @@
+server.port=3105
+db.port=3306
+db.host=127.0.0.1
+db.user=nro
+db.password=replace-with-NRO_DB_PASSWORD
+db.name=ngocrong
+db.pool.minIdle=1
+db.pool.maxSize=4
+db.driver=com.mysql.cj.jdbc.Driver
+admin.mode=0

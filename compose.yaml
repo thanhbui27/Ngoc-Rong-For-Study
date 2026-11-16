@@ -1,0 +1,24 @@
+name: game-nro
+services:
+  db:
+    image: mariadb:10.11
+    ports:
+      - "127.0.0.1:3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${NRO_DB_ROOT_PASSWORD:?Set NRO_DB_ROOT_PASSWORD in .env}
+      MARIADB_DATABASE: ngocrong
+      MARIADB_USER: nro
+      MARIADB_PASSWORD: ${NRO_DB_PASSWORD:?Set NRO_DB_PASSWORD in .env}
+    volumes:
+      - nro_db:/var/lib/mysql
+      - "./ngocrong-clean.sql:/docker-entrypoint-initdb.d/01-ngocrong.sql:ro"
+    command: --innodb-buffer-pool-size=128M --max-connections=32
+    mem_limit: 512m
+    cpus: 1
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  nro_db:
