@@ -1,0 +1,12 @@
+[2026-11-16 22:53:24 ERROR Log:53] nro.server.Manager:Lỗi load properites
+java.io.FileNotFoundException: resources\config\server.properties (The system cannot find the path specified)
+	at java.base/java.io.FileInputStream.open0(Native Method)
+	at java.base/java.io.FileInputStream.open(FileInputStream.java:213)
+	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:152)
+	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:106)
+	at nro.server.Manager.loadProperties(Manager.java:974)
+	at nro.server.Manager.<init>(Manager.java:172)
+	at nro.server.Manager.gI(Manager.java:165)
+	at nro.server.ServerManager.init(ServerManager.java:71)
+	at nro.server.ServerManager.gI(ServerManager.java:83)
+	at nro.server.ServerManager.main(ServerManager.java:90)

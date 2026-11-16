@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class Octopus extends BigBoss {
 

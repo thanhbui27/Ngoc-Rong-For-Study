@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  */
 public class Pet extends Player {

@@ -12,7 +12,7 @@ import nro.utils.Util;
 /**
  *
  * @author ❤Girlkun75❤
- * @copyright ❤YTB KhanhDTK❤
+ * @copyright ❤YTB ThanhBN❤
  */
 public class KingKong extends Boss {
 

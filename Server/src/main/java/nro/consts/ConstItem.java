@@ -6,7 +6,7 @@
 package nro.consts;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class ConstItem {
 

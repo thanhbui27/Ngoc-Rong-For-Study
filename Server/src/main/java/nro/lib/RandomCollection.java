@@ -11,7 +11,7 @@ import java.util.TreeMap;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class RandomCollection<E> {
 

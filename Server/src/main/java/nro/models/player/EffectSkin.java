@@ -17,7 +17,7 @@ import nro.services.func.EffectMapService;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  *
  */

@@ -28,7 +28,7 @@ import nro.utils.FileIO;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class Resources {
 
@@ -254,7 +254,7 @@ public class Resources {
             msg.writer().writeUTF(imgName);
             msg.writer().writeByte(Manager.getNFrameImageByName(imgName));
             byte[] data = FileIO
-                    .readFile("resources/khanhdtk/img_by_name/x" + session.zoomLevel + "/" + imgName + ".png");
+                    .readFile("resources/ThanhBN/img_by_name/x" + session.zoomLevel + "/" + imgName + ".png");
             msg.writer().writeInt(data.length);
             msg.writer().write(data);
             session.sendMessage(msg);

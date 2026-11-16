@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class Barrack extends Zone {
 

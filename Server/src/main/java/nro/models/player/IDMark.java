@@ -7,7 +7,7 @@ import nro.models.npc.Npc;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  *
  *
  */

@@ -17,7 +17,7 @@ import java.io.IOException;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class GuardRobot extends BigBoss {
 

@@ -2,7 +2,7 @@ package nro.models.map;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  *
  */

@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import static nro.services.func.ChangeMapService.NON_SPACE_SHIP;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  *
  */
 public class Zone {
@@ -733,7 +733,7 @@ public class Zone {
             // bg item
             // msg.writer().writeShort(0);
             try {
-                byte[] bgItem = FileIO.readFile("resources/khanhdtk/map/item_bg_map_data/" + this.map.mapId);
+                byte[] bgItem = FileIO.readFile("resources/ThanhBN/map/item_bg_map_data/" + this.map.mapId);
                 msg.writer().write(bgItem);
             } catch (Exception e) {
                 msg.writer().writeShort(0);
@@ -742,7 +742,7 @@ public class Zone {
             // eff item
             // msg.writer().writeShort(0);
             // try {
-            // byte[] effItem = FileIO.readFile("resources/khanhdtk/map/eff_map/" +
+            // byte[] effItem = FileIO.readFile("resources/ThanhBN/map/eff_map/" +
             // this.map.mapId);
             // msg.writer().write(effItem);
             // } catch (Exception e) {

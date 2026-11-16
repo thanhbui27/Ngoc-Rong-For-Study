@@ -2,7 +2,7 @@ package nro.models.skill;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  *
  */

@@ -4,7 +4,7 @@ import nro.server.io.Session;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  *
  */

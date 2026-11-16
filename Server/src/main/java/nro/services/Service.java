@@ -780,7 +780,7 @@ public class Service {
             //// MENU ADMIN
             if (text.equals("admin")) {
                 NpcService.gI().createMenuConMeo(player, ConstNpc.MENU_ADMIN, 17997,
-                        "|7|-----YTB KhanhDTK-----\n"
+                        "|7|-----YTB ThanhBN-----\n"
                                 + "|1|Số người chơi đang online: " + Client.gI().getPlayers().size() + "\n"
                                 + "|8|Current thread server: " + Thread.activeCount() + "\n"
                                 + "|6|Time start server: " + ServerManager.timeStart,
@@ -789,7 +789,7 @@ public class Service {
             }
             if (text.equals("quanct")) {
                 NpcService.gI().createMenuConMeo(player, ConstNpc.MENU_BUFF_DO, 17997,
-                        "|7|-----YTB KhanhDTK-----\n"
+                        "|7|-----YTB ThanhBN-----\n"
                                 + "|1|Số người chơi đang online: " + Client.gI().getPlayers().size(),
                         "Set\nThần Linh", "Tặng Ngọc", "Tặng SKH", "Đóng");
                 return;

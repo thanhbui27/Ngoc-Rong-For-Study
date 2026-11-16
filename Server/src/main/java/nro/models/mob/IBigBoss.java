@@ -9,7 +9,7 @@ import nro.models.player.Player;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public interface IBigBoss {
 

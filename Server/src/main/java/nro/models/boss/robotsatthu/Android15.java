@@ -14,7 +14,7 @@ import nro.utils.Util;
 /**
  *
  * @author ❤Girlkun75❤
- * @copyright ❤YTB KhanhDTK❤
+ * @copyright ❤YTB ThanhBN❤
  */
 public class Android15 extends Boss {
 

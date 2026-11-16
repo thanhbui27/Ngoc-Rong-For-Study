@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class LoginController {
 
@@ -188,7 +188,7 @@ public class LoginController {
     }
 
     public void onConnectOK() {
-        System.out.println("----------YTB KhanhDTK----------");
+        System.out.println("----------YTB ThanhBN----------");
         session.getService().setServer(Manager.SERVER, Client.gI());
     }
 
@@ -196,7 +196,7 @@ public class LoginController {
         System.out.println("Mat ket noi may chu login");
         Util.setTimeout(() -> {
             session.reconnect();
-        }, 10000, "----------YTB KhanhDTK----------");
+        }, 10000, "----------YTB ThanhBN----------");
     }
 
 }

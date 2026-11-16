@@ -7,7 +7,7 @@ package nro.models.mob;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class MobFactory {
 

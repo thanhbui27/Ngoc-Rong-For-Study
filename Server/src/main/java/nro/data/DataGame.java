@@ -25,7 +25,7 @@ import java.util.Map;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  *
  */
@@ -35,15 +35,15 @@ public class DataGame {
     public static byte vsSkill = 5;
     public static byte vsItem = 6;
 
-    public static String LINK_IP_PORT = "KhanhDTK:localhost:14445:0,0,0";
+    public static String LINK_IP_PORT = "ThanhBN:localhost:14445:0,0,0";
     private static final String MOUNT_NUM = "733:1,734:2,735:3,743:4,744:5,746:6,795:7,849:8,897:9,920:10,1092:11,1135:12,1148:13,1176:14";
     public static final Map MAP_MOUNT_NUM = new HashMap();
 
-    private static final byte[] dart = FileIO.readFile("resources/khanhdtk/update_data/dart");
-    private static final byte[] arrow = FileIO.readFile("resources/khanhdtk/update_data/arrow");
-    private static final byte[] effect = FileIO.readFile("resources/khanhdtk/update_data/effect");
-    private static final byte[] image = FileIO.readFile("resources/khanhdtk/update_data/image");
-    private static final byte[] skill = FileIO.readFile("resources/khanhdtk/update_data/skill");
+    private static final byte[] dart = FileIO.readFile("resources/ThanhBN/update_data/dart");
+    private static final byte[] arrow = FileIO.readFile("resources/ThanhBN/update_data/arrow");
+    private static final byte[] effect = FileIO.readFile("resources/ThanhBN/update_data/effect");
+    private static final byte[] image = FileIO.readFile("resources/ThanhBN/update_data/image");
+    private static final byte[] skill = FileIO.readFile("resources/ThanhBN/update_data/skill");
 
     static {
         String[] array = MOUNT_NUM.split(",");
@@ -242,7 +242,7 @@ public class DataGame {
             msg = new Message(-111);
             msg.writer()
                     .write(FileIO
-                            .readFile("resources/khanhdtk/data/data_img_version/x" + session.zoomLevel + "/img_version"));
+                            .readFile("resources/ThanhBN/data/data_img_version/x" + session.zoomLevel + "/img_version"));
             session.doSendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
@@ -266,7 +266,7 @@ public class DataGame {
         Message msg;
         try {
             msg = new Message(-82);
-            msg.writer().write(FileIO.readFile("resources/khanhdtk/map/tile_set_info"));
+            msg.writer().write(FileIO.readFile("resources/ThanhBN/map/tile_set_info"));
             session.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {

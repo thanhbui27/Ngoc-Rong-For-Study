@@ -47,7 +47,7 @@ import static nro.models.boss.BossManager.BOSSES_IN_GAME;
 import nro.models.boss.td.TuanLocEvent;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  *
  */
 public class UseItem {

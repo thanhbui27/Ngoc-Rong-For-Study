@@ -68,7 +68,7 @@ import nro.consts.ConstNpc;
 import nro.models.boss.mapoffline.NPC_ToSuKaio;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  *
  */
 public class Manager {
@@ -632,7 +632,7 @@ public class Manager {
             Log.success("Load shop thành công (" + SHOPS.size() + ")");
 
             // load reward lucky round
-            File folder = new File("resources/khanhdtk/data/data_lucky_round_reward");
+            File folder = new File("resources/ThanhBN/data/data_lucky_round_reward");
             for (File fileEntry : folder.listFiles()) {
                 if (!fileEntry.isDirectory()) {
                     String line = Files.readAllLines(fileEntry.toPath()).get(0);
@@ -669,7 +669,7 @@ public class Manager {
             }
 
             // load reward mob
-            folder = new File("resources/khanhdtk/data/data_mob_reward");
+            folder = new File("resources/ThanhBN/data/data_mob_reward");
             for (File fileEntry : folder.listFiles()) {
                 if (!fileEntry.isDirectory()) {
                     BufferedReader br = new BufferedReader(new FileReader(fileEntry));
@@ -1098,7 +1098,7 @@ public class Manager {
     private int[][] readTileIndexTileType(int tileTypeFocus) {
         int[][] tileIndexTileType = null;
         try {
-            DataInputStream dis = new DataInputStream(new FileInputStream("resources/khanhdtk/map/tile_set_info"));
+            DataInputStream dis = new DataInputStream(new FileInputStream("resources/ThanhBN/map/tile_set_info"));
             int numTileMap = dis.readByte();
             tileIndexTileType = new int[numTileMap][];
             for (int i = 0; i < numTileMap; i++) {

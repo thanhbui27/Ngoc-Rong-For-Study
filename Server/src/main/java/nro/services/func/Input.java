@@ -25,7 +25,7 @@ import nro.models.player.Inventory;
 import nro.utils.Util;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  *
  */
 public class Input {
@@ -469,7 +469,7 @@ public class Input {
     }
 
     public void createFormTangSKH(Player pl) {
-        createForm(pl, TANG_SKH, "-----YTB KhanhDTK-----", new SubInput("Tên nhân vật", ANY),
+        createForm(pl, TANG_SKH, "-----YTB ThanhBN-----", new SubInput("Tên nhân vật", ANY),
                 new SubInput("SGK, HP, Galick, Lienhoan, KI", ANY),
                 new SubInput("0-Áo, 1-Quần; 2-Găng; 3-Giày; 4-Rada; 5-Full", NUMERIC));
     }

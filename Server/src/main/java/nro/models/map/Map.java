@@ -23,7 +23,7 @@ import nro.models.npc.NpcManager;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  *
  */

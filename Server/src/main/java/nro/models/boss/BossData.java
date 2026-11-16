@@ -6,7 +6,7 @@ import nro.models.skill.Skill;
 import lombok.Builder;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  *
  */
 public class BossData {

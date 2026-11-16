@@ -12,7 +12,7 @@ import lombok.Getter;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class AttributeManager {
 

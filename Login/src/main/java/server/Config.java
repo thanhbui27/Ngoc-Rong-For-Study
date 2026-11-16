@@ -24,8 +24,12 @@ public class Config {
     private int secondWaitLogin;
 
     public Config(String path) {
+        File configFile = new File(path);
+        if (!configFile.isFile() && "server.ini".equals(path)) {
+            configFile = new File("Login", "server.ini");
+        }
         try (InputStreamReader input = new InputStreamReader(
-                new FileInputStream(new File(path)), StandardCharsets.UTF_8)) {
+                new FileInputStream(configFile), StandardCharsets.UTF_8)) {
             System.out.println("load config");
             Properties props = new Properties();
             props.load(input);
@@ -46,7 +50,7 @@ public class Config {
                     ? (int) Short.parseShort(props.getProperty("wait.login"))
                     : 5;
         } catch (IOException ex) {
-            throw new IllegalStateException("Cannot read login config: " + path, ex);
+            throw new IllegalStateException("Cannot read login config: " + configFile, ex);
         }
     }
 

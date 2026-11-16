@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public abstract class Satellite extends ItemMap {
 

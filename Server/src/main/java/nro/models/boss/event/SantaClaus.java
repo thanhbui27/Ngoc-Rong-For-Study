@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class SantaClaus extends Boss {
     private static final Logger logger = Logger.getLogger(SantaClaus.class);

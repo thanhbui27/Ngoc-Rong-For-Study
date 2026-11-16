@@ -44,7 +44,7 @@ import java.util.List;
 
 /**
  * @author ❤Girlkun75❤
- * @copyright ❤YTB KhanhDTK❤
+ * @copyright ❤YTB ThanhBN❤
  */
 public class GodGK {
     // ttest da sua

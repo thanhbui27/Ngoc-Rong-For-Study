@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  */
 public class CardManager {
 

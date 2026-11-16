@@ -42,7 +42,7 @@ import nro.services.MapService;
 import org.apache.log4j.Logger;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * @copyright 💖 NROLOVE 💖
  */
 public class BossFactory {

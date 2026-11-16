@@ -29,7 +29,7 @@ import nro.server.MenuController;
 import java.util.ArrayList;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  */
 public class ShopService {
@@ -644,7 +644,7 @@ public class ShopService {
             for (int i = 0; i < n; i++) {
                 Item item = player.inventory.itemsBoxCrackBall.get(i);
                 msg.writer().writeShort(item.template.id);
-                msg.writer().writeUTF("\n|7|-----YTB KhanhDTK-----");
+                msg.writer().writeUTF("\n|7|-----YTB ThanhBN-----");
                 List<ItemOption> itemOptions = item.getDisplayOptions();
                 msg.writer().writeByte(itemOptions.size());
                 for (ItemOption io : itemOptions) {
@@ -732,7 +732,7 @@ public class ShopService {
             msg.writer().writeByte(player.getSession().itemsReward.size());
             for (Item item : player.getSession().itemsReward) {
                 msg.writer().writeShort(item.template.id);
-                msg.writer().writeUTF("|7|-----YTB KhanhDTK------");
+                msg.writer().writeUTF("|7|-----YTB ThanhBN------");
                 List<ItemOption> itemOptions = item.getDisplayOptions();
                 msg.writer().writeByte(itemOptions.size() + 1);
                 for (ItemOption io : itemOptions) {

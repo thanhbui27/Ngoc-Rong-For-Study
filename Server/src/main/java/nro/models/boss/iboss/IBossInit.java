@@ -2,7 +2,7 @@ package nro.models.boss.iboss;
 
 /**
  *
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  * 
  *
  */

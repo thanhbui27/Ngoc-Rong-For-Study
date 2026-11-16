@@ -23,7 +23,7 @@ import nro.models.item.Item;
 import nro.server.Client;
 
 /**
- * @author 💖 YTB KhanhDTK 💖
+ * @author 💖 YTB ThanhBN 💖
  *
  */
 public class MapService {
@@ -180,7 +180,7 @@ public class MapService {
     public int[][] readTileIndexTileType(int tileTypeFocus) {
         int[][] tileIndexTileType = null;
         try {
-            DataInputStream dis = new DataInputStream(new FileInputStream("resources/khanhdtk/map/tile_set_info"));
+            DataInputStream dis = new DataInputStream(new FileInputStream("resources/ThanhBN/map/tile_set_info"));
             int numTileMap = dis.readByte();
             tileIndexTileType = new int[numTileMap][];
             for (int i = 0; i < numTileMap; i++) {
