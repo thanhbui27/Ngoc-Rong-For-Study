@@ -1,7 +1,6 @@
 **/target/
 **/.idea/
 Server/log/
-ngocrong.sql
 Login/server.ini
 Server/resources/config/server.properties
 *.before-fix.bak
