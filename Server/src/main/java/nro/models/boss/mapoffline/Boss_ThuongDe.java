@@ -99,6 +99,9 @@ public class Boss_ThuongDe extends FutureBoss {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (this.zone == null) {
                 leaveMap();
@@ -156,7 +159,7 @@ public class Boss_ThuongDe extends FutureBoss {
 
     @Override
     public int injured(Player plAtt, int damage, boolean piercing, boolean isMobAttack) {
-        if (plAtt.id == this.idPlayerForNPC) {
+        if (plAtt != null && plAtt.id == this.idPlayerForNPC) {
             int dame = 0;
             if (this.isDie()) {
                 return dame;
@@ -173,10 +176,7 @@ public class Boss_ThuongDe extends FutureBoss {
                 }
                 dame = super.injured(plAtt, damage, piercing, isMobAttack);
                 if (this.isDie()) {
-                    rewards(plAtt);
-                    notifyPlayeKill(plAtt);
                     PlayerService.gI().changeAndSendTypePK(plAtt, ConstPlayer.NON_PK);
-                    die();
                 }
                 return dame;
             }

@@ -95,6 +95,9 @@ public class Boss_ThanMeo extends FutureBoss {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (this.zone == null) {
                 leaveMap();
@@ -170,15 +173,9 @@ public class Boss_ThanMeo extends FutureBoss {
                     }
                 }
 
-                dame = super.injured(plAtt, damage, piercing, isMobAttack);
-                if (dame > 199) {
-                    dame = 199;
-                }
+                dame = super.injured(plAtt, Math.min(damage, 498), piercing, isMobAttack);
                 if (this.isDie()) {
-                    rewards(plAtt);
-                    notifyPlayeKill(plAtt);
                     PlayerService.gI().changeAndSendTypePK(plAtt, ConstPlayer.NON_PK);
-                    die();
                 }
                 return dame;
             }

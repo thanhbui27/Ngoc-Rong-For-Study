@@ -33,7 +33,18 @@ public class Whis extends Boss {
     @Override
     public void joinMap() {
         super.joinMap();
-        BossFactory.createBoss(BossFactory.BILL).zone = this.zone;
+        if (this.zone == null) {
+            return;
+        }
+        Boss bill = BossManager.gI().getBossById(BossFactory.BILL);
+        if (bill == null) {
+            bill = BossFactory.createBoss(BossFactory.BILL);
+        } else if (bill.zone == null) {
+            bill.setJustRest();
+        } else {
+            return;
+        }
+        bill.zone = this.zone;
     }
 
     @Override
@@ -97,7 +108,7 @@ public class Whis extends Boss {
     public void leaveMap() {
         super.leaveMap();
         BossManager.gI().removeBoss(this);
-        BossManager.gI().getBossById(BossFactory.BILL).changeToAttack();
+        BossManager.gI().restBossIfPresent(BossFactory.BILL);
     }
 
     @Override

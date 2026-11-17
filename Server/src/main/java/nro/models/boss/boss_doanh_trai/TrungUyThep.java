@@ -55,6 +55,9 @@ public class TrungUyThep extends BossDoanhTrai {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (activeAttack) {
                 Player pl = getPlayerAttack();

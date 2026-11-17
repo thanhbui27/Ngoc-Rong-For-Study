@@ -55,6 +55,13 @@ public abstract class BossDHVT extends Boss {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
+        performTournamentAttack();
+    }
+
+    protected void performTournamentAttack() {
         try {
             if (playerAtt != null && playerAtt.zone != null && this.zone != null && this.zone.equals(playerAtt.zone)) {
                 if (this.isDie()) {
@@ -86,43 +93,9 @@ public abstract class BossDHVT extends Boss {
 
     @Override
     public void joinMap() {
-        if (playerAtt.zone != null) {
+        if (playerAtt != null && playerAtt.zone != null) {
             this.zone = playerAtt.zone;
             ChangeMapService.gI().changeMap(this, this.zone, 435, 264);
-        }
-    }
-
-    private void immortalMp() {
-        this.nPoint.mp = this.nPoint.mpg;
-    }
-
-    @Override
-    public void update() {
-        super.update();
-        try {
-            if (!this.effectSkill.isHaveEffectSkill()
-                    && !this.effectSkill.isCharging) {
-                this.immortalMp();
-                switch (this.status) {
-                    case JUST_JOIN_MAP:
-                        joinMap();
-                        if (this.zone != null) {
-                            changeStatus(ATTACK);
-                        }
-                        break;
-                    case ATTACK:
-                        this.talk();
-                        if (this.playerSkill.prepareTuSat || this.playerSkill.prepareLaze
-                                || this.playerSkill.prepareQCKK) {
-                            break;
-                        } else {
-                            this.attack();
-                        }
-                        break;
-                }
-            }
-        } catch (Exception e) {
-            Log.error(BossDHVT.class, e);
         }
     }
 

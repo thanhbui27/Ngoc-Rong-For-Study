@@ -3,6 +3,7 @@ package nro.models.map.mabu;
 import nro.consts.ConstNpc;
 import nro.models.boss.Boss;
 import nro.models.boss.BossFactory;
+import nro.models.boss.BossManager;
 import nro.models.map.Map;
 import nro.models.map.Zone;
 import nro.models.npc.Npc;
@@ -16,8 +17,10 @@ import nro.services.func.ChangeMapService;
 import nro.utils.TimeUtil;
 import nro.utils.Util;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author outcast c-cute hột me 😳
@@ -25,7 +28,8 @@ import java.util.List;
 public class MabuWar {
 
     private static MabuWar i;
-    public final List<Boss> bosses = new ArrayList<>();
+    public final List<Boss> bosses = new CopyOnWriteArrayList<>();
+    private final Set<Zone> pendingMabu = new HashSet<>();
     public static long TIME_OPEN;
 
     public static long TIME_CLOSE;
@@ -39,7 +43,7 @@ public class MabuWar {
     public boolean initBoss;
     public boolean clearBoss;
 
-    public static MabuWar gI() {
+    public static synchronized MabuWar gI() {
         if (i == null) {
             i = new MabuWar();
         }
@@ -47,8 +51,24 @@ public class MabuWar {
         return i;
     }
 
-    public void setTime() {
+    public synchronized void setTime() {
         if (i.day == -1 || i.day != TimeUtil.getCurrDay()) {
+            if (i.day != -1) {
+                removeAllBoss();
+                initBoss = false;
+                clearBoss = false;
+                pendingMabu.clear();
+                for (int mapId = 114; mapId <= 120; mapId++) {
+                    Map map = MapService.gI().getMapById(mapId);
+                    if (map != null) {
+                        for (Zone zone : map.zones) {
+                            zone.percentMabuEgg = 0;
+                            zone.initBossMabu = false;
+                            zone.finishMabuWar = false;
+                        }
+                    }
+                }
+            }
             i.day = TimeUtil.getCurrDay();
             try {
                 this.TIME_OPEN = TimeUtil.getTime(TimeUtil.getTimeNow("dd/MM/yyyy") + " " + HOUR_OPEN + ":" + MIN_OPEN + ":" + SECOND_OPEN, "dd/MM/yyyy HH:mm:ss");
@@ -60,19 +80,48 @@ public class MabuWar {
 
     public boolean isTimeMabuWar() {
         long now = System.currentTimeMillis();
-        if (now > TIME_OPEN && now < TIME_CLOSE) {
+        if (now >= TIME_OPEN && now < TIME_CLOSE) {
             return true;
         }
         return false;
     }
 
+    public String getClosedMessage() {
+        return System.currentTimeMillis() < TIME_OPEN
+                ? "Đại chiến Mabư chưa tới giờ, mở lúc 12:00"
+                : "Đại chiến Mabư đã kết thúc, mở lại lúc 12:00 ngày mai";
+    }
+
+    public synchronized void updateEvent() {
+        setTime();
+        if (isTimeMabuWar()) {
+            if (!initBoss) {
+                initBoss = true;
+                BossFactory.initBossMabuWar();
+            }
+        } else if (initBoss && !clearBoss) {
+            removeAllBoss();
+        }
+    }
+
+    public synchronized void addBoss(Boss boss) {
+        if (boss == null) {
+            return;
+        }
+        if (isTimeMabuWar() && !clearBoss) {
+            bosses.add(boss);
+        } else {
+            boss.leaveMap();
+            BossManager.gI().removeBoss(boss);
+        }
+    }
+
     public void update(Player player) {
+        if (player == null || player.zone == null) {
+            return;
+        }
         if (MapService.gI().isMapMabuWar(player.zone.map.mapId)) {
             if (isTimeMabuWar()) {
-                if (!initBoss) {
-                    BossFactory.initBossMabuWar();
-                    initBoss = true;
-                }
                 if (Util.canDoWithTime(player.lastTimeBabiday, 30000)) {
                     if (player.cFlag == 9) {
                         if (Util.isTrue(50, 100)) {
@@ -105,7 +154,6 @@ public class MabuWar {
             try {
                 if (!isTimeMabuWar()) {
                     kickOutOfMap(player);
-                    removeAllBoss();
                 }
 
             } catch (Exception ex) {
@@ -115,7 +163,7 @@ public class MabuWar {
     }
 
     private void kickOutOfMap(Player player) {
-        Service.getInstance().sendThongBao(player, "Trận đại chiến đã kết thúc, tàu vận chuyển sẽ đưa bạn về nhà");
+        Service.getInstance().sendThongBao(player, getClosedMessage());
         ChangeMapService.gI().changeMapBySpaceShip(player, player.gender + 21, -1, 250);
     }
 
@@ -125,12 +173,19 @@ public class MabuWar {
         }
     }
 
-    public void removeAllBoss() {
+    public synchronized void removeAllBoss() {
         if (!clearBoss) {
             for (Boss boss : bosses) {
-                boss.leaveMap();
+                try {
+                    boss.leaveMap();
+                } catch (Exception e) {
+                    nro.utils.Log.error(MabuWar.class, e);
+                } finally {
+                    BossManager.gI().removeBoss(boss);
+                }
             }
             this.bosses.clear();
+            pendingMabu.clear();
             clearBoss = true;
         }
     }
@@ -175,14 +230,21 @@ public class MabuWar {
         return null;
     }
 
-    public void initMabu(Zone zone) {
+    public synchronized void initMabu(Zone zone) {
+        if (zone == null || !isTimeMabuWar() || !pendingMabu.add(zone)) {
+            return;
+        }
         new Thread(() -> {
             try {
                 Thread.sleep(4000);
+                if (!isTimeMabuWar()) {
+                    return;
+                }
                 Boss boss = BossFactory.createBoss(BossFactory.MABU_MAP);
                 boss.zone = zone;
-                bosses.add(boss);
+                addBoss(boss);
             } catch (Exception e) {
+                nro.utils.Log.error(MabuWar.class, e);
             }
         }).start();
     }

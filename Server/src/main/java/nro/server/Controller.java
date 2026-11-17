@@ -483,9 +483,6 @@ public class Controller {
                     if (player != null) {
                         int selectSkill = _msg.reader().readShort();
                         SkillService.gI().selectSkill(player, selectSkill);
-                        if (selectSkill == Skill.BIEN_HINH || selectSkill == Skill.HUYT_SAO) {
-                            SkillService.gI().useSkill(player, null, null, _msg);
-                        }
                     }
                     break;
                 case 54:

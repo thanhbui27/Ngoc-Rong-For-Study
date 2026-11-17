@@ -71,12 +71,18 @@ public class SantaClaus extends Boss {
     @Override
     public void joinMap() {
         this.zone = getMapCanJoin(mapID);
+        if (this.zone == null) {
+            return;
+        }
         int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
         ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
     }
 
     @Override
     public void attack() {
+        if (this.zone == null) {
+            return;
+        }
         if (Util.isTrue(50, ConstRatio.PER100)) {
             int x = location.x + Util.nextInt(-50, 50);
             if (x < 35) {

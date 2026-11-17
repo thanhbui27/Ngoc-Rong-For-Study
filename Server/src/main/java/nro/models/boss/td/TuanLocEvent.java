@@ -42,9 +42,6 @@ public class TuanLocEvent extends Boss {
                 return 10;
             }
             dame = super.injured(plAtt, damage, piercing, isMobAttack);
-            if (this.isDie()) {
-                die();
-            }
             return dame;
         }
     }
@@ -65,6 +62,7 @@ public class TuanLocEvent extends Boss {
         }
         if (isDie()) {
             super.leaveMap();
+            return;
         }
         if (lastTimeNhatChuong > 0) {
             if (Util.canDoWithTime(lastTimeNhatChuong, 5000)) {
@@ -73,6 +71,7 @@ public class TuanLocEvent extends Boss {
                 super.leaveMap();
                 setJustRest();
                 changeStatus(DIE);
+                return;
             }
         }
         if (Util.canDoWithTime(lastTimRestPawn, 180000)) {
@@ -81,6 +80,7 @@ public class TuanLocEvent extends Boss {
             super.leaveMap();
             setJustRest();
             changeStatus(DIE);
+            return;
         }
         try {
             Player pl = getPlayerAttack();

@@ -481,7 +481,11 @@ public class InventoryService {
         }
         Item item = player.inventory.itemsBag.get(index);
         if (item.isNotNullItem()) {
-            player.inventory.itemsBag.set(index, putItemBody(player, item));
+            Item itemSwap = putItemBody(player, item);
+            if (itemSwap == item) {
+                return;
+            }
+            player.inventory.itemsBag.set(index, itemSwap);
             if (item.template.type == 39) {
                 Service.getInstance().removeTitle1(player);
                 Service.getInstance().sendTitle1(player, item.template.part);
@@ -502,11 +506,16 @@ public class InventoryService {
         }
         Item item = player.inventory.itemsBody.get(index);
         if (item.isNotNullItem()) {
+            Item emptySlot = putItemBag(player, item);
+            if (emptySlot == item) {
+                Service.getInstance().sendThongBaoOK(player, "Hành trang đã đầy");
+                return;
+            }
             if (item.template.type == 39) {
                 Service.getInstance().removeTitle1(player);
                 Service.getInstance().removeFoot1(player);
             }
-            player.inventory.itemsBody.set(index, putItemBag(player, item));
+            player.inventory.itemsBody.set(index, emptySlot);
             sendItemBags(player);
             sendItemBody(player);
             player.zone.load_Me_To_Another(player);
@@ -525,16 +534,17 @@ public class InventoryService {
             Item item = player.inventory.itemsBag.get(index);
             if (item.isNotNullItem()) {
                 Item itemSwap = putItemBody(player.pet, item);
+                if (itemSwap == item) {
+                    return;
+                }
                 player.inventory.itemsBag.set(index, itemSwap);
                 sendItemBags(player);
                 sendItemBody(player);
 
                 Service.getInstance().Send_Caitrang(player.pet);
                 Service.getInstance().Send_Caitrang(player);
-                if (!itemSwap.equals(item)) {
-                    Service.getInstance().point(player);
-                    Service.getInstance().showInfoPet(player);
-                }
+                Service.getInstance().point(player);
+                Service.getInstance().showInfoPet(player);
             }
         } else {
             Service.getInstance().sendThongBaoOK(player, "Đệ tử phải đạt 1tr5 sức mạnh mới có thể mặc");
@@ -542,12 +552,17 @@ public class InventoryService {
     }
 
     public void itemPetBodyToBag(Player player, int index) {
-        if (index < 0 || index >= player.inventory.itemsBody.size()) {
+        if (player.pet == null || index < 0 || index >= player.pet.inventory.itemsBody.size()) {
             return;
         }
         Item item = player.pet.inventory.itemsBody.get(index);
         if (item.isNotNullItem()) {
-            player.pet.inventory.itemsBody.set(index, putItemBag(player, item));
+            Item emptySlot = putItemBag(player, item);
+            if (emptySlot == item) {
+                Service.getInstance().sendThongBaoOK(player, "Hành trang đã đầy");
+                return;
+            }
+            player.pet.inventory.itemsBody.set(index, emptySlot);
             sendItemBags(player);
             sendItemBody(player);
             Service.getInstance().Send_Caitrang(player.pet);
@@ -625,7 +640,16 @@ public class InventoryService {
         }
         Item item = player.inventory.itemsBody.get(index);
         if (item.isNotNullItem()) {
-            player.inventory.itemsBody.set(index, putItemBox(player, item));
+            Item emptySlot = putItemBox(player, item);
+            if (emptySlot == item) {
+                Service.getInstance().sendThongBaoOK(player, "Rương đã đầy");
+                return;
+            }
+            player.inventory.itemsBody.set(index, emptySlot);
+            if (item.template.type == 39) {
+                Service.getInstance().removeTitle1(player);
+                Service.getInstance().removeFoot1(player);
+            }
             arrangeItems(player.inventory.itemsBag);
             sendItemBody(player);
             sendItemBox(player);
@@ -899,6 +923,7 @@ public class InventoryService {
             for (int i = 0; i < player.inventory.itemsBag.size(); i++) {
                 Item item = player.inventory.itemsBag.get(i);
                 if (!item.isNotNullItem()) {
+                    msg.writer().writeShort(-1);
                     continue;
                 }
                 msg.writer().writeShort(item.template.id);

@@ -39,9 +39,15 @@ public class TrungUyXanhLo extends BossBanDoKhoBau {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (!useSpecialSkill()) {
                 Player pl = getPlayerAttack();
+                if (pl == null) {
+                    return;
+                }
                 this.playerSkill.skillSelect = this.getSkillAttack();
                 if (Util.getDistance(this, pl) <= this.getRangeCanAttackWithSkillSelect()) {
                     if (Util.isTrue(10, ConstRatio.PER100)) {
@@ -92,10 +98,12 @@ public class TrungUyXanhLo extends BossBanDoKhoBau {
                                 }
                             } else {
                                 List<Player> notBosses = this.zone.getNotBosses();
-                                for (Player pl : notBosses) {
-                                    if ((pl.location.x <= 358 && pl.location.y == 456) && !pl.effectSkin.isVoHinh) {
-                                        this.activeAttack = true;
-                                        break;
+                                synchronized (notBosses) {
+                                    for (Player pl : notBosses) {
+                                        if ((pl.location.x <= 358 && pl.location.y == 456) && !pl.effectSkin.isVoHinh) {
+                                            this.activeAttack = true;
+                                            break;
+                                        }
                                     }
                                 }
                             }

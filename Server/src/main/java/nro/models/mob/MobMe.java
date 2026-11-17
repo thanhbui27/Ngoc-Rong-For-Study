@@ -29,7 +29,7 @@ public final class MobMe extends Mob {
         this.point.maxHp = SkillUtil.getHPMobMe(player.nPoint.hpMax, level);
         this.point.dame = SkillUtil.getHPMobMe(player.nPoint.getDameAttack(false), level);
         if (this.player.setClothes.pikkoroDaimao == 5) {
-            this.point.dame *= 2;
+            this.point.dame = (int) Math.min(Integer.MAX_VALUE, (long) this.point.dame * 2L);
         }
         this.point.hp = this.point.maxHp;
         this.zone = player.zone;

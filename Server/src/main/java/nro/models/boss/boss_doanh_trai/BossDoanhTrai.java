@@ -49,7 +49,7 @@ public abstract class BossDoanhTrai extends Boss {
                         }
                     }
                 }
-                this.nPoint.dameg = (int) (this.highestHp / this.xHpForDame);
+                this.nPoint.dameg = capBossStat(this.highestHp / this.xHpForDame);
                 break;
         }
         switch (this.typeHp) {
@@ -61,7 +61,7 @@ public abstract class BossDoanhTrai extends Boss {
                         }
                     }
                 }
-                this.nPoint.hpg = (int) (this.highestDame * this.xDameForHp);
+                this.nPoint.hpg = capBossStat(this.highestDame * this.xDameForHp);
                 this.nPoint.calPoint();
                 this.nPoint.setFullHpMp();
                 break;

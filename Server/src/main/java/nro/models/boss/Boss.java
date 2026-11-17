@@ -14,6 +14,7 @@ import nro.models.boss.nappa.Kuku;
 import nro.models.boss.nappa.MapDauDinh;
 import nro.models.boss.nappa.Rambo;
 import nro.models.map.ItemMap;
+import nro.models.map.Map;
 import nro.models.map.Zone;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
@@ -135,7 +136,7 @@ public abstract class Boss extends Player implements BossInterface {
 
     public Boss(HashMap<Integer, BossData> map) {
         super();
-        this.id = BossManager.gI().bossId--;
+        this.id = BossManager.gI().nextBossId();
         this.nextLevel = map;
         this.typeBosses = new ArrayList<>(map.keySet());
         this.bossType = typeBosses.get(0);
@@ -190,19 +191,19 @@ public abstract class Boss extends Player implements BossInterface {
                 break;
             case DAME_PERCENT_HP_HUND:
                 this.percentDame = dame;
-                this.nPoint.dameg = (int) (this.nPoint.hpg * dame / 100);
+                this.nPoint.dameg = scaledDamage(this.nPoint.hpg, dame, 100);
                 break;
             case DAME_PERCENT_MP_HUND:
                 this.percentDame = dame;
-                this.nPoint.dameg = (int) (this.nPoint.mpg * dame / 100);
+                this.nPoint.dameg = scaledDamage(this.nPoint.mpg, dame, 100);
                 break;
             case DAME_PERCENT_HP_THOU:
                 this.percentDame = dame;
-                this.nPoint.dameg = (int) (this.nPoint.hp * dame / 1000);
+                this.nPoint.dameg = scaledDamage(this.nPoint.hpg, dame, 1000);
                 break;
             case DAME_PERCENT_MP_THOU:
                 this.percentDame = dame;
-                this.nPoint.dameg = (int) (this.nPoint.mpg * dame / 1000);
+                this.nPoint.dameg = scaledDamage(this.nPoint.mpg, dame, 1000);
                 break;
             case DAME_TIME_PLAYER_WITH_HIGHEST_HP_IN_CLAN:
 
@@ -216,6 +217,15 @@ public abstract class Boss extends Player implements BossInterface {
         }
         this.joinMapIdle = data.joinMapIdle;
         initSkill();
+    }
+
+    private int scaledDamage(long base, long factor, long divisor) {
+        long damage = base * factor / divisor;
+        return capBossStat(damage);
+    }
+
+    protected int capBossStat(long value) {
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, value));
     }
 
     @Override
@@ -342,8 +352,10 @@ public abstract class Boss extends Player implements BossInterface {
     protected int nextLevel(int damage, Player plAtt) {
         if (damage >= this.nPoint.hp && isNotLastTypeBoss()) {
             canUpLevel = true;
-            rewards(plAtt);
-            notifyPlayeKill(plAtt);
+            if (plAtt != null) {
+                rewards(plAtt);
+                notifyPlayeKill(plAtt);
+            }
             this.changeToIdle();
             return this.nPoint.hp - 1;
         }
@@ -419,9 +431,14 @@ public abstract class Boss extends Player implements BossInterface {
             damage = methodBeforeGetDamage(damage, plAtt);
             this.nPoint.subHP(damage);
             if (isDie()) {
-                rewards(plAtt);
-                notifyPlayeKill(plAtt);
-                die();
+                try {
+                    if (plAtt != null) {
+                        rewards(plAtt);
+                        notifyPlayeKill(plAtt);
+                    }
+                } finally {
+                    die();
+                }
             }
             return damage;
         } else {
@@ -465,13 +482,12 @@ public abstract class Boss extends Player implements BossInterface {
     @Override
     public void joinMap() {
         if (this.zone == null) {
-            if (this.name == "Karin") {
-            } else {
+            if (!"Karin".equals(this.name) && mapJoin != null && mapJoin.length > 0) {
                 this.zone = getMapCanJoin(mapJoin[Util.nextInt(0, mapJoin.length - 1)]);
             }
         }
         if (this.zone != null) {
-            if (this.name == "Karin") {
+            if ("Karin".equals(this.name)) {
                 ChangeMapService.gI().changeMap(this, 46, this.zone.zoneId, 420, 408);
                 System.out.println("BOSS " + this.name + " (" + this.id + ")" + ": " + this.zone.map.mapName
                         + " khu vực " + this.zone.zoneId + "(" + this.zone.map.mapId + ")");
@@ -488,12 +504,34 @@ public abstract class Boss extends Player implements BossInterface {
     }
 
     public Zone getMapCanJoin(int mapId) {
-        Zone map = MapService.gI().getMapWithRandZone(mapId);
-        if (map.isBossCanJoin(this)) {
-            return map;
-        } else {
-            return getMapCanJoin(mapJoin[Util.nextInt(0, mapJoin.length - 1)]);
+        Zone preferred = MapService.gI().getMapWithRandZone(mapId);
+        if (preferred != null && preferred.isBossCanJoin(this)) {
+            return preferred;
         }
+        Map map = MapService.gI().getMapById(mapId);
+        if (map != null) {
+            for (Zone zone : map.zones) {
+                if (zone.isBossCanJoin(this)) {
+                    return zone;
+                }
+            }
+        }
+        if (mapJoin != null) {
+            for (short otherMapId : mapJoin) {
+                if (otherMapId == mapId) {
+                    continue;
+                }
+                Map otherMap = MapService.gI().getMapById(otherMapId);
+                if (otherMap != null) {
+                    for (Zone zone : otherMap.zones) {
+                        if (zone.isBossCanJoin(this)) {
+                            return zone;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     protected boolean isNotFullHp() {
@@ -670,6 +708,10 @@ public abstract class Boss extends Player implements BossInterface {
         if (!canAttackWithTime(500)) {
             return;
         }
+        performAttack();
+    }
+
+    protected void performAttack() {
         try {
             if (useSpecialSkill()) {
                 return;

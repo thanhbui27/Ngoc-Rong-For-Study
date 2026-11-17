@@ -42,6 +42,8 @@ public class Trade {
 
     private List<Item> itemsTrade1;
     private List<Item> itemsTrade2;
+    private List<Byte> itemTradeIndexes1;
+    private List<Byte> itemTradeIndexes2;
     private int goldTrade1;
     private int goldTrade2;
 
@@ -61,6 +63,8 @@ public class Trade {
         this.itemsBag2 = InventoryService.gI().copyItemsBag(player2);
         this.itemsTrade1 = new ArrayList<>();
         this.itemsTrade2 = new ArrayList<>();
+        this.itemTradeIndexes1 = new ArrayList<>();
+        this.itemTradeIndexes2 = new ArrayList<>();
         TransactionService.PLAYER_TRADE.put(pl1, this);
         TransactionService.PLAYER_TRADE.put(pl2, this);
     }
@@ -119,9 +123,11 @@ public class Trade {
                             if (pl.equals(this.player1)) {
                                 InventoryService.gI().subQuantityItem(itemsBag1, item, itemTrade.quantity);
                                 itemsTrade1.add(itemTrade);
+                                itemTradeIndexes1.add(index);
                             } else {
                                 InventoryService.gI().subQuantityItem(itemsBag2, item, itemTrade.quantity);
                                 itemsTrade2.add(itemTrade);
+                                itemTradeIndexes2.add(index);
                             }
                         }
                         if (left > 0) {
@@ -130,9 +136,11 @@ public class Trade {
                             if (pl.equals(this.player1)) {
                                 InventoryService.gI().subQuantityItem(itemsBag1, item, itemTrade.quantity);
                                 itemsTrade1.add(itemTrade);
+                                itemTradeIndexes1.add(index);
                             } else {
                                 InventoryService.gI().subQuantityItem(itemsBag2, item, itemTrade.quantity);
                                 itemsTrade2.add(itemTrade);
+                                itemTradeIndexes2.add(index);
                             }
                         }
                     } else {
@@ -141,9 +149,11 @@ public class Trade {
                         if (pl.equals(this.player1)) {
                             InventoryService.gI().subQuantityItem(itemsBag1, item, itemTrade.quantity);
                             itemsTrade1.add(itemTrade);
+                            itemTradeIndexes1.add(index);
                         } else {
                             InventoryService.gI().subQuantityItem(itemsBag2, item, itemTrade.quantity);
                             itemsTrade2.add(itemTrade);
+                            itemTradeIndexes2.add(index);
                         }
                     }
                 }
@@ -165,6 +175,28 @@ public class Trade {
             msg.cleanup();
             Service.getInstance().sendThongBao(pl, "Không thể giao dịch vật phẩm này");
         } catch (Exception e) {
+        }
+    }
+
+    public void removeOfferedItem(Player pl, byte index) {
+        List<Item> items = pl.equals(player1) ? itemsTrade1 : itemsTrade2;
+        List<Byte> indexes = pl.equals(player1) ? itemTradeIndexes1 : itemTradeIndexes2;
+        List<Item> bag = pl.equals(player1) ? itemsBag1 : itemsBag2;
+        List<Item> originalBag = pl.equals(player1) ? bag1Before : bag2Before;
+        if (index < 0 || index >= bag.size()) {
+            return;
+        }
+        boolean removed = false;
+        for (int i = indexes.size() - 1; i >= 0; i--) {
+            if (indexes.get(i) == index) {
+                indexes.remove(i);
+                items.remove(i);
+                removed = true;
+            }
+        }
+        if (removed) {
+            bag.set(index, ItemService.gI().copyItem(originalBag.get(index)));
+            accept = 0;
         }
     }
 
@@ -261,6 +293,8 @@ public class Trade {
         this.itemsBag2 = null;
         this.itemsTrade1 = null;
         this.itemsTrade2 = null;
+        this.itemTradeIndexes1 = null;
+        this.itemTradeIndexes2 = null;
     }
 
     public void lockTran(Player pl) {

@@ -61,6 +61,6 @@ public class Pic extends Boss {
     public void leaveMap() {
         super.leaveMap();
         BossManager.gI().removeBoss(this);
-        BossManager.gI().getBossById(BossFactory.KINGKONG).changeToAttack();
+        BossManager.gI().activateBossIfPresent(BossFactory.KINGKONG);
     }
 }

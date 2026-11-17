@@ -4,6 +4,8 @@ import nro.consts.ConstRatio;
 import nro.models.boss.Boss;
 import nro.models.boss.BossData;
 import nro.models.boss.BossFactory;
+import nro.models.boss.BossManager;
+import nro.models.map.mabu.MabuWar;
 import nro.models.map.ItemMap;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
@@ -31,7 +33,12 @@ public class Mabu_Tang6 extends BossMabuWar {
     public void attack() {
         if (this.isDie()) {
             this.zone.finishMabuWar = true;
-            die();
+            leaveMap();
+            MabuWar.gI().bosses.remove(this);
+            BossManager.gI().removeBoss(this);
+            return;
+        }
+        if (!canAttackWithTime(500)) {
             return;
         }
         try {
@@ -79,7 +86,7 @@ public class Mabu_Tang6 extends BossMabuWar {
                 }
             }
             int dame = super.injuredNotCheckDie(plAtt, damage, piercing);
-            if (this.isDie()) {
+            if (this.isDie() && plAtt != null) {
                 rewards(plAtt);
             }
             return dame;

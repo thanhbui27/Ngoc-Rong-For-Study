@@ -64,7 +64,7 @@ public class Chill2 extends FutureBoss {
 
      @Override
     public void leaveMap() {
-        BossManager.gI().getBossById(BossFactory.CHILL).setJustRest();
+        BossManager.gI().restBossIfPresent(BossFactory.CHILL);
         super.leaveMap();
         BossManager.gI().removeBoss(this);
     }

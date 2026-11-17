@@ -5,6 +5,7 @@ import nro.consts.ConstPlayer;
 import nro.models.intrinsic.Intrinsic;
 import nro.models.mob.Mob;
 import nro.models.mob.MobMe;
+import nro.models.map.Zone;
 import nro.models.player.Pet;
 import nro.models.player.Player;
 import nro.models.pvp.PVP;
@@ -41,8 +42,8 @@ public class SkillService {
 
     public boolean useSkill(Player player, Player plTarget, Mob mobTarget, Message message) {
         try {
-            if (player.playerSkill.skillSelect == null && player.playerSkill == null
-                    && player.playerSkill.skillSelect.template == null) {
+            if (player == null || player.playerSkill == null || player.playerSkill.skillSelect == null
+                    || player.playerSkill.skillSelect.template == null) {
                 return false;
             }
             if (player.playerSkill.skillSelect.template.type == 2 && canUseSkillWithMana(player)
@@ -54,7 +55,8 @@ public class SkillService {
                     && (player.playerSkill.skillSelect.template.id != Skill.TU_SAT
                             && player.playerSkill.skillSelect.template.id != Skill.QUA_CAU_KENH_KHI
                             && player.playerSkill.skillSelect.template.id != Skill.MAKANKOSAPPO))
-                    || (plTarget != null && !canAttackPlayer(player, plTarget))
+                    || (plTarget != null && !(player.playerSkill.skillSelect.template.id == Skill.QUA_CAU_KENH_KHI
+                            ? canQCKKAttackPlayer(player, plTarget) : canAttackPlayer(player, plTarget)))
                     || (mobTarget != null && mobTarget.isDie())
                     || !canUseSkillWithMana(player) || !canUseSkillWithCooldown(player)) {
                 return false;
@@ -75,16 +77,17 @@ public class SkillService {
             Short x = -1;
             Short y = -1;
 
-            try {
-                st = message.reader().readByte();
-                skillId = message.reader().readByte();
-                dx = message.reader().readShort();
-                dy = message.reader().readShort();
-                dir = message.reader().readByte();
-                x = message.reader().readShort();
-                y = message.reader().readShort();
-            } catch (Exception ex) {
-
+            if (message != null) {
+                try {
+                    st = message.reader().readByte();
+                    skillId = message.reader().readByte();
+                    dx = message.reader().readShort();
+                    dy = message.reader().readShort();
+                    dir = message.reader().readByte();
+                    x = message.reader().readShort();
+                    y = message.reader().readShort();
+                } catch (Exception ex) {
+                }
             }
             if (st == 20 && skillId != player.playerSkill.skillSelect.template.id) {
                 selectSkill(player, skillId);
@@ -182,12 +185,13 @@ public class SkillService {
             case Skill.QUA_CAU_KENH_KHI:
                 // ném cầu
                 List<Mob> mobs = new ArrayList<>();
+                List<Player> players = new ArrayList<>();
+                int rangeQCKK = SkillUtil.getRangeQCKK(player.playerSkill.skillSelect.point);
                 if (plTarget != null) {
                     playerAttackPlayer(player, plTarget, false, -1);
                     for (Mob mob : player.zone.mobs) {
                         if (!mob.isDie()
-                                && Util.getDistance(plTarget, mob) <= SkillUtil
-                                        .getRangeQCKK(player.playerSkill.skillSelect.point)) {
+                                && Util.getDistance(plTarget, mob) <= rangeQCKK) {
                             mobs.add(mob);
                         }
                     }
@@ -195,15 +199,29 @@ public class SkillService {
                 if (mobTarget != null) {
                     playerAttackMob(player, mobTarget, false, true);
                     for (Mob mob : player.zone.mobs) {
-                        if (!mob.equals(mobTarget) && !mob.isDie()
-                                && Util.getDistance(mob, mobTarget) <= SkillUtil
-                                        .getRangeQCKK(player.playerSkill.skillSelect.point)) {
+                        if (!mob.equals(mobTarget) && !mob.isDie() && !mobs.contains(mob)
+                                && Util.getDistance(mob, mobTarget) <= rangeQCKK) {
                             mobs.add(mob);
+                        }
+                    }
+                }
+                if (plTarget != null || mobTarget != null) {
+                    for (Player target : player.zone.getHumanoids()) {
+                        if (target == plTarget || !target.isPl() || target.cFlag == 0
+                                || !canQCKKAttackPlayer(player, target)) {
+                            continue;
+                        }
+                        if ((plTarget != null && Util.getDistance(plTarget, target) <= rangeQCKK)
+                                || (mobTarget != null && Util.getDistance(target, mobTarget) <= rangeQCKK)) {
+                            players.add(target);
                         }
                     }
                 }
                 for (Mob mob : mobs) {
                     mob.injured(player, player.nPoint.getDameAttack(true), true);
+                }
+                for (Player target : players) {
+                    playerAttackPlayer(player, target, false, -1);
                 }
                 PlayerService.gI().sendInfoHpMpMoney(player);
                 affterUseSkill(player, player.playerSkill.skillSelect.template.id);
@@ -458,8 +476,8 @@ public class SkillService {
         List<Player> players;
         switch (player.playerSkill.skillSelect.template.id) {
             case Skill.BIEN_HINH: {
-                EffectSkillService.gI().sendEffectbienhinh(player);
                 if (player.effectSkill.levelBienHinh < player.playerSkill.skillSelect.point) {
+                    EffectSkillService.gI().sendEffectbienhinh(player);
                     EffectSkillService.gI().setBienHinh(player);
                     EffectSkillService.gI().sendEffectbienhinh(player);
                     Service.getInstance().Send_Caitrang(player);
@@ -572,6 +590,10 @@ public class SkillService {
     }
 
     private void playerAttackPlayer(Player plAtt, Player plInjure, boolean miss, int damage) {
+        playerAttackPlayer(plAtt, plInjure, miss, damage, plAtt.playerSkill.skillSelect);
+    }
+
+    private void playerAttackPlayer(Player plAtt, Player plInjure, boolean miss, int damage, Skill attackSkill) {
         if (plInjure.effectSkill.anTroi) {
             plAtt.nPoint.isCrit100 = true;
         }
@@ -583,10 +605,10 @@ public class SkillService {
         try {
             msg = new Message(-60);
             msg.writer().writeInt((int) plAtt.id); // id pem
-            msg.writer().writeByte(plAtt.playerSkill.skillSelect.skillId); // skill pem
+            msg.writer().writeByte(attackSkill.skillId); // skill pem
             msg.writer().writeByte(1); // số người pem
             msg.writer().writeInt((int) plInjure.id); // id ăn pem
-            byte typeSkill = SkillUtil.getTyleSkillAttack(plAtt.playerSkill.skillSelect);
+            byte typeSkill = SkillUtil.getTyleSkillAttack(attackSkill);
             msg.writer().writeByte(typeSkill == 2 ? 0 : 1); // read continue
             msg.writer().writeByte(typeSkill); // type skill
             msg.writer().writeInt(dameHit); // dame ăn
@@ -600,7 +622,7 @@ public class SkillService {
                 msg.cleanup();
                 msg = new Message(-60);
                 msg.writer().writeInt((int) plAtt.id); // id pem
-                msg.writer().writeByte(plAtt.playerSkill.skillSelect.skillId); // skill pem
+                msg.writer().writeByte(attackSkill.skillId); // skill pem
                 msg.writer().writeByte(1); // số người pem
                 msg.writer().writeInt((int) plInjure.id); // id ăn pem
                 msg.writer().writeByte(typeSkill == 2 ? 0 : 1); // read continue
@@ -685,7 +707,7 @@ public class SkillService {
                     return player.nPoint.mp >= player.playerSkill.skillSelect.manaUse;
                 }
                 case 1 -> {
-                    int mpUse = (int) (player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100);
+                    long mpUse = (long) player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100;
                     return player.nPoint.mp >= mpUse;
                 }
                 case 2 -> {
@@ -742,7 +764,7 @@ public class SkillService {
                     }
                 }
                 case 1 -> {
-                    int mpUse = (int) (player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100);
+                    long mpUse = (long) player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100;
                     if (player.nPoint.mp >= mpUse) {
                         player.nPoint.setMp(player.nPoint.mp - mpUse);
                     }
@@ -855,6 +877,11 @@ public class SkillService {
         }
     }
 
+    private boolean canQCKKAttackPlayer(Player caster, Player target) {
+        return target != null && !caster.equals(target) && !caster.isDie() && !target.isDie()
+                && (target.cFlag == 8 || canAttackPlayer(caster, target));
+    }
+
     private void sendPlayerAttackMob(Player plAtt, Mob mob) {
         Message msg;
         try {
@@ -901,63 +928,77 @@ public class SkillService {
     public void useSKillNotFocus(Player player, short skillID, short xPlayer, short yPlayer, byte dir, short x,
             short y) {
         try {
-            SkillNotFocus skill = (SkillNotFocus) player.playerSkill.getSkillbyId(skillID);
+            if ((skillID != Skill.SUPER_KAME && skillID != Skill.SUPER_ANTOMIC && skillID != Skill.MAFUBA)
+                    || player.zone == null) {
+                return;
+            }
+            Skill selectedSkill = player.playerSkill.getSkillbyId(skillID);
+            if (!(selectedSkill instanceof SkillNotFocus skill)) {
+                return;
+            }
             player.playerSkill.skillSelect = skill;
-            if (canUseSkillWithMana(player) && canUseSkillWithCooldown(player)
-                    && player.playerSkill.skillSelect != null) {
+            if (canUseSkillWithMana(player) && canUseSkillWithCooldown(player)) {
                 if (player.location.x != xPlayer || player.location.y != yPlayer) {
                     return;
                 }
+                Zone castZone = player.zone;
                 int skillRange = skill.getRange();
-                int range = player.location.x + (dir == 1 ? skillRange : -skillRange);
+                int skillHeight = skill.dy;
+                int range = xPlayer + (dir == 1 ? skillRange : -skillRange);
                 sendEffStartSkillNotFocus(player, skillID, dir, skill.getTimePre(), (byte) player.isFly);
+                affterUseSkill(player, skillID);
                 if (skillID != Skill.MAFUBA) {
                     Util.setTimeout(() -> {
+                        if (player.zone != castZone || player.isDie()) {
+                            return;
+                        }
                         long currentTime = System.currentTimeMillis();
                         skill.setTime(currentTime + skill.getTimeDame());
                         int period = skill.getTimeDame() / 15;
                         int count = 1;
                         sendEffEndUseSkillNotFocus(player, skillID, range, skill.getTimeDame(), 50, null);
-                        while (!player.isDie() && currentTime < skill.getTime()) {
+                        while (!player.isDie() && player.zone == castZone
+                                && currentTime < skill.getTime() && count <= 15) {
                             currentTime = System.currentTimeMillis();
-                            int dameAttack = player.nPoint.getDameAttackSkillNotFocus() * (count == 15 ? 2 : 1);
+                            int baseDamage = player.nPoint.getDameAttackSkillNotFocus(skill);
+                            int dameAttack = (int) Math.min(Integer.MAX_VALUE,
+                                    (long) baseDamage * (count == 15 ? 2 : 1));
                             count++;
-                            for (Mob mob : player.zone.mobs) {
-                                if (Math.abs(player.location.y - mob.location.y) <= 100) {
+                            for (Mob mob : castZone.mobs) {
+                                if (Math.abs(yPlayer - mob.location.y) <= skillHeight) {
                                     if (dir == 1) {// phải
                                         if (mob.location.x >= xPlayer
-                                                && Math.abs(player.location.x - mob.location.x) <= skillRange) {
+                                                && mob.location.x - xPlayer <= skillRange) {
                                             mob.injured(player, dameAttack, false);
                                         }
                                     } else {// trái
                                         if (mob.location.x <= xPlayer
-                                                && Math.abs(player.location.x - mob.location.x) <= skillRange) {
+                                                && xPlayer - mob.location.x <= skillRange) {
                                             mob.injured(player, dameAttack, false);
                                         }
                                     }
                                 }
                             }
 
-                            for (Player p : player.zone.getHumanoids()) {
+                            for (Player p : castZone.getHumanoids()) {
                                 if (canAttackPlayer(player, p) && !p.equals(player)) {
-                                    if (Math.abs(player.location.y - p.location.y) <= 100) {
+                                    if (Math.abs(yPlayer - p.location.y) <= skillHeight) {
                                         if (dir == 1) {// phải
                                             if (p.location.x >= xPlayer
-                                                    && Math.abs(player.location.x - p.location.x) <= skillRange) {
-                                                playerAttackPlayer(player, p, false, dameAttack);
+                                                    && p.location.x - xPlayer <= skillRange) {
+                                                playerAttackPlayer(player, p, false, dameAttack, skill);
                                                 havePlayerAttack(p, false, dameAttack, 0);
                                             }
                                         } else {// trái
                                             if (p.location.x <= xPlayer
-                                                    && Math.abs(player.location.x - p.location.x) <= skillRange) {
-                                                playerAttackPlayer(player, p, false, dameAttack);
+                                                    && xPlayer - p.location.x <= skillRange) {
+                                                playerAttackPlayer(player, p, false, dameAttack, skill);
                                                 havePlayerAttack(p, false, dameAttack, 0);
                                             }
                                         }
                                     }
                                 }
                             }
-                            affterUseSkill(player, skillID);
                             try {
                                 TimeUnit.MILLISECONDS.sleep(period);
                             } catch (InterruptedException e) {
@@ -969,9 +1010,12 @@ public class SkillService {
                         try {
                             List<Object> list = new ArrayList<>();
                             TimeUnit.MILLISECONDS.sleep(skill.getTimePre());
+                            if (player.zone != castZone || player.isDie()) {
+                                return;
+                            }
                             int point = skill.point;
                             int distanceX = player.location.x + 50 * dir;
-                            List<Mob> mobs = player.zone.mobs
+                            List<Mob> mobs = castZone.mobs
                                     .stream()
                                     .filter(m -> !m.isDie() && Util.getDistance(distanceX, player.location.y,
                                             m.location.x, m.location.y) <= 100 + 15 * point)
@@ -982,9 +1026,9 @@ public class SkillService {
                                     list.add(mob);
                                 }
                             }
-                            List<Player> pls = player.zone.getHumanoids()
+                            List<Player> pls = castZone.getHumanoids()
                                     .stream()
-                                    .filter(m -> !m.equals(player) && !m.isDie()
+                                    .filter(m -> !m.equals(player) && !m.isDie() && canAttackPlayer(player, m)
                                             && Util.getDistance(distanceX, player.location.y, m.location.x,
                                                     m.location.y) <= 100 + 15 * point)
                                     .sorted(Comparator.comparingInt(m -> Math.abs(distanceX - m.location.x)))
@@ -996,10 +1040,15 @@ public class SkillService {
                             }
                             sendEffEndUseSkillNotFocus(player, skillID, distanceX, skill.getTimeDame(),
                                     100 + 15 * skill.point, list);
-                            affterUseSkill(player, skillID);
                             TimeUnit.MILLISECONDS.sleep(skill.getTimeDame());
+                            if (player.zone != castZone || player.isDie()) {
+                                return;
+                            }
                             for (Object obj : list) {
                                 if (obj instanceof Mob mob) {
+                                    if (mob.isDie()) {
+                                        continue;
+                                    }
                                     mob.effectSkill.setMafuba(System.currentTimeMillis(), SkillUtil.getTimeMafuba(),
                                             skill.point, player);
                                     EffectSkillService.gI().sendMobAppearence(player, mob,
@@ -1008,6 +1057,9 @@ public class SkillService {
                                                             : EffectSkillService.BINH_MAFUBA - 9);
                                 }
                                 if (obj instanceof Player pl) {
+                                    if (pl.zone != castZone || !canAttackPlayer(player, pl)) {
+                                        continue;
+                                    }
                                     EffectSkillService.gI().setMafuba(pl, System.currentTimeMillis(),
                                             SkillUtil.getTimeMafuba(), player, point);
                                     Service.getInstance().Send_Caitrang(pl);

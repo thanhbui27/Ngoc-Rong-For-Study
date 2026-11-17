@@ -49,9 +49,6 @@ public class Goku_Tang5 extends BossMabuWar {
                 }
             }
             int dame = super.injured(plAtt, damage, piercing, isMobAttack);
-            if (this.isDie()) {
-                rewards(plAtt);
-            }
             return dame;
         }
     }
@@ -79,6 +76,9 @@ public class Goku_Tang5 extends BossMabuWar {
     @Override
     public void joinMap() {
         this.zone = getMapCanJoin(mapID);
+        if (this.zone == null) {
+            return;
+        }
         int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
         ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
     }

@@ -42,6 +42,9 @@ public class Drabula_Tang6 extends BossMabuWar {
             die();
             return;
         }
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             Player pl = getPlayerAttack();
             if (pl != null) {
@@ -86,7 +89,7 @@ public class Drabula_Tang6 extends BossMabuWar {
                 }
             }
             int dame = super.injuredNotCheckDie(plAtt, damage, piercing);
-            if (this.isDie()) {
+            if (this.isDie() && plAtt != null) {
                 rewards(plAtt);
             }
             if (this.zone.percentMabuEgg == 100) {
@@ -125,6 +128,9 @@ public class Drabula_Tang6 extends BossMabuWar {
     @Override
     public void joinMap() {
         this.zone = getMapCanJoin(mapID);
+        if (this.zone == null) {
+            return;
+        }
         int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
         ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
         this.nPoint.wearingDrabula = true;

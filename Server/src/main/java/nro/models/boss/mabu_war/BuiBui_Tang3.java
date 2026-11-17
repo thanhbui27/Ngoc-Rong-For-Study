@@ -50,9 +50,6 @@ public class BuiBui_Tang3 extends BossMabuWar {
                 }
             }
             int dame = super.injured(plAtt, damage, piercing, isMobAttack);
-            if (this.isDie()) {
-                rewards(plAtt);
-            }
             return dame;
         }
     }
@@ -76,6 +73,9 @@ public class BuiBui_Tang3 extends BossMabuWar {
     @Override
     public void joinMap() {
         this.zone = getMapCanJoin(mapID);
+        if (this.zone == null) {
+            return;
+        }
         int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
         ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
     }
@@ -83,11 +83,7 @@ public class BuiBui_Tang3 extends BossMabuWar {
     @Override
     public Zone getMapCanJoin(int mapId) {
         Zone map = MapService.gI().getZoneJoinByMapIdAndZoneId(this, mapId, zoneId);
-        if (map.isBossCanJoin(this)) {
-            return map;
-        } else {
-            return getMapCanJoin(mapJoin[Util.nextInt(0, mapJoin.length - 1)]);
-        }
+        return map != null && map.isBossCanJoin(this) ? map : null;
     }
 
     @Override

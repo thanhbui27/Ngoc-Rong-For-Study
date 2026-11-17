@@ -154,6 +154,7 @@ public class Player {
     public long idPlayerForNPC;
 
     public boolean haveTau77;
+    private boolean notifiedMap57Clear;
 
     public boolean hide_Yanjiro = false;
 
@@ -486,7 +487,7 @@ public class Player {
                     if (fusion != null) {
                         fusion.update();
                     }
-                    if (effectSkin != null) {
+                    if (effectSkill != null) {
                         effectSkill.update();
                     }
                     if (mobMe != null) {
@@ -524,7 +525,9 @@ public class Player {
                         if (this.isDie()) {
                             EffectSkillService.gI().removeMaPhongBa(this);
                         }
-                        checkLocation();
+                        if (zone != null && zone.map != null) {
+                            checkLocation();
+                        }
                         if (lastimelogin2 == 0) {
                             lastimelogin2 = System.currentTimeMillis();
                         }
@@ -534,16 +537,12 @@ public class Player {
                         checkDoneBDKBSom();
                         checkDoneKhiGasSom();
                     }
-                    if (!this.isBoss && !this.isPet && !this.isMiniPet) {
-                        boolean doneSendNotify = false;
-                        if (this.zone.map.mapId == 57) {
-                            if (this.zone.isCheckKilledAll(57)) {
-                                if (doneSendNotify = false) {
-                                    Service.getInstance().sendThongBao(this, "Mau đi tìm độc nhãn");
-                                    doneSendNotify = true;
-                                }
-                            }
+                    if (!this.isBoss && !this.isPet && !this.isMiniPet && zone != null && zone.map != null) {
+                        boolean map57Cleared = zone.map.mapId == 57 && zone.isCheckKilledAll(57);
+                        if (map57Cleared && !notifiedMap57Clear) {
+                            Service.getInstance().sendThongBao(this, "Mau đi tìm độc nhãn");
                         }
+                        notifiedMap57Clear = map57Cleared;
                     }
                     if (isgotoPrimaryForest && Util.canDoWithTime(lastTimePrimaryForest, 6000)) {
                         ChangeMapService.gI().changeMap(this, 161, -1, 169, 312);
@@ -636,7 +635,6 @@ public class Player {
                 PlayerService.gI().changeAndSendTypePK(this, ConstPlayer.NON_PK);
                 Service.getInstance().sendThongBao(this, "Bạn đã thất bại, hãy thử sức lại vào ngày mai");
             }
-            return;
         }
         if (this.zone.map.mapId == 47) {
             Service.getInstance().callTau77(this);
@@ -1030,11 +1028,12 @@ public class Player {
                     this.pet.angry(plAtt);
                 }
                 if (!this.isBoss && plAtt.nPoint.xDameChuong && SkillUtil.isUseSkillChuong(plAtt)) {
-                    damage = plAtt.nPoint.tlDameChuong * damage;
+                    damage = (int) Math.min(Integer.MAX_VALUE, (long) plAtt.nPoint.tlDameChuong * damage);
                     plAtt.nPoint.xDameChuong = false;
                 }
                 if (mstChuong > 0 && SkillUtil.isUseSkillChuong(plAtt)) {
-                    PlayerService.gI().hoiPhuc(this, 0, damage * mstChuong / 100);
+                    int mpRecovery = (int) Math.min(Integer.MAX_VALUE, (long) damage * mstChuong / 100L);
+                    PlayerService.gI().hoiPhuc(this, 0, mpRecovery);
                     damage = 0;
                 }
             }

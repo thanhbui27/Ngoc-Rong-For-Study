@@ -15,6 +15,7 @@ import nro.models.map.DaiHoiVoThuat.DHVT23Manager;
 import nro.models.map.dungeon.DungeonManager;
 import nro.models.map.phoban.BanDoKhoBau;
 import nro.models.map.phoban.DoanhTrai;
+import nro.models.map.mabu.MabuWar;
 import nro.models.player.Player;
 import nro.server.io.Session;
 import nro.services.ClanService;
@@ -204,6 +205,11 @@ public class ServerManager {
             while (isRunning) {
                 long l1 = System.currentTimeMillis();
                 BossManager.gI().updateAllBoss();
+                try {
+                    MabuWar.gI().updateEvent();
+                } catch (Exception e) {
+                    Log.error(MabuWar.class, e);
+                }
                 long l2 = System.currentTimeMillis() - l1;
                 if (l2 < delay) {
                     try {

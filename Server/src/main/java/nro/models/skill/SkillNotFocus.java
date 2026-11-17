@@ -18,6 +18,7 @@ public class SkillNotFocus extends Skill {
         super(skill);
         this.timePre = 2000;
         this.timeDame = 3000;
-        this.range = 250;
+        this.range = (short) ((skill.template.id == Skill.SUPER_KAME
+                || skill.template.id == Skill.SUPER_ANTOMIC) && skill.dx > 0 ? skill.dx : 250);
     }
 }

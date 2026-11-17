@@ -3646,10 +3646,8 @@ public class NpcFactory {
                                                         + "Quý vị nào muốn đi theo thì xin mời !",
                                                 "Ok", "Chê");
                                     } else {
-                                        this.createOtherMenu(player, ConstNpc.BASE_MENU,
-                                                "Vào lúc 12h tôi sẽ bí mật...\n đuổi theo 2 tên đồ tể... \n"
-                                                        + "Quý vị nào muốn đi theo thì xin mời !",
-                                                "Ok");
+                                        Service.getInstance().sendThongBao(player,
+                                                MabuWar.gI().getClosedMessage());
                                     }
                                 } else if (this.mapId == 154) {
                                     this.createOtherMenu(player, ConstNpc.BASE_MENU, "Ta có thể giúp gì cho ngươi ?",
@@ -3687,6 +3685,11 @@ public class NpcFactory {
                                     if (player.iDMark.isBaseMenu()) {
                                         switch (select) {
                                             case 0:
+                                                if (!MabuWar.gI().isTimeMabuWar()) {
+                                                    Service.getInstance().sendThongBao(player,
+                                                            MabuWar.gI().getClosedMessage());
+                                                    break;
+                                                }
                                                 ChangeMapService.gI().changeMap(player, 114, -1, 354, 240);
                                                 break;
                                         }
@@ -5460,11 +5463,12 @@ public class NpcFactory {
                                                         if (!player.receivedWoodChest) {
                                                             if (InventoryService.gI().finditemWoodChest(player)) {
                                                                 if (player.inventory.getGem() >= player.gemChallenge) {
-                                                                    DHVT23Service.gI().startChallenge(player);
-                                                                    player.inventory.subGem(player.gemChallenge);
-                                                                    PlayerService.gI().sendInfoHpMpMoney(player);
-                                                                    player.goldChallenge += 50000;
-                                                                    player.gemChallenge += 1;
+                                                                    if (DHVT23Service.gI().startChallenge(player)) {
+                                                                        player.inventory.subGem(player.gemChallenge);
+                                                                        PlayerService.gI().sendInfoHpMpMoney(player);
+                                                                        player.goldChallenge += 50000;
+                                                                        player.gemChallenge += 1;
+                                                                    }
                                                                 } else {
                                                                     Service.getInstance().sendThongBao(player,
                                                                             "Không đủ ngọc, còn thiếu "
@@ -5486,11 +5490,12 @@ public class NpcFactory {
                                                         if (!player.receivedWoodChest) {
                                                             if (InventoryService.gI().finditemWoodChest(player)) {
                                                                 if (player.inventory.getGold() >= goldchallenge) {
-                                                                    DHVT23Service.gI().startChallenge(player);
-                                                                    player.inventory.subGold(goldchallenge);
-                                                                    PlayerService.gI().sendInfoHpMpMoney(player);
-                                                                    player.goldChallenge += 50000;
-                                                                    player.gemChallenge += 1;
+                                                                    if (DHVT23Service.gI().startChallenge(player)) {
+                                                                        player.inventory.subGold(goldchallenge);
+                                                                        PlayerService.gI().sendInfoHpMpMoney(player);
+                                                                        player.goldChallenge += 50000;
+                                                                        player.gemChallenge += 1;
+                                                                    }
                                                                 } else {
                                                                     Service.getInstance().sendThongBao(player,
                                                                             "Không đủ vàng, còn thiếu "
@@ -5524,11 +5529,12 @@ public class NpcFactory {
                                                         if (!player.receivedWoodChest) {
                                                             if (InventoryService.gI().finditemWoodChest(player)) {
                                                                 if (player.inventory.getGem() >= player.gemChallenge) {
-                                                                    DHVT23Service.gI().startChallenge(player);
-                                                                    player.inventory.subGem(player.gemChallenge);
-                                                                    PlayerService.gI().sendInfoHpMpMoney(player);
-                                                                    player.goldChallenge += 50000;
-                                                                    player.gemChallenge += 1;
+                                                                    if (DHVT23Service.gI().startChallenge(player)) {
+                                                                        player.inventory.subGem(player.gemChallenge);
+                                                                        PlayerService.gI().sendInfoHpMpMoney(player);
+                                                                        player.goldChallenge += 50000;
+                                                                        player.gemChallenge += 1;
+                                                                    }
                                                                 } else {
                                                                     Service.getInstance().sendThongBao(player,
                                                                             "Không đủ ngọc, còn thiếu "
@@ -5551,10 +5557,11 @@ public class NpcFactory {
                                                         if (!player.receivedWoodChest) {
                                                             if (InventoryService.gI().finditemWoodChest(player)) {
                                                                 if (player.inventory.getGold() >= goldchallenge) {
-                                                                    DHVT23Service.gI().startChallenge(player);
-                                                                    player.inventory.subGold(goldchallenge);
-                                                                    PlayerService.gI().sendInfoHpMpMoney(player);
-                                                                    player.goldChallenge += 2000000;
+                                                                    if (DHVT23Service.gI().startChallenge(player)) {
+                                                                        player.inventory.subGold(goldchallenge);
+                                                                        PlayerService.gI().sendInfoHpMpMoney(player);
+                                                                        player.goldChallenge += 2000000;
+                                                                    }
                                                                 } else {
                                                                     Service.getInstance().sendThongBao(player,
                                                                             "Không đủ vàng, còn thiếu "

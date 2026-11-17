@@ -23,6 +23,9 @@ public abstract class EscortedBoss extends Boss {
     }
 
     public void move() {
+        if (zone == null) {
+            return;
+        }
         if (Util.isTrue(50, ConstRatio.PER100)) {
             if (escort == null) {
                 int x = location.x + Util.nextInt(-50, 50);
@@ -61,6 +64,10 @@ public abstract class EscortedBoss extends Boss {
     }
 
     public void joinMapEscort() {
+        if (escort == null || escort.zone == null) {
+            stopEscorting();
+            return;
+        }
         if (!MapService.gI().isMapVS(escort.zone.map.mapId)) {
             this.location.x = escort.location.x + Util.nextInt(-10, 10);
             this.location.y = escort.location.y;
@@ -72,6 +79,12 @@ public abstract class EscortedBoss extends Boss {
     }
 
     public void setEscort(Player escort) {
+        if (escort == null) {
+            return;
+        }
+        if (this.escort != null && this.escort != escort) {
+            this.escort.setEscortedBoss(null);
+        }
         this.escort = escort;
         escort.setEscortedBoss(this);
         PlayerService.gI().changeAndSendTypePK(this, ConstPlayer.NON_PK);
@@ -79,7 +92,9 @@ public abstract class EscortedBoss extends Boss {
 
     public void stopEscorting() {
         changeStatus(LEAVE_MAP);
-        this.escort.setEscortedBoss(null);
+        if (this.escort != null) {
+            this.escort.setEscortedBoss(null);
+        }
         this.escort = null;
     }
 }

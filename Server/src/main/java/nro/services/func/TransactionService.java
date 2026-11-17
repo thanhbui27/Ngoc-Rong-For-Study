@@ -25,6 +25,7 @@ public class TransactionService implements Runnable {
     private static final byte ACCEPT_TRADE = 1;
     private static final byte ADD_ITEM_TRADE = 2;
     private static final byte CANCEL_TRADE = 3;
+    private static final byte REMOVE_ITEM_TRADE = 4;
     private static final byte LOCK_TRADE = 5;
     private static final byte ACCEPT = 7;
 
@@ -94,6 +95,7 @@ public class TransactionService implements Runnable {
                         if (quantity < 0) {
                             Service.getInstance().sendThongBao(pl, "Không thể thực hiện");
                             trade.cancelTrade();
+                            break;
                         }
                         if (quantity == 0) {// do
                             quantity = 1;
@@ -104,6 +106,11 @@ public class TransactionService implements Runnable {
                 case CANCEL_TRADE:
                     if (trade != null) {
                         trade.cancelTrade();
+                    }
+                    break;
+                case REMOVE_ITEM_TRADE:
+                    if (trade != null) {
+                        trade.removeOfferedItem(pl, msg.reader().readByte());
                     }
                     break;
                 case LOCK_TRADE:

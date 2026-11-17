@@ -38,6 +38,9 @@ public class SuperBojack extends FutureBoss {
 
     public void joinMap() {
         super.joinMap();
+        if (this.zone == null) {
+            return;
+        }
         BossFactory.createBoss(BossFactory.BIDO).zone = this.zone;
         BossFactory.createBoss(BossFactory.BOJACK).zone = this.zone;
         BossFactory.createBoss(BossFactory.BUJIN).zone = this.zone;

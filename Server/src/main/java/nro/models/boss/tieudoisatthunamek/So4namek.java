@@ -72,7 +72,7 @@ public class So4namek extends FutureBoss {
 
     @Override
     public void leaveMap() {
-        BossManager.gI().getBossById(BossFactory.SO3NAMEK).changeToAttack();
+        BossManager.gI().activateBossIfPresent(BossFactory.SO3NAMEK);
         super.leaveMap();
         BossManager.gI().removeBoss(this);
     }

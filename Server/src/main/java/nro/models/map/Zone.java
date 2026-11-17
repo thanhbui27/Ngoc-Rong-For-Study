@@ -157,7 +157,8 @@ public class Zone {
 
     private void updateItem() {
         synchronized (items) {
-            for (ItemMap item : items) {
+            // An expired item can remove itself from items during update().
+            for (ItemMap item : new ArrayList<>(items)) {
                 try {
                     item.update();
                 } catch (Exception e) {
@@ -185,9 +186,11 @@ public class Zone {
     }
 
     public boolean isBossCanJoin(Boss boss) {
-        for (Player b : this.bosses) {
-            if (b.id == boss.id) {
-                return false;
+        synchronized (bosses) {
+            for (Player b : this.bosses) {
+                if (b.id == boss.id) {
+                    return false;
+                }
             }
         }
         return true;
@@ -493,10 +496,11 @@ public class Zone {
     }
 
     public Player getRandomPlayerInMap() {
-        if (!this.notBosses.isEmpty()) {
+        synchronized (notBosses) {
+            if (this.notBosses.isEmpty()) {
+                return null;
+            }
             return this.notBosses.get(Util.nextInt(0, this.notBosses.size() - 1));
-        } else {
-            return null;
         }
     }
 

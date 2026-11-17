@@ -166,7 +166,8 @@ public class SkillUtil {
 
     public static int getHPMobMe(int hpMaxPlayer, int level) { // lấy hp max của đệ trứng theo hp max player
         int[] perHPs = { 30, 40, 50, 60, 70, 80, 90 };
-        return hpMaxPlayer * perHPs[level - 1] / 100;
+        long amount = (long) hpMaxPlayer * perHPs[level - 1] / 100L;
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, amount));
     }
 
     public static Skill getSkillbyId(Player player, int id) {

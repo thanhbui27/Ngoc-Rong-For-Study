@@ -4,6 +4,8 @@ import nro.consts.ConstRatio;
 import nro.models.boss.Boss;
 import nro.models.boss.BossData;
 import nro.models.boss.BossFactory;
+import nro.models.boss.BossManager;
+import nro.models.map.mabu.MabuWar;
 import nro.models.map.ItemMap;
 import nro.models.map.Zone;
 import nro.models.player.Player;
@@ -86,7 +88,7 @@ public class Drabula_Tang5 extends BossMabuWar {
                 }
             }
             int dame = super.injuredNotCheckDie(plAtt, damage, piercing);
-            if (this.isDie()) {
+            if (this.isDie() && plAtt != null) {
                 rewards(plAtt);
             }
             if (this.nPoint.getCurrPercentHP() < 50) {
@@ -122,6 +124,9 @@ public class Drabula_Tang5 extends BossMabuWar {
     @Override
     public void joinMap() {
         this.zone = getMapCanJoin(mapID);
+        if (this.zone == null) {
+            return;
+        }
         int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
         ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
     }
@@ -129,11 +134,7 @@ public class Drabula_Tang5 extends BossMabuWar {
     @Override
     public Zone getMapCanJoin(int mapId) {
         Zone map = MapService.gI().getZoneJoinByMapIdAndZoneId(this, mapId, zoneId);
-        if (map.isBossCanJoin(this)) {
-            return map;
-        } else {
-            return getMapCanJoin(mapJoin[Util.nextInt(0, mapJoin.length - 1)]);
-        }
+        return map != null && map.isBossCanJoin(this) ? map : null;
     }
 
     @Override
@@ -164,11 +165,13 @@ public class Drabula_Tang5 extends BossMabuWar {
 
     @Override
     public void leaveMap() {
-        Boss boss = BossFactory.createBoss(BossFactory.GOKU_TANG5);
-        boss.zone = this.zone;
-        boss = BossFactory.createBoss(BossFactory.CADIC_TANG5);
-        boss.zone = this.zone;
+        Zone arena = this.zone;
+        if (arena != null && MabuWar.gI().isTimeMabuWar()) {
+            MabuWar.gI().addBoss(new Goku_Tang5(arena.map.mapId, arena.zoneId));
+            MabuWar.gI().addBoss(new Calich_Tang5(arena.map.mapId, arena.zoneId));
+        }
         super.leaveMap();
-        this.changeToIdle();
+        MabuWar.gI().bosses.remove(this);
+        BossManager.gI().removeBoss(this);
     }
 }

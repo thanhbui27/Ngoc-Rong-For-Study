@@ -86,10 +86,12 @@ public class Cadich extends CBoss {
     public void update() {
         if (!isDie()) {
             if (!transformed && !this.effectSkill.isMonkey && nPoint.hp <= nPoint.hpMax / 2) {
-                transformed = true;
                 this.playerSkill.skillSelect = this.getSkillById(Skill.BIEN_KHI);
-                this.playerSkill.skillSelect = this.getSkillById(Skill.TAI_TAO_NANG_LUONG);
-                SkillService.gI().useSkill(this, null, null, null);
+                if (this.playerSkill.skillSelect != null) {
+                    this.nPoint.mp = this.nPoint.mpg;
+                    SkillService.gI().useSkill(this, null, null, null);
+                    transformed = this.effectSkill.isMonkey;
+                }
             }
         }
         super.update();

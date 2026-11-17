@@ -58,7 +58,7 @@ public class Boss_MrPôPô extends FutureBoss {
         this.idPlayerForNPC = id_player;
     }
 
-    private static boolean canJoinMap = false;
+    private boolean canJoinMap = false;
 
     public static long lastTimeHoiSinh;
 
@@ -84,6 +84,9 @@ public class Boss_MrPôPô extends FutureBoss {
 
     @Override
     public void update() {
+        if (this.zone == null) {
+            return;
+        }
         try {
             if (this.effectSkill.isMaPhongBa) {
                 if (Util.canDoWithTime(this.effectSkill.lastTimeMaPhongBa, this.effectSkill.timeMaPhongBa)) {
@@ -195,6 +198,9 @@ public class Boss_MrPôPô extends FutureBoss {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (this.typePk == ConstPlayer.NON_PK) {
                 return;
@@ -256,7 +262,7 @@ public class Boss_MrPôPô extends FutureBoss {
 
     @Override
     public int injured(Player plAtt, int damage, boolean piercing, boolean isMobAttack) {
-        if (plAtt.id == super.idPlayerForNPC) {
+        if (plAtt != null && plAtt.id == super.idPlayerForNPC) {
             int dame = 0;
             if (this.isDie()) {
                 return dame;
@@ -272,15 +278,9 @@ public class Boss_MrPôPô extends FutureBoss {
                     }
                 }
 
-                dame = super.injured(plAtt, damage, piercing, isMobAttack);
-                if (dame > 199) {
-                    dame = 199;
-                }
+                dame = super.injured(plAtt, Math.min(damage, 498), piercing, isMobAttack);
                 if (this.isDie()) {
-                    rewards(plAtt);
-                    notifyPlayeKill(plAtt);
                     PlayerService.gI().changeAndSendTypePK(plAtt, ConstPlayer.NON_PK);
-                    die();
                 }
                 return dame;
             }

@@ -50,6 +50,9 @@ public class NinjaAoTim extends BossDoanhTrai {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (!useSpecialSkill()) {
                 // if (Util.isTrue(10)) {

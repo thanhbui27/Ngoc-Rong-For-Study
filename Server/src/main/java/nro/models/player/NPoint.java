@@ -28,6 +28,12 @@ import java.util.List;
  * 
  */
 public class NPoint {
+    private static final long[] CRITICAL_POTENTIAL_COSTS = {
+        50000000L, 250000000L, 1250000000L, 5000000000L,
+        15000000000L, 30000000000L, 45000000000L, 60000000000L,
+        75000000000L, 90000000000L, 110000000000L, 130000000000L,
+        150000000000L, 170000000000L
+    };
 
     public static final byte MAX_LIMIT = 11;
 
@@ -194,7 +200,14 @@ public class NPoint {
     public void calPoint() {
         try {
             if (this.player.pet != null) {
+                if (this.player.pet.inventory.itemsBody != null
+                        && this.player.pet.inventory.itemsBody.size() >= 6) {
+                    this.player.pet.setClothes.setup();
+                }
                 this.player.pet.nPoint.setPointWhenWearClothes();
+            }
+            if (this.player.inventory.itemsBody != null && this.player.inventory.itemsBody.size() >= 6) {
+                this.player.setClothes.setup();
             }
             this.setPointWhenWearClothes();
         } catch (Exception e) {
@@ -246,7 +259,6 @@ public class NPoint {
                 break;
             case 26:
                 this.wearingDrabula = true;
-                this.player.effectSkin.lastTimeDrabula = System.currentTimeMillis();
                 break;
             case 29:
                 this.wearingMabu = true;
@@ -368,6 +380,8 @@ public class NPoint {
     }
 
     private void setPointWhenWearClothes() {
+        boolean wasWearingDrabula = this.wearingDrabula;
+        boolean hadChargedDameChuong = this.xDameChuong;
         resetPoint();
         for (Item item : this.player.inventory.itemsBody) {
             if (item.isNotNullItem()) {
@@ -475,6 +489,10 @@ public class NPoint {
             }
         }
 
+        if (this.wearingDrabula && !wasWearingDrabula) {
+            this.player.effectSkin.lastTimeDrabula = System.currentTimeMillis();
+        }
+        this.xDameChuong = this.tlDameChuong > 0 && hadChargedDameChuong;
         setDameTrainArmor();
         setBasePoint();
     }
@@ -534,12 +552,8 @@ public class NPoint {
     }
 
     private void setHpMax() {
-        this.hpMax = this.hpg;
-        this.hpMax += this.hpAdd;
-        // đồ
-        for (Integer tl : this.tlHp) {
-            this.hpMax += calPercent(this.hpMax, tl);
-        }
+        long baseHp = (long) this.hpg + this.hpAdd;
+        this.hpMax = clampStat(addOptionPercent(baseHp, sumOptionPercent(this.tlHp)));
 
         if (player.DH1) {
             this.hpMax += calPercent(this.hpMax, player.ChiSoHP_1);
@@ -559,7 +573,7 @@ public class NPoint {
 
         // set nappa
         if (this.player.setClothes.nappa == 5) {
-            this.hpMax += calPercent(this.hpMax, 100);
+            this.hpMax = clampStat((long) this.hpMax * 2L);
         }
         // ngọc rồng đen 2 sao
         if (this.player.rewardBlackBall.timeOutOfDateReward[1] > System.currentTimeMillis()) {
@@ -678,130 +692,130 @@ public class NPoint {
     }
 
     private void setMpMax() {
-        this.mpMax = this.mpg;
-        this.mpMax += this.mpAdd;
-        // đồ
-        for (Integer tl : this.tlMp) {
-            this.mpMax += calPercent(this.mpMax, tl);
-        }
+        long baseMp = (long) this.mpg + this.mpAdd;
+        this.mpMax = clampStat(addOptionPercent(baseMp, sumOptionPercent(this.tlMp)));
         if (this.player.setClothes.picolo == 5) {
-            this.mpMax *= 3;
+            this.mpMax = clampStat((long) this.mpMax * 3L);
         }
         // ngọc rồng đen 3 sao
         if (this.player.rewardBlackBall.timeOutOfDateReward[2] > System.currentTimeMillis()) {
-            this.mpMax += calPercent(this.mpMax, RewardBlackBall.R3S);
+            addMpMax(calPercent(this.mpMax, RewardBlackBall.R3S));
 
         }
         if (player.DH1) {
-            this.mpMax += calPercent(this.mpMax, player.ChiSoKI_1);
+            addMpMax(calPercent(this.mpMax, player.ChiSoKI_1));
         }
         // BIẾN HÌNH
         if (this.player.effectSkill.isBienHinh) {
             if (!this.player.isPet || (this.player.isPet
                     && ((Pet) this.player).status != Pet.FUSION)) {
                 int percent = SkillUtil.getPercentHpMonkey(player.effectSkill.levelBienHinh);
-                this.mpMax += calPercent(this.mpMax, percent);
+                addMpMax(calPercent(this.mpMax, percent));
             }
         }
         if (player.DH2) {
-            this.mpMax += calPercent(this.mpMax, player.ChiSoKI_2);
+            addMpMax(calPercent(this.mpMax, player.ChiSoKI_2));
         }
         if (player.DH3) {
-            this.mpMax += calPercent(this.mpMax, player.ChiSoKI_3);
+            addMpMax(calPercent(this.mpMax, player.ChiSoKI_3));
         }
         if (player.DH4) {
-            this.mpMax += calPercent(this.mpMax, player.ChiSoKI_4);
+            addMpMax(calPercent(this.mpMax, player.ChiSoKI_4));
         }
         if (player.DH5) {
-            this.mpMax += calPercent(this.mpMax, player.ChiSoKI_5);
+            addMpMax(calPercent(this.mpMax, player.ChiSoKI_5));
         }
         // pet mabư
         if (this.player.isPet && ((Pet) this.player).isMabu
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
-            this.mpMax += calPercent(this.mpMax, 10);
+            addMpMax(calPercent(this.mpMax, 10));
         }
         /// đệ vip
         if (this.player.isPet && ((Pet) this.player).isBulo
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
-            this.mpMax += calPercent(this.mpMax, 20);
+            addMpMax(calPercent(this.mpMax, 20));
         }
         if (this.player.isPet && ((Pet) this.player).isCellBao
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
-            this.mpMax += calPercent(this.mpMax, 40);
+            addMpMax(calPercent(this.mpMax, 40));
         }
         if (this.player.isPet && ((Pet) this.player).isBillNhi
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
-            this.mpMax += calPercent(this.mpMax, 30);
+            addMpMax(calPercent(this.mpMax, 30));
         }
         if (this.player.isPet && ((Pet) this.player).isFideTrau
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
-            this.mpMax += calPercent(this.mpMax, 30);
+            addMpMax(calPercent(this.mpMax, 30));
         }
         /// end
         if (this.player.isPet && ((Pet) this.player).isMabu
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
-            this.mpMax += calPercent(this.mpMax, 10);
+            addMpMax(calPercent(this.mpMax, 10));
         }
         if (this.player.isPet && ((Pet) this.player).isBulo
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
-            this.mpMax += calPercent(this.mpMax, 20);
+            addMpMax(calPercent(this.mpMax, 20));
         }
         if (this.player.isPet && ((Pet) this.player).isCellBao
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
-            this.mpMax += calPercent(this.mpMax, 40);
+            addMpMax(calPercent(this.mpMax, 40));
         }
         if (this.player.isPet && ((Pet) this.player).isBillNhi
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
-            this.mpMax += calPercent(this.mpMax, 30);
+            addMpMax(calPercent(this.mpMax, 30));
         }
         if (this.player.isPet && ((Pet) this.player).isFideTrau
                 && ((Pet) this.player).master.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
-            this.mpMax += calPercent(this.mpMax, 30);
+            addMpMax(calPercent(this.mpMax, 30));
         }
         // hợp thể
         if (this.player.fusion.typeFusion != 0) {
-            this.mpMax += this.player.pet.nPoint.mpMax;
+            addMpMax(this.player.pet.nPoint.mpMax);
         }
         // bổ khí
         if (this.player.itemTime != null && this.player.itemTime.isUseBoKhi) {
-            this.mpMax *= 2;
+            this.mpMax = clampStat((long) this.mpMax * (2));
         }
         // bổ khí 2
         if (this.player.itemTime != null && this.player.itemTime.isUseBoKhi2) {
-            this.mpMax += calPercent(mpMax, 120);
+            addMpMax(calPercent(mpMax, 120));
         }
         // phù
         if (this.player.zone != null && MapService.gI().isMapBlackBallWar(this.player.zone.map.mapId)) {
-            this.mpMax *= this.player.effectSkin.xHPKI;
+            this.mpMax = clampStat((long) this.mpMax * (this.player.effectSkin.xHPKI));
         }
         // xiên cá
         if (this.player.effectFlagBag.useXienCa) {
-            this.mpMax += calPercent(this.mpMax, 15);
+            addMpMax(calPercent(this.mpMax, 15));
         }
         // Kiem z
         if (this.player.effectFlagBag.useKiemz) {
-            this.mpMax += calPercent(this.mpMax, 20);
+            addMpMax(calPercent(this.mpMax, 20));
         }
         if (this.player.effectFlagBag.useDieuRong) {
-            this.mpMax += calPercent(this.mpMax, 30);
+            addMpMax(calPercent(this.mpMax, 30));
         }
         if (this.player.effectFlagBag.useHoaVang || this.player.effectFlagBag.useHoaHong) {
-            this.mpMax += calPercent(this.mpMax, 20);
+            addMpMax(calPercent(this.mpMax, 20));
         }
         if (!player.isBoss) {
             Attribute at = ServerManager.gI().getAttributeManager().find(ConstAttribute.KI);
             if (at != null && !at.isExpired()) {
-                mpMax += calPercent(mpMax, at.getValue());
+                addMpMax(calPercent(mpMax, at.getValue()));
             }
         }
         if (this.player.itemTime != null) {
             if (this.player.itemTime.isUseBanhTet) {
-                mpMax += calPercent(mpMax, 20);
+                addMpMax(calPercent(mpMax, 20));
             }
         }
         if (player.getBuff() == Buff.BUFF_KI) {
-            mpMax += calPercent(mpMax, 20);
+            addMpMax(calPercent(mpMax, 20));
         }
+    }
+
+    private void addMpMax(long bonus) {
+        this.mpMax = clampStat((long) this.mpMax + bonus);
     }
 
     private void setMp() {
@@ -811,15 +825,9 @@ public class NPoint {
     }
 
     private void setDame() {
-        this.dame = this.dameg;
-        this.dame += this.dameAdd;
-        // đồ
-        for (Integer tl : this.tlDame) {
-            this.dame += calPercent(this.dame, tl);
-        }
-        for (Integer tl : this.tlSDDep) {
-            this.dame += calPercent(this.dame, tl);
-        }
+        long baseDame = (long) this.dameg + this.dameAdd;
+        long optionPercent = sumOptionPercent(this.tlDame) + sumOptionPercent(this.tlSDDep);
+        this.dame = clampStat(addOptionPercent(baseDame, optionPercent));
         if (player.DH1) {
             this.dame += calPercent(this.dame, player.ChiSoSD_1);
         }
@@ -973,21 +981,9 @@ public class NPoint {
         }
     }
 
-    private void setCritDame() {
-        if (this.player.effectSkin.isTanjiro) {
-            this.tlDameCrit.add(30);
-        }
-        if (this.player.itemTime != null) {
-            if (this.player.itemTime.isUseBanhChung) {
-                this.tlDameCrit.add(15);
-            }
-        }
-    }
-
     private void setSpeed() {
-        for (Integer tl : this.tlSpeed) {
-            this.speed += calPercent(this.speed, tl);
-        }
+        this.speed = (byte) Math.min(Byte.MAX_VALUE,
+                Math.max(0, addOptionPercent(this.speed, sumOptionPercent(this.tlSpeed))));
         if (this.player.effectSkin.isSlow) {
             this.speed = 1;
         }
@@ -1031,6 +1027,7 @@ public class NPoint {
         this.mstChuong = 0;
         this.tlGiamst = 0;
         this.tlTNSMPet = 0;
+        this.tlDameChuong = 0;
 
         this.wearingVoHinh = false;
         this.isKhongLanh = false;
@@ -1044,13 +1041,14 @@ public class NPoint {
         this.wearingBuiBui = false;
         this.xDameChuong = false;
         this.wearingYacon = false;
+        this.wearingRedNoelHat = false;
+        this.wearingBlueNoelHat = false;
+        this.wearingGrayNoelHat = false;
+        this.wearingNoelHat = false;
     }
 
     public void addHp(long hp) {
-        this.hp += hp;
-        if (this.hp > this.hpMax) {
-            this.hp = this.hpMax;
-        }
+        this.hp = (int) Math.max(0, Math.min((long) this.hpMax, (long) this.hp + hp));
     }
 
     public void subHp(long hp) {
@@ -1058,10 +1056,7 @@ public class NPoint {
     }
 
     public void addMp(long mp) {
-        this.mp += mp;
-        if (this.mp > this.mpMax) {
-            this.mp = this.mpMax;
-        }
+        this.mp = (int) Math.max(0, Math.min((long) this.mpMax, (long) this.mp + mp));
     }
 
     public void setHp(long hp) {
@@ -1169,23 +1164,20 @@ public class NPoint {
                 break;
             case Skill.DICH_CHUYEN_TUC_THOI:
                 dameAttack *= 2;
-                dameAttack = Util.nextInt((int) (dameAttack - calPercent(dameAttack, 5)),
-                        (int) (dameAttack + calPercent(dameAttack, 5)));
-                return (int) dameAttack;
+                return rollDamage(dameAttack);
             case Skill.MAKANKOSAPPO:
                 percentDameSkill = skillSelect.damage;
-                int dameSkill = (int) calPercent(this.mpMax, percentDameSkill);
-                return dameSkill;
+                return clampStat(calPercent(this.mpMax, percentDameSkill));
             case Skill.QUA_CAU_KENH_KHI:
                 long totalHP = 0;
                 if (player.zone != null) {
                     totalHP = player.zone.getTotalHP();
                 }
-                int damage = (int) ((totalHP / 10) + (this.dame * 10));
+                long damage = (totalHP / 10) + (long) this.dame * 10L;
                 if (this.player.setClothes.kirin == 5) {
-                    damage *= 3;
+                    damage *= 3L;
                 }
-                return damage;
+                return clampStat(damage);
         }
         if (intrinsic.id == 18 && this.player.effectSkill.isMonkey) {
             percentDameIntrinsic = intrinsic.param1;
@@ -1197,9 +1189,7 @@ public class NPoint {
         dameAttack += calPercent(dameAttack, dameAfter);
 
         if (isAttackMob) {
-            for (Integer tl : this.tlDameAttMob) {
-                dameAttack += calPercent(dameAttack, tl);
-            }
+            dameAttack = addOptionPercent(dameAttack, sumOptionPercent(this.tlDameAttMob));
         }
         dameAfter = 0;
         if (this.player.isPet && ((Pet) this.player).master.charms.tdDeTu > System.currentTimeMillis()) {
@@ -1207,29 +1197,25 @@ public class NPoint {
         }
         if (isCrit) {
             dameAttack *= 2;
-            for (Integer tl : this.tlDameCrit) {
-                dameAttack += calPercent(dameAttack, tl);
-            }
+            dameAttack = addOptionPercent(dameAttack, sumOptionPercent(this.tlDameCrit));
+            dameAttack = addCriticalEffectBonuses(dameAttack);
         }
         dameAttack += calPercent(dameAttack, percentXDame);
-        // System.out.println(dameAttack);
-        dameAttack = Util.nextInt((int) (dameAttack - calPercent(dameAttack, 5)),
-                (int) (dameAttack + calPercent(dameAttack, 5)));
-
-        // check activation set
-        return (int) dameAttack;
+        return rollDamage(dameAttack);
     }
 
-    public int getDameAttackSkillNotFocus() {
+    public int getDameAttackSkillNotFocus(Skill skillSelect) {
         setIsCrit();
         long dameAttack = this.dame;
         intrinsic = this.player.playerIntrinsic.intrinsic;
         percentDameIntrinsic = 0;
         int percentDameSkill = 0;
         int percentXDame = 0;
-        Skill skillSelect = player.playerSkill.skillSelect;
         switch (skillSelect.template.id) {
-
+            case Skill.SUPER_KAME:
+            case Skill.SUPER_ANTOMIC:
+                percentDameSkill = skillSelect.damage;
+                break;
         }
         if (intrinsic.id == 18 && this.player.effectSkill.isMonkey) {
             percentDameIntrinsic = intrinsic.param1;
@@ -1245,14 +1231,11 @@ public class NPoint {
         }
         if (isCrit) {
             dameAttack *= 2;
-            for (Integer tl : this.tlDameCrit) {
-                dameAttack += calPercent(dameAttack, tl);
-            }
+            dameAttack = addOptionPercent(dameAttack, sumOptionPercent(this.tlDameCrit));
+            dameAttack = addCriticalEffectBonuses(dameAttack);
         }
         dameAttack += calPercent(dameAttack, percentXDame);
-        dameAttack = Util.nextInt((int) (dameAttack - calPercent(dameAttack, 5)),
-                (int) (dameAttack + calPercent(dameAttack, 5)));
-        return (int) dameAttack;
+        return rollDamage(dameAttack);
     }
 
     public int getCurrPercentHP() {
@@ -1287,9 +1270,7 @@ public class NPoint {
 
     public long calSucManhTiemNang(long tiemNang) {
         if (power < getPowerLimit()) {
-            for (Integer tl : this.tlTNSM) {
-                tiemNang += calPercent(tiemNang, tl);
-            }
+            tiemNang = addOptionPercent(tiemNang, sumOptionPercent(this.tlTNSM));
             if (this.player.cFlag != 0) {
                 if (this.player.cFlag == 8) {
                     tiemNang += calPercent(tiemNang, 10);
@@ -1426,11 +1407,11 @@ public class NPoint {
         boolean updatePoint = false;
         long tiemNangUse = 0;
         if (type == 0) {
-            int pointHp = point * 20;
-            tiemNangUse = point * (2 * (this.hpg + 1000) + pointHp - 20) / 2;
-            if ((this.hpg + pointHp) <= powerLimit.getHp()) {
+            long pointHp = point * 20L;
+            tiemNangUse = point * (2L * (this.hpg + 1000L) + pointHp - 20L) / 2L;
+            if (this.hpg + pointHp <= powerLimit.getHp()) {
                 if (doUseTiemNang(tiemNangUse)) {
-                    hpg += pointHp;
+                    hpg += (int) pointHp;
                     updatePoint = true;
                 }
             } else {
@@ -1440,11 +1421,11 @@ public class NPoint {
             }
         }
         if (type == 1) {
-            int pointMp = point * 20;
-            tiemNangUse = point * (2 * (this.mpg + 1000) + pointMp - 20) / 2;
-            if ((this.mpg + pointMp) <= powerLimit.getMp()) {
+            long pointMp = point * 20L;
+            tiemNangUse = point * (2L * (this.mpg + 1000L) + pointMp - 20L) / 2L;
+            if (this.mpg + pointMp <= powerLimit.getMp()) {
                 if (doUseTiemNang(tiemNangUse)) {
-                    mpg += pointMp;
+                    mpg += (int) pointMp;
                     updatePoint = true;
                 }
             } else {
@@ -1454,8 +1435,8 @@ public class NPoint {
             }
         }
         if (type == 2) {
-            tiemNangUse = point * (2 * this.dameg + point - 1) / 2 * 100;
-            if ((this.dameg + point) <= powerLimit.getDamage()) {
+            tiemNangUse = point * (2L * this.dameg + point - 1L) / 2L * 100L;
+            if ((long) this.dameg + point <= powerLimit.getDamage()) {
                 if (doUseTiemNang(tiemNangUse)) {
                     dameg += point;
                     updatePoint = true;
@@ -1467,8 +1448,8 @@ public class NPoint {
             }
         }
         if (type == 3) {
-            tiemNangUse = 2 * (this.defg + 5) / 2 * 100000;
-            if ((this.defg + point) <= powerLimit.getDefense()) {
+            tiemNangUse = point * (2L * (this.defg + 5L) + point - 1L) / 2L * 100000L;
+            if ((long) this.defg + point <= powerLimit.getDefense()) {
                 if (doUseTiemNang(tiemNangUse)) {
                     defg += point;
                     updatePoint = true;
@@ -1480,11 +1461,16 @@ public class NPoint {
             }
         }
         if (type == 4) {
-            tiemNangUse = 50000000L;
-            for (int i = 0; i < this.critg; i++) {
-                tiemNangUse *= 5L;
-            }
-            if ((this.critg + point) <= powerLimit.getCritical()) {
+            if ((long) this.critg + point <= powerLimit.getCritical()) {
+                try {
+                    for (int i = 0; i < point; i++) {
+                        int costIndex = Math.min(this.critg + i, CRITICAL_POTENTIAL_COSTS.length - 1);
+                        tiemNangUse = Math.addExact(tiemNangUse, CRITICAL_POTENTIAL_COSTS[costIndex]);
+                    }
+                } catch (ArithmeticException e) {
+                    Service.getInstance().sendThongBaoOK(player, "Bạn không đủ tiềm năng");
+                    return;
+                }
                 if (doUseTiemNang(tiemNangUse)) {
                     critg += point;
                     updatePoint = true;
@@ -1560,7 +1546,6 @@ public class NPoint {
         setHpHoi();
         setMpHoi();
         setNeDon();
-        setCritDame();
         setSpeed();
         setAttributeOverLimit();
     }
@@ -1605,6 +1590,48 @@ public class NPoint {
         }
         setHp();
         setMp();
+    }
+
+    private long sumOptionPercent(List<Integer> bonuses) {
+        long total = 0;
+        for (int bonus : bonuses) {
+            total += bonus;
+        }
+        return total;
+    }
+
+    private long addOptionPercent(long base, long percent) {
+        try {
+            long bonus = Math.multiplyExact(base, percent) / 100L;
+            return Math.max(0L, Math.addExact(base, bonus));
+        } catch (ArithmeticException e) {
+            return percent >= 0 ? Long.MAX_VALUE : 0L;
+        }
+    }
+
+    private int clampStat(long value) {
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, value));
+    }
+
+    private int rollDamage(long damage) {
+        if (damage >= Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        int cappedDamage = clampStat(damage);
+        long variance = cappedDamage * 5L / 100L;
+        int minDamage = (int) Math.max(0L, cappedDamage - variance);
+        int maxDamage = (int) Math.min(Integer.MAX_VALUE, cappedDamage + variance);
+        return Util.nextInt(minDamage, maxDamage);
+    }
+
+    private long addCriticalEffectBonuses(long damage) {
+        if (this.player.effectSkin.isTanjiro) {
+            damage = addOptionPercent(damage, 30);
+        }
+        if (this.player.itemTime != null && this.player.itemTime.isUseBanhChung) {
+            damage = addOptionPercent(damage, 15);
+        }
+        return damage;
     }
 
     public long calPercent(long param, int percent) {

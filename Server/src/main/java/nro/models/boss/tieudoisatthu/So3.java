@@ -59,8 +59,8 @@ public class So3 extends FutureBoss {
 
     @Override
     public void leaveMap() {
-        BossManager.gI().getBossById(BossFactory.SO2).changeToAttack();
-        BossManager.gI().getBossById(BossFactory.SO1).changeToAttack();
+        BossManager.gI().activateBossIfPresent(BossFactory.SO2);
+        BossManager.gI().activateBossIfPresent(BossFactory.SO1);
         super.leaveMap();
         BossManager.gI().removeBoss(this);
     }

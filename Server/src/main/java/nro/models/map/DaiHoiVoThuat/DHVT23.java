@@ -11,6 +11,7 @@ import nro.event.SummerEvent;
 import nro.models.boss.Boss;
 import nro.models.boss.dhvt.*;
 import nro.models.item.Item;
+import nro.models.map.Zone;
 import nro.models.player.Player;
 import nro.models.player.Referee;
 import nro.models.skill.PlayerSkill;
@@ -31,30 +32,42 @@ public class DHVT23 {
     private Boss boss;
     @Setter
     private Player npc;
+    @Setter
+    private Zone arena;
 
     @Setter
     private int time;
     private int round;
+    @Getter
+    private volatile boolean ended;
     @Setter
     private int timeWait;
 
     public void update() {
-        if (time > 0) {
-            time--;
-            if (!player.isDie() && player != null && player.zone != null) {
-                if (boss.isDie()) {
-                    player.levelWoodChest++;
-                    boss.leaveMap();
-                    toTheNextRound();
-                }
-                if (player.location.y > 264 && time > 10) {
-                    leave();
-                }
-            } else {
-                endChallenge();
-            }
-        } else {
+        if (ended) {
+            return;
+        }
+        if (player == null || arena == null || player.zone != arena || player.isDie() || boss == null) {
+            endChallenge();
+            return;
+        }
+        if (time <= 0) {
             timeOut();
+            return;
+        }
+        time--;
+        if (boss.isDie()) {
+            player.levelWoodChest++;
+            round = player.levelWoodChest;
+            boss.leaveMap();
+            toTheNextRound();
+            if (ended) {
+                return;
+            }
+        }
+        if (player.location.y > 264 && time > 10) {
+            leave();
+            return;
         }
         if (timeWait > 0) {
             switch (timeWait) {
@@ -84,14 +97,19 @@ public class DHVT23 {
     }
 
     public void ready() {
+        Boss roundBoss = boss;
         EffectSkillService.gI().startStun(boss, System.currentTimeMillis(), 10000);
         EffectSkillService.gI().startStun(player, System.currentTimeMillis(), 10000);
         ItemTimeService.gI().sendItemTime(player, 3779, 10000 / 1000);
 //        Service.getInstance().releaseCooldownSkill(this.player);
         Util.setTimeout(() -> {
-            DHVT23Service.gI().sendTypePK(player, boss);
+            if (ended || player.zone != arena || player.isDie() || boss != roundBoss
+                    || roundBoss.zone != arena) {
+                return;
+            }
+            DHVT23Service.gI().sendTypePK(player, roundBoss);
             PlayerService.gI().changeAndSendTypePK(this.player, ConstPlayer.PK_PVP);
-            boss.setStatus((byte) 3);
+            roundBoss.setStatus((byte) 3);
         }, 10000,"dhvt23");
     }
 
@@ -139,9 +157,9 @@ public class DHVT23 {
 //        if (round > 0 && round < 11) {
 //            boss.joinMap();
 //        }
+        setBoss(boss);
         PlayerService.gI().setPos(player, 335, 264, 0);
         setTimeWait(11);
-        setBoss(boss);
         setTime(185);
         resetSkill();
     }
@@ -178,26 +196,47 @@ public class DHVT23 {
         }
     }
 
-    public void endChallenge() {
-        if (round > 5 && Event.isEvent() && Event.getInstance() instanceof SummerEvent) {
-            byte[] rwLimit = player.getRewardLimit();
-            if (rwLimit[ConstRewardLimit.QUE_DOT] < 10) {
-                rwLimit[ConstRewardLimit.QUE_DOT]++;
-                Item item = ItemService.gI().createNewItem((short) ConstItem.QUE_DOT, 1);
-                InventoryService.gI().addItemBag(player, item, 99);
+    public synchronized void endChallenge() {
+        if (ended) {
+            return;
+        }
+        ended = true;
+        try {
+            if (player != null && round > 5 && Event.isEvent() && Event.getInstance() instanceof SummerEvent) {
+                byte[] rwLimit = player.getRewardLimit();
+                if (rwLimit[ConstRewardLimit.QUE_DOT] < 10) {
+                    rwLimit[ConstRewardLimit.QUE_DOT]++;
+                    Item item = ItemService.gI().createNewItem((short) ConstItem.QUE_DOT, 1);
+                    InventoryService.gI().addItemBag(player, item, 99);
+                }
+            }
+            if (player != null) {
+                reward();
+                EffectSkillService.gI().removeStun(player);
+                if (player.zone != null) {
+                    if (player.zone == arena && player.isDie()) {
+                        Service.getInstance().hsChar(player, player.nPoint.hpMax, player.nPoint.mpMax);
+                    }
+                    PlayerService.gI().changeAndSendTypePK(player, ConstPlayer.NON_PK);
+                    if (player.zone == arena) {
+                        Util.setTimeout(() -> {
+                            if (player.zone == arena) {
+                                ChangeMapService.gI().changeMapNonSpaceship(player, ConstMap.DAI_HOI_VO_THUAT_129,
+                                        player.location.x, 360);
+                            }
+                        }, 500, "len san dau");
+                    }
+                }
+            }
+        } finally {
+            try {
+                if (boss != null) {
+                    boss.leaveMap();
+                }
+            } finally {
+                DHVT23Service.gI().releaseArena(arena, player);
+                DHVT23Manager.gI().remove(this);
             }
         }
-        reward();
-        PlayerService.gI().hoiSinh(player);
-        PlayerService.gI().changeAndSendTypePK(player, ConstPlayer.NON_PK);
-        if (player != null && player.zone != null && player.zone.map.mapId == ConstMap.DAI_HOI_VO_THUAT_129) {
-            Util.setTimeout(() -> {
-                ChangeMapService.gI().changeMapNonSpaceship(player, ConstMap.DAI_HOI_VO_THUAT_129, player.location.x, 360);
-            }, 500,"len san dau");
-        }
-        if (boss != null) {
-            boss.leaveMap();
-        }
-        DHVT23Manager.gI().remove(this);
     }
 }

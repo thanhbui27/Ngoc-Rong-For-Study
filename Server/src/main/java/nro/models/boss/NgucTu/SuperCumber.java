@@ -76,7 +76,7 @@ public class SuperCumber extends FutureBoss {
     @Override
     public void leaveMap() {
 
-        BossManager.gI().getBossById(BossFactory.CUMBER).setJustRest();
+        BossManager.gI().restBossIfPresent(BossFactory.CUMBER);
         super.leaveMap();
         BossManager.gI().removeBoss(this);
     }

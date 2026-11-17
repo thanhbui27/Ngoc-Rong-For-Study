@@ -237,43 +237,19 @@ public class BossFactory {
 
     public static void initBoss() {
         new Thread(() -> {
-            try {
-                // createBoss(TUAN_LOC_EVENT);
-                // createBoss(ONG_GIA_NOEL);
-                // createBoss(BROLYKHOINGUYEN);
-                // createBoss(FU);
-                createBoss(SIEU_BO_HUNG);
-                // createBoss(BERUSHALLOWEEN);
-                createBoss(THIENSU);
-                // createBoss(SUPERBOJACK);
-                // createBoss(THODAICA);
-                createBoss(XEN_BO_HUNG_1);
-                createBoss(XEN_BO_HUNG);
-                createBoss(XEN_CON_1);
-                createBoss(XEN_CON_2);
-                createBoss(XEN_CON_3);
-                createBoss(XEN_CON_4);
-                createBoss(XEN_CON_5);
-                createBoss(BLACKGOKU);
-                createBoss(CHILL);
-                createBoss(COOLER);
-                createBoss(KUKU);
-                createBoss(MAP_DAU_DINH);
-                createBoss(RAMBO);
-                createBoss(TIEU_DOI_TRUONG);
-                createBoss(TIEU_DOI_TRUONGNAMEK);
-                createBoss(FIDE_DAI_CA_1);
-                createBoss(ANDROID_20);
-                createBoss(ANDROID_13);
-                createBoss(KINGKONG);
-                createBoss(CUMBER);
-                createBoss(SUPER_BROLY_RED);
-
-                // for (int i = 0; i < 15; i++) {
-                // createBoss(BROLY);
-                // }
-            } catch (Exception e) {
-                logger.error("Err initboss", e);
+            int[] bossIds = {
+                    SIEU_BO_HUNG, THIENSU, XEN_BO_HUNG_1, XEN_BO_HUNG,
+                    XEN_CON_1, XEN_CON_2, XEN_CON_3, XEN_CON_4, XEN_CON_5,
+                    BLACKGOKU, CHILL, COOLER, KUKU, MAP_DAU_DINH, RAMBO,
+                    TIEU_DOI_TRUONG, TIEU_DOI_TRUONGNAMEK, FIDE_DAI_CA_1,
+                    ANDROID_20, ANDROID_13, KINGKONG, CUMBER, SUPER_BROLY_RED
+            };
+            for (int bossId : bossIds) {
+                try {
+                    createBoss(bossId);
+                } catch (Exception e) {
+                    logger.error("Err initboss " + bossId, e);
+                }
             }
         }).start();
     }
@@ -284,49 +260,49 @@ public class BossFactory {
                 Map map = MapService.gI().getMapById(mapid);
                 for (Zone zone : map.zones) {
                     Boss boss = new Drabula_Tang1(mapid, zone.zoneId);
-                    MabuWar.gI().bosses.add(boss);
+                    MabuWar.gI().addBoss(boss);
                 }
             }
             for (short mapid : BossData.DRABULA_TANG6.mapJoin) {
                 Map map = MapService.gI().getMapById(mapid);
                 for (Zone zone : map.zones) {
                     Boss boss = new Drabula_Tang6(mapid, zone.zoneId);
-                    MabuWar.gI().bosses.add(boss);
+                    MabuWar.gI().addBoss(boss);
                 }
             }
             for (short mapid : BossData.GOKU_TANG5.mapJoin) {
                 Map map = MapService.gI().getMapById(mapid);
                 for (Zone zone : map.zones) {
                     Boss boss = new Goku_Tang5(mapid, zone.zoneId);
-                    MabuWar.gI().bosses.add(boss);
+                    MabuWar.gI().addBoss(boss);
                 }
             }
             for (short mapid : BossData.CALICH_TANG5.mapJoin) {
                 Map map = MapService.gI().getMapById(mapid);
                 for (Zone zone : map.zones) {
                     Boss boss = new Calich_Tang5(mapid, zone.zoneId);
-                    MabuWar.gI().bosses.add(boss);
+                    MabuWar.gI().addBoss(boss);
                 }
             }
             for (short mapid : BossData.BUIBUI_TANG2.mapJoin) {
                 Map map = MapService.gI().getMapById(mapid);
                 for (Zone zone : map.zones) {
                     Boss boss = new BuiBui_Tang2(mapid, zone.zoneId);
-                    MabuWar.gI().bosses.add(boss);
+                    MabuWar.gI().addBoss(boss);
                 }
             }
             for (short mapid : BossData.BUIBUI_TANG3.mapJoin) {
                 Map map = MapService.gI().getMapById(mapid);
                 for (Zone zone : map.zones) {
                     Boss boss = new BuiBui_Tang3(mapid, zone.zoneId);
-                    MabuWar.gI().bosses.add(boss);
+                    MabuWar.gI().addBoss(boss);
                 }
             }
             for (short mapid : BossData.YACON_TANG4.mapJoin) {
                 Map map = MapService.gI().getMapById(mapid);
                 for (Zone zone : map.zones) {
                     Boss boss = new Yacon_Tang4(mapid, zone.zoneId);
-                    MabuWar.gI().bosses.add(boss);
+                    MabuWar.gI().addBoss(boss);
                 }
             }
         }).start();
@@ -488,6 +464,30 @@ public class BossFactory {
             case MABU_MAP:
                 boss = new Mabu_Tang6();
                 break;
+            case CUMBER:
+                boss = new Cumber();
+                break;
+            case CUMBER2:
+                boss = new SuperCumber();
+                break;
+            case SUPERBOJACK:
+                boss = new SuperBojack();
+                break;
+            case BIDO:
+                boss = new Bido();
+                break;
+            case BOJACK:
+                boss = new Bojack();
+                break;
+            case BUJIN:
+                boss = new Bujin();
+                break;
+            case KOGU:
+                boss = new Kogu();
+                break;
+            case ZANGYA:
+                boss = new Zangya();
+                break;
             case XEN_MAX:
                 boss = new XenMax();
                 break;
@@ -502,12 +502,6 @@ public class BossFactory {
             // break;
             // case FIDEGOLD:
             // boss = new FideGold();
-            // break;
-            // case CUMBER:
-            // boss = new Cumber();
-            // break;
-            // case CUMBER2:
-            // boss = new SuperCumber();
             // break;
         }
         return boss;

@@ -110,7 +110,7 @@ public class XenBoHungHoanThien extends FutureBoss {
 
     @Override
     public void leaveMap() {
-        BossManager.gI().getBossById(BossFactory.XEN_BO_HUNG_1).setJustRest();
+        BossManager.gI().restBossIfPresent(BossFactory.XEN_BO_HUNG_1);
         super.leaveMap();
         BossManager.gI().removeBoss(this);
     }

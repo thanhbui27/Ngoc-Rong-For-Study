@@ -1,9 +1,9 @@
 package nro.models.boss;
 
 import nro.utils.Log;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import nro.models.player.Player;
+import nro.utils.Util;
 
 /**
  *
@@ -13,22 +13,30 @@ import nro.models.player.Player;
  */
 public class BossManager {
 
-    public static final List<Boss> BOSSES_IN_GAME;
+    public static final CopyOnWriteArrayList<Boss> BOSSES_IN_GAME;
     private static BossManager intance;
 
     static {
-        BOSSES_IN_GAME = new ArrayList<>();
+        BOSSES_IN_GAME = new CopyOnWriteArrayList<>();
     }
-    public int bossId = -1;
+    private int bossId = -1_000_000_000;
+
+    public synchronized int nextBossId() {
+        if (bossId == Integer.MIN_VALUE) {
+            throw new IllegalStateException("Đã hết ID boss động");
+        }
+        return bossId--;
+    }
 
     public void updateAllBoss() {
-        for (int i = BOSSES_IN_GAME.size() - 1; i >= 0; i--) {
-            Boss boss = BOSSES_IN_GAME.get(i);
+        Boss[] bosses = BOSSES_IN_GAME.toArray(new Boss[0]);
+        for (int i = bosses.length - 1; i >= 0; i--) {
+            Boss boss = bosses[i];
             if (boss != null) {
                 try {
                     boss.update();
                 } catch (Exception e) {
-                    System.out.println("Lỗi khi update boss: \n" + e);
+                    Log.error(BossManager.class, e);
                 }
             }
         }
@@ -38,7 +46,7 @@ public class BossManager {
 
     }
 
-    public static BossManager gI() {
+    public static synchronized BossManager gI() {
         if (intance == null) {
             intance = new BossManager();
         }
@@ -46,35 +54,44 @@ public class BossManager {
     }
 
     public Boss getBossTau77ByPlayer(Player player) {
-        for (int i = BOSSES_IN_GAME.size() - 1; i >= 0; i--) {
-            if (BOSSES_IN_GAME.get(i).id == (-251003 - player.id - 2000)) {
-                return BOSSES_IN_GAME.get(i);
+        int bossId = Util.createIdDuongTank((int) player.id) - 10000000;
+        Boss[] bosses = BOSSES_IN_GAME.toArray(new Boss[0]);
+        for (int i = bosses.length - 1; i >= 0; i--) {
+            Boss boss = bosses[i];
+            if (boss.id == bossId) {
+                return boss;
             }
         }
         return null;
     }
 
     public Boss getBossById(int bossId) {
-        for (int i = BOSSES_IN_GAME.size() - 1; i >= 0; i--) {
-            if (BOSSES_IN_GAME.get(i).id == bossId) {
-                return BOSSES_IN_GAME.get(i);
+        Boss[] bosses = BOSSES_IN_GAME.toArray(new Boss[0]);
+        for (int i = bosses.length - 1; i >= 0; i--) {
+            Boss boss = bosses[i];
+            if (boss.id == bossId) {
+                return boss;
             }
         }
         return null;
     }
 
-    public void addBoss(Boss boss) {
-        boolean have = false;
-        for (Boss b : BOSSES_IN_GAME) {
-            if (boss.equals(b)) {
-                have = true;
-                break;
-            }
+    public void activateBossIfPresent(int bossId) {
+        Boss boss = getBossById(bossId);
+        if (boss != null) {
+            boss.changeToAttack();
         }
-        if (!have) {
-            BOSSES_IN_GAME.add(boss);
+    }
 
+    public void restBossIfPresent(int bossId) {
+        Boss boss = getBossById(bossId);
+        if (boss != null) {
+            boss.setJustRest();
         }
+    }
+
+    public void addBoss(Boss boss) {
+        BOSSES_IN_GAME.addIfAbsent(boss);
     }
 
     public void removeBoss(Boss boss) {

@@ -1,6 +1,7 @@
 package nro.models.map.VoDaiSinhTu;
 
 import nro.utils.Util;
+import nro.utils.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +13,10 @@ public class VoDaiSinhTuManager {
 
     private static VoDaiSinhTuManager i;
     private long lastUpdate;
-    private static List<VoDaiSinhTu> list = new ArrayList<>();
-    private static List<VoDaiSinhTu> toRemove = new ArrayList<>();
+    private static final List<VoDaiSinhTu> list = new ArrayList<>();
+    private static final List<VoDaiSinhTu> toRemove = new ArrayList<>();
 
-    public static VoDaiSinhTuManager gI() {
+    public static synchronized VoDaiSinhTuManager gI() {
         if (i == null) {
             i = new VoDaiSinhTuManager();
         }
@@ -30,10 +31,18 @@ public class VoDaiSinhTuManager {
                     try {
                         mc.update();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.error(VoDaiSinhTuManager.class, e);
+                        try {
+                            mc.endChallenge();
+                        } catch (Exception cleanupError) {
+                            Log.error(VoDaiSinhTuManager.class, cleanupError);
+                        }
                     }
                 }
-                list.removeAll(toRemove);
+                synchronized (toRemove) {
+                    list.removeAll(toRemove);
+                    toRemove.clear();
+                }
             }
         }
     }

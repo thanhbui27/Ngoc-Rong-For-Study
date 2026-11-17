@@ -51,6 +51,9 @@ public class RobotVeSi extends BossDoanhTrai {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (!useSpecialSkill()) {
                 Player pl = getPlayerAttack();

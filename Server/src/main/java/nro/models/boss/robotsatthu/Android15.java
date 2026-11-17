@@ -62,7 +62,7 @@ public class Android15 extends Boss {
     public void leaveMap() {
         super.leaveMap();
         BossManager.gI().removeBoss(this);
-        BossManager.gI().getBossById(BossFactory.ANDROID_14).changeToAttack();
+        BossManager.gI().activateBossIfPresent(BossFactory.ANDROID_14);
     }
 
 }

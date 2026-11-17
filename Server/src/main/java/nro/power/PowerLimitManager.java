@@ -32,7 +32,7 @@ public class PowerLimitManager {
 
     public void load() {
         try (java.sql.Connection con = DBService.gI().getConnectionForGame()) {
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM `power_limit`");
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM `power_limit` ORDER BY `id`");
             ResultSet rs = ps.executeQuery();
             try {
                 while (rs.next()) {

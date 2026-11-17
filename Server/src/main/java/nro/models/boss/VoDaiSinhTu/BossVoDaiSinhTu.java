@@ -54,25 +54,28 @@ public abstract class BossVoDaiSinhTu extends Boss {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
-//            if (playerAtt != null && playerAtt.zone != null && this.zone != null && this.zone.equals(playerAtt.zone)) {
-//                if (this.isDie()) {
-//                    return;
-//                }
-//                this.playerSkill.skillSelect = this.getSkillAttack();
-//                if (Util.getDistance(this, playerAtt) <= this.getRangeCanAttackWithSkillSelect()) {
-//                    if (Util.isTrue(15, ConstRatio.PER100) && SkillUtil.isUseSkillChuong(this)) {
-//                        goToXY(playerAtt.location.x + (Util.getOne(-1, 1) * Util.nextInt(20, 80)),
-//                                Util.nextInt(10) % 2 == 0 ? playerAtt.location.y : playerAtt.location.y - Util.nextInt(0, 50), false);
-//                    }
-//                    SkillService.gI().useSkill(this, playerAtt, null, null);
-//                    checkPlayerDie(playerAtt);
-//                } else {
-//                    goToPlayer(playerAtt, false);
-//                }
-//            } else {
-//                this.leaveMap();
-//            }
+            if (playerAtt == null || playerAtt.zone == null || this.zone != playerAtt.zone) {
+                leaveMap();
+                return;
+            }
+            if (this.isDie()) {
+                return;
+            }
+            this.playerSkill.skillSelect = this.getSkillAttack();
+            if (Util.getDistance(this, playerAtt) <= this.getRangeCanAttackWithSkillSelect()) {
+                if (Util.isTrue(15, ConstRatio.PER100) && SkillUtil.isUseSkillChuong(this)) {
+                    goToXY(playerAtt.location.x + (Util.getOne(-1, 1) * Util.nextInt(20, 80)),
+                            Util.nextInt(10) % 2 == 0 ? playerAtt.location.y : playerAtt.location.y - Util.nextInt(0, 50), false);
+                }
+                SkillService.gI().useSkill(this, playerAtt, null, null);
+                checkPlayerDie(playerAtt);
+            } else {
+                goToPlayer(playerAtt, false);
+            }
         } catch (Exception ex) {
             Log.error(BossVoDaiSinhTu.class, ex);
         }
@@ -85,43 +88,9 @@ public abstract class BossVoDaiSinhTu extends Boss {
 
     @Override
     public void joinMap() {
-        if (playerAtt.zone != null) {
+        if (playerAtt != null && playerAtt.zone != null) {
             this.zone = playerAtt.zone;
-            ChangeMapService.gI().changeMap(this, this.zone, 545, 336);
-        }
-    }
-
-    private void immortalMp() {
-        this.nPoint.mp = this.nPoint.mpg;
-    }
-
-    @Override
-    public void update() {
-        super.update();
-        try {
-            if (!this.effectSkill.isHaveEffectSkill()
-                    && !this.effectSkill.isCharging) {
-                this.immortalMp();
-                switch (this.status) {
-                    case JUST_JOIN_MAP:
-                        joinMap();
-                        if (this.zone != null) {
-                            changeStatus(ATTACK);
-                        }
-                        break;
-                    case ATTACK:
-                        this.talk();
-                        if (this.playerSkill.prepareTuSat || this.playerSkill.prepareLaze
-                                || this.playerSkill.prepareQCKK) {
-                            break;
-                        } else {
-                            this.attack();
-                        }
-                        break;
-                }
-            }
-        } catch (Exception e) {
-            Log.error(BossVoDaiSinhTu.class, e);
+            ChangeMapService.gI().changeMap(this, this.zone, 435, 264);
         }
     }
 

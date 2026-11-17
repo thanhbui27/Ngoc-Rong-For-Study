@@ -31,13 +31,13 @@ public abstract class BossKhiGasHuyDiet extends Boss {
     }
 
     private void spawn(byte level) {
-        this.nPoint.hpg = (int) (level * this.data.hp[0][0]);
+        this.nPoint.hpg = capBossStat((long) level * this.data.hp[0][0]);
         switch (this.data.typeDame) {
             case DAME_PERCENT_HP_THOU:
-                this.nPoint.dameg = (int) (this.nPoint.hpg / 1000 * this.data.dame);
+                this.nPoint.dameg = capBossStat((long) this.nPoint.hpg * this.data.dame / 1000);
                 break;
             case DAME_PERCENT_HP_HUND:
-                this.nPoint.dameg = (int) (this.nPoint.hpg / 100 * this.data.dame);
+                this.nPoint.dameg = capBossStat((long) this.nPoint.hpg * this.data.dame / 100);
                 break;
         }
         this.nPoint.calPoint();
@@ -49,11 +49,14 @@ public abstract class BossKhiGasHuyDiet extends Boss {
         if (!canAttackWithTime(400)) {
             return;
         }
-        super.attack();
+        super.performAttack();
     }
 
     @Override
     public void idle() {
+        if (this.zone == null) {
+            return;
+        }
         boolean allMobDie = true;
         for (Mob mob : this.zone.mobs) {
             if (!mob.isDie()) {
@@ -86,7 +89,9 @@ public abstract class BossKhiGasHuyDiet extends Boss {
 
     @Override
     public void rewards(Player pl) {
-        pl.clan.banDoKhoBau.trungUyIsDie = true;
+        if (this.zone == null) {
+            return;
+        }
         int[] nro = { 17, 18, 19, 20, 539 };
         ItemMap itemMap = new ItemMap(this.zone, nro[Util.nextInt(0, nro.length - 1)], 1,
                 this.location.x, this.zone.map.yPhysicInTop(this.location.x, 100), -1);

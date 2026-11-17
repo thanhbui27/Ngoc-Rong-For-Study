@@ -45,6 +45,9 @@ public class NinjaAoTimFake extends NinjaAoTim {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (!useSpecialSkill()) {
                 if (Util.isTrue(30, ConstRatio.PER100)) {

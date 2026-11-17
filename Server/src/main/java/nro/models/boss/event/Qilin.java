@@ -24,7 +24,7 @@ public class Qilin extends EscortedBoss {
             return;
         }
         super.attack();
-        if (zone.map.mapId != mapID || escort != null) {
+        if (zone != null && escort != null) {
             if (Util.canDoWithTime(lastTimeChangeMap, 60000)) {
                 stopEscorting();
             }
@@ -56,7 +56,7 @@ public class Qilin extends EscortedBoss {
             } else {
                 result = true;
             }
-            if (result) {
+            if (result && plAtt != null && !this.isDie()) {
                 Service.getInstance().chat(plAtt, "Đi thôi lân con");
                 setEscort(plAtt);
             }
@@ -92,6 +92,9 @@ public class Qilin extends EscortedBoss {
     @Override
     public void joinMap() {
         this.zone = getMapCanJoin(mapID);
+        if (this.zone == null) {
+            return;
+        }
         int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
         ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
     }

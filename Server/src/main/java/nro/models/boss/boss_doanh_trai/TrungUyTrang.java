@@ -53,9 +53,11 @@ public class TrungUyTrang extends BossDoanhTrai {
         List<Player> list = new ArrayList<>();
 
         List<Player> notBosses = this.zone.getNotBosses();
-        for (Player pl : notBosses) {
-            if (!pl.isDie() && pl.location.x >= 755 && pl.location.x <= 1069 && !pl.effectSkin.isVoHinh) {
-                list.add(pl);
+        synchronized (notBosses) {
+            for (Player pl : notBosses) {
+                if (!pl.isDie() && pl.location.x >= 755 && pl.location.x <= 1069 && !pl.effectSkin.isVoHinh) {
+                    list.add(pl);
+                }
             }
         }
         if (!list.isEmpty()) {
@@ -67,6 +69,9 @@ public class TrungUyTrang extends BossDoanhTrai {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             Player pl = getPlayerAttack();
             this.playerSkill.skillSelect = this.getSkillAttack();

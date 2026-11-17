@@ -14,6 +14,7 @@ import nro.utils.Util;
 public class ThienXinHangClone extends BossDHVT {
     private int timeLive;
     private long lastUpdate;
+    private volatile boolean finished;
 
 
     public ThienXinHangClone(int id, Player player) {
@@ -27,6 +28,9 @@ public class ThienXinHangClone extends BossDHVT {
 
     @Override
     public void update() {
+        if (finished) {
+            return;
+        }
         try {
             if (!this.effectSkill.isHaveEffectSkill()
                     && !this.effectSkill.isCharging) {
@@ -53,11 +57,19 @@ public class ThienXinHangClone extends BossDHVT {
                 if (timeLive > 0) {
                     timeLive--;
                 } else {
-                    super.leaveMap();
+                    leaveMap();
                 }
             }
             } catch(Exception e){
                 Log.error(ThienXinHangClone.class, e);
             }
         }
+
+    @Override
+    public synchronized void leaveMap() {
+        if (!finished) {
+            finished = true;
+            super.leaveMap();
+        }
+    }
     }

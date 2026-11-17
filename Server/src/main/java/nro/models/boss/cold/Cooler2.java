@@ -61,7 +61,7 @@ public class Cooler2 extends FutureBoss {
 
     @Override
     public void leaveMap() {
-        BossManager.gI().getBossById(BossFactory.COOLER).setJustRest();
+        BossManager.gI().restBossIfPresent(BossFactory.COOLER);
         super.leaveMap();
         BossManager.gI().removeBoss(this);
     }

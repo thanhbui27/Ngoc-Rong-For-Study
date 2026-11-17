@@ -1156,10 +1156,6 @@ public class Service {
             Player master = ((Pet) player).master;
 
             param = master.nPoint.calSubTNSM(param);
-            if (master.nPoint.power < master.nPoint.getPowerLimit()) {
-                master.nPoint.powerUp(param);
-            }
-            master.nPoint.tiemNangUp(param);
             addSMTN(master, type, param, true);
         } else {
             if (player.nPoint.power > player.nPoint.getPowerLimit()) {
@@ -1321,7 +1317,7 @@ public class Service {
         try {
             if (!pl.isPet) {
                 msg = new Message(-17);
-                msg.writer().writeByte((int) pl.id);
+                msg.writer().writeByte(0); // cPk, same format as the nearby player-death packet
                 msg.writer().writeShort(pl.location.x);
                 msg.writer().writeShort(pl.location.y);
                 pl.sendMessage(msg);
@@ -1331,7 +1327,7 @@ public class Service {
             }
 
             msg = new Message(-8);
-            msg.writer().writeShort((int) pl.id);
+            msg.writer().writeInt((int) pl.id);
             msg.writer().writeByte(0); // cpk
             msg.writer().writeShort(pl.location.x);
             msg.writer().writeShort(pl.location.y);
@@ -1630,7 +1626,8 @@ public class Service {
                     break;
                 }
                 case 8 -> {
-                    if (player.gender == 1) {
+                    if (player.gender == 1 && player.playerSkill.skillSelect != null
+                            && player.playerSkill.skillSelect.template.id == Skill.DE_TRUNG) {
                         SkillService.gI().useSkillDeTrung(player);
                     }
                 }
@@ -1639,6 +1636,12 @@ public class Service {
                 }
                 case 10 -> {
                     SkillService.gI().useSkillHuytSao(player);
+                }
+                case 11 -> {
+                    if (player.playerSkill.skillSelect != null
+                            && player.playerSkill.skillSelect.template.id == Skill.BIEN_HINH) {
+                        SkillService.gI().useSkill(player, null, null, null);
+                    }
                 }
                 case 20 -> {
                     // System.out.println(status);

@@ -125,29 +125,24 @@ public class DrLychee extends BossKhiGasHuyDiet {
             return dame;
         } else {
             dame = super.injured(plAtt, damage, piercing, isMobAttack);
-            long ptHPMax = ((long) this.nPoint.hpMax * 5) / 10;
-            if (this.nPoint.hp < dame) {
-                dame = (int) (this.nPoint.hp - ptHPMax);
-            }
-            if (this.isDie()) {
-                rewards(plAtt);
-                notifyPlayeKill(plAtt);
-                die();
-                EffectSkillService.gI().removeMaPhongBa(this);
-            }
-
             return dame;
         }
     }
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (this.typePk == ConstPlayer.NON_PK) {
                 changeStatus(TALK_AFTER);
                 return;
             }
             Player pl = getPlayerAttack();
+            if (pl == null) {
+                return;
+            }
             this.playerSkill.skillSelect = this.getSkillAttack();
             if (Util.getDistance(this, pl) <= this.getRangeCanAttackWithSkillSelect()) {
                 if (Util.isTrue(10, ConstRatio.PER100)) {

@@ -4,7 +4,9 @@ import nro.consts.ConstRatio;
 import nro.models.boss.Boss;
 import nro.models.boss.BossData;
 import nro.models.boss.BossFactory;
+import nro.models.boss.BossManager;
 import nro.models.boss.cell.XenBoHung;
+import nro.models.map.mabu.MabuWar;
 import nro.models.map.ItemMap;
 import nro.models.map.Zone;
 import nro.models.player.Player;
@@ -33,7 +35,12 @@ public class Yacon_Tang4 extends BossMabuWar {
     public void attack() {
         if (this.isDie()) {
             this.zone.finishMabuWar = true;
-            die();
+            leaveMap();
+            MabuWar.gI().bosses.remove(this);
+            BossManager.gI().removeBoss(this);
+            return;
+        }
+        if (!canAttackWithTime(500)) {
             return;
         }
         try {
@@ -78,7 +85,7 @@ public class Yacon_Tang4 extends BossMabuWar {
                 }
             }
             int dame = super.injuredNotCheckDie(plAtt, damage, piercing);
-            if (this.isDie()) {
+            if (this.isDie() && plAtt != null) {
                 rewards(plAtt);
             }
             return dame;
@@ -88,6 +95,9 @@ public class Yacon_Tang4 extends BossMabuWar {
     @Override
     public void joinMap() {
         this.zone = getMapCanJoin(mapID);
+        if (this.zone == null) {
+            return;
+        }
         int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
         ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
         this.nPoint.wearingYacon = true;

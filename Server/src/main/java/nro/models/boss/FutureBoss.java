@@ -12,7 +12,7 @@ public abstract class FutureBoss extends Boss {
     @Override
     public int injured(Player plAtt, int damage, boolean piercing, boolean isMobAttack) {
         if (plAtt != null) {
-            damage = (damage / 100) * 80;
+            damage = (int) Math.min(Integer.MAX_VALUE, Math.max(0L, (long) damage * 80 / 100));
             return super.injured(plAtt, damage, piercing, isMobAttack);
         } else {
             return 0;

@@ -30,7 +30,7 @@ public class Android19 extends Boss {
 
     @Override
     public void leaveMap() {
-        BossManager.gI().getBossById(BossFactory.ANDROID_20).changeToAttack();
+        BossManager.gI().activateBossIfPresent(BossFactory.ANDROID_20);
         super.leaveMap();
         BossManager.gI().removeBoss(this);
     }

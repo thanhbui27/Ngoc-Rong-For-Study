@@ -1,5 +1,7 @@
 package nro.models.boss.dhvt;
 
+import java.util.ArrayList;
+import java.util.List;
 import nro.models.boss.BossData;
 import nro.models.boss.BossFactory;
 import nro.models.player.Player;
@@ -13,6 +15,7 @@ import nro.utils.Util;
 public class ThienXinHang extends BossDHVT {
 
     private long lastTimePhanThan;
+    private final List<ThienXinHangClone> clones = new ArrayList<>();
 
     public ThienXinHang(Player player) {
         super(BossFactory.THIEN_XIN_HANG, BossData.THIEN_XIN_HANG);
@@ -34,10 +37,10 @@ public class ThienXinHang extends BossDHVT {
     public void attack() {
         try {
             if (!canAttackWithTime(400)) {
-            return;
-        }
+                return;
+            }
             if (!useSpecialSkill()) {
-                super.attack();
+                performTournamentAttack();
             }
             if (Util.canDoWithTime(lastTimePhanThan, 20000)) {
                 lastTimePhanThan = System.currentTimeMillis();
@@ -48,10 +51,20 @@ public class ThienXinHang extends BossDHVT {
         }
     }
 
-    private void phanThan() {
-        new ThienXinHangClone(BossFactory.THIEN_XIN_HANG_CLONE, playerAtt);
-        new ThienXinHangClone(BossFactory.THIEN_XIN_HANG_CLONE1, playerAtt);
-        new ThienXinHangClone(BossFactory.THIEN_XIN_HANG_CLONE2, playerAtt);
-        new ThienXinHangClone(BossFactory.THIEN_XIN_HANG_CLONE3, playerAtt);
+    private synchronized void phanThan() {
+        clones.removeIf(clone -> clone.zone == null);
+        clones.add(new ThienXinHangClone(BossFactory.THIEN_XIN_HANG_CLONE, playerAtt));
+        clones.add(new ThienXinHangClone(BossFactory.THIEN_XIN_HANG_CLONE1, playerAtt));
+        clones.add(new ThienXinHangClone(BossFactory.THIEN_XIN_HANG_CLONE2, playerAtt));
+        clones.add(new ThienXinHangClone(BossFactory.THIEN_XIN_HANG_CLONE3, playerAtt));
+    }
+
+    @Override
+    public synchronized void leaveMap() {
+        for (ThienXinHangClone clone : clones) {
+            clone.leaveMap();
+        }
+        clones.clear();
+        super.leaveMap();
     }
 }

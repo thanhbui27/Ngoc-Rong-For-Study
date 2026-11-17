@@ -165,6 +165,9 @@ public class EffectSkill {
                 EffectSkillService.gI().removeMaPhongBa(this.player);
             }
         }
+        if (isMafuba && Util.canDoWithTime(lastTimeMafuba, timeMafuba)) {
+            EffectSkillService.gI().removeMafuba(this.player);
+        }
         if (tiLeHPHuytSao != 0 && Util.canDoWithTime(lastTimeHuytSao, 30000)) {
             EffectSkillService.gI().removeHuytSao(this.player);
         }
@@ -185,7 +188,11 @@ public class EffectSkill {
         if (isMafuba && Util.canDoWithTime(lastTimeBurn, 1000)) {
             lastTimeBurn = System.currentTimeMillis();
             Player plUseSkill = this.player.effectSkill.plUseSkillMafuba;
-            this.player.injured(plUseSkill, plUseSkill.nPoint.hpMax * 10 / 100, true, false);
+            if (plUseSkill == null || plUseSkill.nPoint == null) {
+                EffectSkillService.gI().removeMafuba(this.player);
+                return;
+            }
+            this.player.injured(plUseSkill, plUseSkill.nPoint.hpMax / 10, true, false);
             PlayerService.gI().sendInfoHp(player);
             Service.getInstance().Send_Info_NV(player);
             // SkillService.gI().havePlayerAttack(this.player, false,

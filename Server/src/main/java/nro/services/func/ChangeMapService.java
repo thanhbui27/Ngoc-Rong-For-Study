@@ -188,7 +188,6 @@ public class ChangeMapService {
     }
 
     public void changeMap(Player pl, Zone zoneJoin, int mapId, int zoneId, int x, int y, byte typeSpace) {
-        TransactionService.gI().cancelTrade(pl);
         if (zoneJoin == null) {
             if (mapId != -1) {
                 if (zoneId == -1) {
@@ -198,6 +197,13 @@ public class ChangeMapService {
                 }
             }
         }
+        if (zoneJoin != null && !pl.isBoss && !pl.isPet
+                && MapService.gI().isMapMabuWar(zoneJoin.map.mapId)
+                && !MabuWar.gI().isTimeMabuWar()) {
+            Service.getInstance().sendThongBao(pl, MabuWar.gI().getClosedMessage());
+            return;
+        }
+        TransactionService.gI().cancelTrade(pl);
         if (pl.isHoldNamecBall) {
             int plX = pl.location.x;
             if (pl.location.x >= pl.zone.map.mapWidth - 60) {

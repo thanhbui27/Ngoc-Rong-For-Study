@@ -54,6 +54,9 @@ public class NPC_ToSuKaio extends Player {
 
     @Override
     public void update() {
+        if (this.zone == null) {
+            return;
+        }
         Player pl = super.zone.findPlayerByID(-super.id);
         if (pl == null) {
             MapService.gI().exitMap(this);

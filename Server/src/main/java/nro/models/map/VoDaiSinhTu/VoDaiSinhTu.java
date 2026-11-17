@@ -26,6 +26,7 @@ import nro.models.boss.dhvt.ThienXinHang;
 import nro.models.boss.dhvt.Xinbato;
 import nro.models.boss.dhvt.Yamcha;
 import nro.models.item.Item;
+import nro.models.map.Zone;
 import nro.models.map.DaiHoiVoThuat.DHVT23Manager;
 import nro.models.map.DaiHoiVoThuat.DHVT23Service;
 import nro.models.npc.Npc;
@@ -55,31 +56,37 @@ public class VoDaiSinhTu {
     private Boss boss;
     @Setter
     private Player npc;
+    @Setter
+    private Zone arena;
 
     @Setter
     private int time;
     private int round;
+    @Getter
+    private volatile boolean ended;
     @Setter
     private int timeWait;
 
     public void update() {
-        if (time > 0) {
-            time--;
-            if (!player.isDie() && player != null && player.zone != null) {
-                if (boss.isDie()) {
-                    round++;
-                    boss.leaveMap();
-                    toTheNextRound();
-                }
-            } else if (player.zone != null) {
-                if (player.zone.map.mapId != 112) {
-                    endChallenge();
-                }
-            } else {
-                endChallenge();
-            }
-        } else {
+        if (ended) {
+            return;
+        }
+        if (player == null || arena == null || player.zone != arena || player.isDie() || boss == null) {
+            endChallenge();
+            return;
+        }
+        if (time <= 0) {
             timeOut();
+            return;
+        }
+        time--;
+        if (boss.isDie()) {
+            round++;
+            boss.leaveMap();
+            toTheNextRound();
+            if (ended) {
+                return;
+            }
         }
         if (timeWait > 0) {
             switch (timeWait) {
@@ -98,10 +105,15 @@ public class VoDaiSinhTu {
     }
 
     public void ready() {
+        Boss roundBoss = boss;
         Util.setTimeout(() -> {
-            DHVT23Service.gI().sendTypePK(player, boss);
+            if (ended || player.zone != arena || player.isDie() || boss != roundBoss
+                    || roundBoss.zone != arena) {
+                return;
+            }
+            DHVT23Service.gI().sendTypePK(player, roundBoss);
             PlayerService.gI().changeAndSendTypePK(this.player, ConstPlayer.PK_PVP);
-            boss.setStatus((byte) 3);
+            roundBoss.setStatus((byte) 3);
         }, 5000,"vo dai sinh tu");
     }
 
@@ -133,10 +145,9 @@ public class VoDaiSinhTu {
                 champion();
                 return;
         }
+        setBoss(boss);
         PlayerService.gI().setPos(player, 390, 336, 0);
         setTimeWait(5);
-        setBoss(boss);
-        PlayerService.gI().setPos(boss, 435, 264, 0);
         setTime(185);
         resetSkill();
     }
@@ -178,20 +189,33 @@ public class VoDaiSinhTu {
         endChallenge();
     }
 
-    private void reward() {
-        if (player.levelWoodChest < round) {
-            player.levelWoodChest = round;
+    public synchronized void endChallenge() {
+        if (ended) {
+            return;
         }
-    }
-
-    public void endChallenge() {
-        reward();
-        PlayerService.gI().hoiSinh(player);
-        PlayerService.gI().changeAndSendTypePK(player, ConstPlayer.NON_PK);
-        if (boss != null) {
-            boss.leaveMap();
+        ended = true;
+        try {
+            if (player != null) {
+                EffectSkillService.gI().removeStun(player);
+                if (player.zone != null) {
+                    if (player.zone == arena && player.isDie()) {
+                        Service.getInstance().hsChar(player, player.nPoint.hpMax, player.nPoint.mpMax);
+                    }
+                    PlayerService.gI().changeAndSendTypePK(player, ConstPlayer.NON_PK);
+                    if (player.zone == arena) {
+                        PlayerService.gI().setPos(player, 178, 408, 0);
+                    }
+                }
+            }
+        } finally {
+            try {
+                if (boss != null) {
+                    boss.leaveMap();
+                }
+            } finally {
+                VoDaiSinhTuService.gI().releaseArena(arena, player);
+                VoDaiSinhTuManager.gI().remove(this);
+            }
         }
-        PlayerService.gI().setPos(player, 178, 408, 0);
-        VoDaiSinhTuManager.gI().remove(this);
     }
 }

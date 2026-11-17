@@ -22,7 +22,18 @@ public class Thiensu extends FutureBoss {
     @Override
     public void joinMap() {
         super.joinMap();
-        BossFactory.createBoss(BossFactory.HUYDIET).zone = this.zone;
+        if (this.zone == null) {
+            return;
+        }
+        Boss huyDiet = BossManager.gI().getBossById(BossFactory.HUYDIET);
+        if (huyDiet == null) {
+            huyDiet = BossFactory.createBoss(BossFactory.HUYDIET);
+        } else if (huyDiet.zone == null) {
+            huyDiet.setJustRest();
+        } else {
+            return;
+        }
+        huyDiet.zone = this.zone;
     }
 
    @Override

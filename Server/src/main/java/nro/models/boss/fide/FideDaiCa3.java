@@ -64,7 +64,12 @@ public class FideDaiCa3 extends FutureBoss {
 
     @Override
     public void leaveMap() {
-        BossFactory.createBoss(BossFactory.FIDE_DAI_CA_1).setJustRest();
+        Boss firstForm = BossManager.gI().getBossById(BossFactory.FIDE_DAI_CA_1);
+        if (firstForm != null) {
+            firstForm.setJustRest();
+        } else {
+            BossFactory.createBoss(BossFactory.FIDE_DAI_CA_1).setJustRest();
+        }
         super.leaveMap();
         BossManager.gI().removeBoss(this);
     }

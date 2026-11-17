@@ -39,6 +39,9 @@ public class NgoKhong extends Boss {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             Player pl = getPlayerAttack();
             if (pl != null) {
@@ -65,6 +68,9 @@ public class NgoKhong extends Boss {
 
     @Override
     public void rewards(Player pl) {
+        if (pl == null || this.zone == null) {
+            return;
+        }
         ItemMap itemMap = null;
         int x = this.location.x;
         int y = this.zone.map.yPhysicInTop(x, this.location.y - 24);

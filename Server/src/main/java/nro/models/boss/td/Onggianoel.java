@@ -36,11 +36,15 @@ public class Onggianoel extends Boss {
 
     @Override
     public void attack() {
+        if (this.zone == null) {
+            return;
+        }
          
      
         lastTimeAttack = System.currentTimeMillis();
         if (isDie()) {
             super.leaveMap();
+            return;
         }
 
         try {

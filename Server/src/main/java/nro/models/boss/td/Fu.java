@@ -8,6 +8,7 @@ import nro.models.boss.BossFactory;
 import nro.models.boss.FutureBoss;
 import nro.models.item.ItemOption;
 import nro.models.map.ItemMap;
+import nro.models.map.Zone;
 import nro.models.player.Player;
 import nro.server.ServerNotify;
 import nro.services.MapService;
@@ -29,10 +30,14 @@ public class Fu extends FutureBoss {
     public void changeToAttack() {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         if (now.getHour() == 23) {
+            Zone targetZone = getMapCanJoin(mapJoin[Util.nextInt(0, mapJoin.length - 1)]);
+            if (targetZone == null) {
+                return;
+            }
             if (this.zone != null) {
                 MapService.gI().exitMap(this);
             }
-            this.zone = getMapCanJoin(mapJoin[Util.nextInt(0, mapJoin.length - 1)]);
+            this.zone = targetZone;
             int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
             ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
             ServerNotify.gI().notify("Boss " + this.name + " vừa xuất hiện tại " + this.zone.map.mapName + "");

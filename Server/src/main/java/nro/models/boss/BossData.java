@@ -1,6 +1,7 @@
 package nro.models.boss;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import nro.consts.ConstPlayer;
 import nro.models.skill.Skill;
 import lombok.Builder;
@@ -142,7 +143,7 @@ public class BossData {
         }
 
         // --------------------------------------------------------------------------Broly
-        public static final HashMap<Integer, BossData> BROLY = new HashMap<>() {
+        public static final HashMap<Integer, BossData> BROLY = new LinkedHashMap<>() {
                 {
                         put(BossFactory.BROLY, new BossData(
                                         "Broly %1", // name

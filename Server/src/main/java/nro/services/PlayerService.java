@@ -62,15 +62,18 @@ public class PlayerService {
     }
 
     public void sendTNSM(Player player, byte type, long param) {
-        if (param > 0) {
+        while (param > 0) {
             Message msg;
             try {
                 msg = new Message(-3);
                 msg.writer().writeByte(type);// 0 là cộng sm, 1 cộng tn, 2 là cộng cả 2
-                msg.writer().writeInt((int) param);// số tn cần cộng
+                int amount = (int) Math.min(param, Integer.MAX_VALUE);
+                msg.writer().writeInt(amount);// số tn cần cộng
                 player.sendMessage(msg);
                 msg.cleanup();
+                param -= amount;
             } catch (Exception e) {
+                break;
             }
         }
     }

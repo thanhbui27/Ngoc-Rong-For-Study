@@ -28,13 +28,13 @@ public abstract class BossBanDoKhoBau extends Boss {
     }
 
     private void spawn(byte level) {
-        this.nPoint.hpg = (int) (level * this.data.hp[0][0]);
+        this.nPoint.hpg = capBossStat((long) level * this.data.hp[0][0]);
         switch (this.data.typeDame) {
             case DAME_PERCENT_HP_THOU:
-                this.nPoint.dameg = (int) (this.nPoint.hpg / 1000 * this.data.dame);
+                this.nPoint.dameg = capBossStat((long) this.nPoint.hpg * this.data.dame / 1000);
                 break;
             case DAME_PERCENT_HP_HUND:
-                this.nPoint.dameg = (int) (this.nPoint.hpg / 100 * this.data.dame);
+                this.nPoint.dameg = capBossStat((long) this.nPoint.hpg * this.data.dame / 100);
                 break;
         }
         this.nPoint.calPoint();
@@ -46,11 +46,14 @@ public abstract class BossBanDoKhoBau extends Boss {
         if (!canAttackWithTime(400)) {
             return;
         }
-        super.attack();
+        super.performAttack();
     }
 
     @Override
     public void idle() {
+        if (this.zone == null) {
+            return;
+        }
         boolean allMobDie = true;
         for (Mob mob : this.zone.mobs) {
             if (!mob.isDie()) {
@@ -83,7 +86,10 @@ public abstract class BossBanDoKhoBau extends Boss {
 
     @Override
     public void rewards(Player pl) {
-        pl.clan.banDoKhoBau.trungUyIsDie = true;
+        banDoKhoBau.trungUyIsDie = true;
+        if (pl == null || this.zone == null) {
+            return;
+        }
         if (Util.isTrue(100, 100)) {
             int soluong = Util.nextInt(1, 3);
             int vatpham = 934;

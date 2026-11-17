@@ -44,7 +44,7 @@ public class HoaHong extends Boss {
 
     @Override
     public int injured(Player plAtt, int damage, boolean piercing, boolean isMobAttack) {
-        if (plAtt.effectFlagBag.useGayTre) {
+        if (plAtt != null && plAtt.effectFlagBag.useGayTre) {
             damage = 10;
         } else {
             damage = 5;
@@ -89,6 +89,9 @@ public class HoaHong extends Boss {
     @Override
     public void joinMap() {
         this.zone = getMapCanJoin(mapID);
+        if (this.zone == null) {
+            return;
+        }
         int x = Util.nextInt(50, this.zone.map.mapWidth - 50);
         ChangeMapService.gI().changeMap(this, this.zone, x, this.zone.map.yPhysicInTop(x, 0));
     }

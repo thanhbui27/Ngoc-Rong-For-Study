@@ -174,6 +174,9 @@ public class Boss_Tau77 extends FutureBoss {
 
     @Override
     public void attack() {
+        if (!canAttackWithTime(500)) {
+            return;
+        }
         try {
             if (this.zone == null) {
                 leaveMap();
@@ -231,15 +234,10 @@ public class Boss_Tau77 extends FutureBoss {
 
     @Override
     public int injured(Player plAtt, int damage, boolean piercing, boolean isMobAttack) {
-        if (plAtt.id == idPlayerForNPC) {
+        if (plAtt != null && plAtt.id == idPlayerForNPC) {
             if (plAtt.playerTask.taskMain.id == 10 && plAtt.playerTask.taskMain.index == 1) {
                 int dame = 0;
                 if (this.isDie()) {
-                    rewards(plAtt);
-                    notifyPlayeKill(plAtt);
-                    PlayerService.gI().changeAndSendTypePK(plAtt, ConstPlayer.NON_PK);
-                    PlayerService.gI().changeAndSendTypePK(this, ConstPlayer.NON_PK);
-                    die();
                     return dame;
                 } else {
                     if (Util.isTrue(1, 5) && plAtt != null) {

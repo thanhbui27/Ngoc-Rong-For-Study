@@ -1,6 +1,7 @@
 package nro.models.map.DaiHoiVoThuat;
 
 import nro.utils.Util;
+import nro.utils.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +13,10 @@ public class DHVT23Manager {
 
     private static DHVT23Manager i;
     private long lastUpdate;
-    private static List<DHVT23> list = new ArrayList<>();
-    private static List<DHVT23> toRemove = new ArrayList<>();
+    private static final List<DHVT23> list = new ArrayList<>();
+    private static final List<DHVT23> toRemove = new ArrayList<>();
 
-    public static DHVT23Manager gI() {
+    public static synchronized DHVT23Manager gI() {
         if (i == null) {
             i = new DHVT23Manager();
         }
@@ -30,10 +31,18 @@ public class DHVT23Manager {
                     try {
                         mc.update();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.error(DHVT23Manager.class, e);
+                        try {
+                            mc.endChallenge();
+                        } catch (Exception cleanupError) {
+                            Log.error(DHVT23Manager.class, cleanupError);
+                        }
                     }
                 }
-                list.removeAll(toRemove);
+                synchronized (toRemove) {
+                    list.removeAll(toRemove);
+                    toRemove.clear();
+                }
             }
         }
     }
