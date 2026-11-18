@@ -188,7 +188,7 @@ public class ServerManager {
     private void activeCommandLine() {
         new Thread(() -> {
             Scanner sc = new Scanner(System.in);
-            while (true) {
+            while (sc.hasNextLine()) {
                 String line = sc.nextLine();
                 if (line.equals("baotri")) {
                     new Thread(() -> {
