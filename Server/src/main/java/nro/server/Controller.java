@@ -800,8 +800,18 @@ public class Controller {
         }
     }*/
     public void login2(Session session, Message msg) {
-        //  Service.gI().switchToRegisterScr(session);
-        Service.gI().sendThongBaoOK(session, "Vui lòng đăng ký tài khoản tại www.nronotbuff.com!");
+        Message response = null;
+        try {
+            response = new Message(42);
+            response.writer().writeByte(0);
+            session.sendMessage(response);
+        } catch (Exception e) {
+            Log.error(Controller.class, e);
+        } finally {
+            if (response != null) {
+                response.cleanup();
+            }
+        }
     }
 
     public void sendInfo(Session session) {

@@ -10,6 +10,6 @@ Requires JDK 17+ and Maven. Run `mvn clean package` in both `Login` and `Server`
 
 Copy `.env.example` to `.env`, `Login/server.ini.example` to `Login/server.ini`, and `Server/resources/config/server.properties.example` to `Server/resources/config/server.properties`. Set private passwords and keys in those local files. The two Java configs must use the same database credentials.
 
-`compose.yaml` is an optional MariaDB setup. Check for an existing compatible DB/container before running `docker compose up -d db`; reuse it when available. For a new database, Compose imports `ngocrong-clean.sql`, which contains schema and game templates without existing accounts or characters. The original `ngocrong.sql` is private and excluded from Git.
+`compose.yaml` is an optional MariaDB setup. Check for an existing compatible DB/container before running `docker compose up -d db`; reuse it when available. For a new database, Compose imports `ngocrong-clean.sql`, which contains schema and game templates without existing accounts or characters. The historical `ngocrong.sql` contains old account and character data, is currently tracked in this public repository, and should not be used as the fresh seed.
 
 See [DEPLOY.md](DEPLOY.md) for VPS sizing, ports, and legacy password migration.

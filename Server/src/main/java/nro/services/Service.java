@@ -484,12 +484,15 @@ public class Service {
                         insert.setString(2, PasswordHash.hash(pass));
                         insert.executeUpdate();
                     }
+                    sendThongBaoOK(session, "Đăng ký thành công. Hãy quay lại màn hình đăng nhập để chơi.");
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                Log.error(Service.class, e);
+                sendThongBaoOK(session, "Không thể đăng ký tài khoản, vui lòng thử lại.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error(Service.class, e);
+            sendThongBaoOK(session, "Không thể đăng ký tài khoản, vui lòng thử lại.");
         }
     }
 
