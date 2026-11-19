@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NRO Bot Manager</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">♟</span><div><strong>Bot Manager</strong><small>Game Nro</small></div></div>
+      <nav class="side-nav" aria-label="Điều hướng">
+        <button id="nav-manage" class="nav-item active" type="button"><span aria-hidden="true">▦</span> Quản lý bot</button>
+        <button id="nav-create" class="nav-item" type="button"><span aria-hidden="true">＋</span> Tạo bot mới</button>
+      </nav>
+      <div class="side-foot"><span class="online-dot"></span> Hệ thống: Online <small>Bot Manager · Local</small></div>
+    </aside>
+
+    <aside class="roster" aria-label="Danh sách bot">
+      <div class="roster-head"><h2>Danh sách bot <span id="bot-count">(0)</span></h2><button class="icon-button" id="roster-create" type="button" title="Tạo bot mới">＋</button></div>
+      <label class="search"><span aria-hidden="true">⌕</span><input id="bot-search" type="search" placeholder="Tìm bot (tên, ID, map...)" autocomplete="off"></label>
+      <div id="bot-list" class="bot-list"><div class="empty-small">Chưa có bot</div></div>
+    </aside>
+
+    <main class="main" id="main-panel">
+      <section id="empty-view" class="empty-view">
+        <div class="empty-icon">♟</div><h1>Chọn một bot để xem hoạt động</h1><p>Trạng thái, thông tin nhân vật và log sẽ hiển thị tại đây.</p>
+        <button id="empty-create" class="button primary" type="button">＋ Tạo bot mới</button>
+      </section>
+
+      <section id="overview-view" hidden>
+        <header class="page-head">
+          <div class="title-wrap"><div class="bot-avatar">♟</div><div><div class="title-line"><h1 id="detail-name">Bot</h1><span id="detail-status" class="status-pill">STOPPED</span></div><p><span id="detail-identity">—</span> <span class="separator">|</span> Game server: <span id="detail-server">—</span></p></div></div>
+          <div class="head-actions"><button class="button outline-blue" data-command="start" type="button">↻ Khởi động</button><button class="button" data-command="stop" type="button">■ Dừng</button><button class="button danger" data-command="delete" type="button">♧ Xóa</button></div>
+        </header>
+        <div class="section-tabs"><button class="tab active" data-tab="overview" type="button">⌂ Tổng quan</button><button class="tab" data-tab="config" type="button">☷ Cấu hình</button><button class="tab" data-tab="character" type="button">♙ Nhân vật</button><button class="tab" data-tab="quest" type="button">⚑ Nhiệm vụ</button><button class="tab" data-tab="trade" type="button">⇄ Giao dịch</button><button class="tab" data-tab="logs" type="button">▤ Nhật ký</button></div>
+
+        <div id="summary-section">
+          <div class="activity card"><span class="activity-icon" aria-hidden="true">▣</span><div><strong id="detail-action">Chưa chạy</strong><small id="detail-action-detail">Hoạt động mới nhất của bot</small></div><span id="activity-badge" class="activity-badge">Đã dừng</span></div>
+          <div id="detail-error" class="error-banner" hidden></div>
+          <div class="stats-grid">
+            <div class="stat-card"><span class="stat-icon teal">⌖</span><div><small>Map</small><strong id="stat-map">—</strong></div></div>
+            <div class="stat-card"><span class="stat-icon rose">♡</span><div><small>HP</small><strong id="stat-hp">0 / 0</strong></div></div>
+            <div class="stat-card"><span class="stat-icon amber">ϟ</span><div><small>KI</small><strong id="stat-mp">0 / 0</strong></div></div>
+            <div class="stat-card"><span class="stat-icon gold">◉</span><div><small>Vàng</small><strong id="stat-gold">0</strong></div></div>
+            <div class="stat-card"><span class="stat-icon gray">☠</span><div><small>Mob chết</small><strong id="stat-kills">0</strong></div></div>
+            <div class="stat-card"><span class="stat-icon violet">▣</span><div><small>Nhặt</small><strong id="stat-picks">0</strong></div></div>
+            <div class="stat-card"><span class="stat-icon blue">🛒</span><div><small>Mua</small><strong id="stat-buys">0</strong></div></div>
+            <div class="stat-card"><span class="stat-icon violet">✦</span><div><small>Sức mạnh</small><strong id="stat-power">0</strong></div></div>
+            <div class="stat-card"><span class="stat-icon teal">◈</span><div><small>Tiềm năng</small><strong id="stat-potential">0</strong></div></div>
+          </div>
+          <div class="overview-grid">
+            <div class="card panel"><h2>Điều khiển nhanh</h2><div class="quick-grid"><button class="button success" data-command="start" type="button">▶ Chạy</button><button class="button" data-command="stop" type="button">■ Dừng</button><button class="button outline-blue" data-command="trade" type="button">⇄ Mời giao dịch</button><button class="button danger" data-command="delete" type="button">♧ Xóa bot</button></div></div>
+            <div class="card panel"><h2>Thông tin bot</h2><dl class="info-grid"><div><dt>Tên hiển thị</dt><dd id="info-name">—</dd></div><div><dt>Cổng</dt><dd id="info-port">—</dd></div><div><dt>Tài khoản</dt><dd id="info-account">—</dd></div><div><dt>Cộng chỉ số</dt><dd id="info-stat">—</dd></div><div><dt>Game server</dt><dd id="info-host">—</dd></div><div><dt>Tự tạo tài khoản</dt><dd id="info-register">—</dd></div><div><dt>Hệ nhân vật</dt><dd id="info-gender">—</dd></div><div class="wide"><dt>Nhiệm vụ</dt><dd id="info-task">—</dd></div></dl></div>
+          </div>
+        </div>
+
+        <section id="logs-section" class="card log-panel"><div class="log-head"><div><span class="log-symbol">▤</span><h2>Log bot</h2></div><div class="log-tools"><span id="log-path" class="log-path" title="Đường dẫn file log">—</span><label class="toggle-label">Tự cuộn <input id="auto-scroll" type="checkbox" checked><span class="toggle-track"></span></label></div></div><div id="event-log" class="event-log" tabindex="0"><div class="empty-small">Chưa có log</div></div></section>
+        <section id="config-section" class="card feature-panel" hidden><h2>Cấu hình tự động</h2><p>Bot tự làm nhiệm vụ, chọn bãi quái theo sức mạnh, đánh và nhặt đồ. Cài đặt dưới đây được lưu cho lần mở sau.</p><form id="config-form" class="feature-form"><div class="field-row"><label>Hệ khi tạo nhân vật<select name="gender"><option value="0">Trái Đất</option><option value="1">Namếc</option><option value="2">Xayda</option></select><small>Chỉ áp dụng khi tài khoản chưa có nhân vật.</small></label><label>Cộng chỉ số<select name="stat"><option value="balanced">Cân bằng</option><option value="attack">Sức đánh</option><option value="hp">HP</option><option value="mp">KI</option><option value="def">Giáp</option><option value="off">Tắt</option></select></label></div><div class="field-row"><label>ID vật phẩm hồi phục<input name="heal_item" type="number" min="0"></label><label>ID player giao dịch<input name="trade_partner" type="number" min="0"></label></div><div class="field-row"><label>Map shop<input name="shop_map" type="number" min="-1"></label><label>ID NPC shop<input name="shop_npc" type="number" min="-1"></label></div><div class="field-row"><label>Mục menu shop<input name="shop_menu" type="number" min="0"></label><label>ID món mua<input name="shop_item" type="number" min="0"></label></div><div class="field-row"><label>Mua khi dưới<input name="shop_min" type="number" min="0"></label><label>Mua tới số lượng<input name="shop_target" type="number" min="0"></label></div><div class="feature-footer"><span id="config-notice" role="status"></span><button class="button primary" type="submit">Lưu cấu hình</button></div></form></section>
+        <section id="character-section" class="card feature-panel" hidden><h2>Nhân vật</h2><div class="character-grid"><div><small>Tên nhân vật</small><strong id="character-name">—</strong></div><div><small>Sức mạnh</small><strong id="character-power">0</strong></div><div><small>Tiềm năng</small><strong id="character-potential">0</strong></div><div><small>Sức đánh</small><strong id="character-damage">0</strong></div><div><small>Giáp</small><strong id="character-defense">0</strong></div><div><small>Vị trí</small><strong id="character-location">—</strong></div></div><h3>Hành trang</h3><div id="character-bag" class="bag-list">Chưa có dữ liệu</div></section>
+        <section id="quest-section" class="card feature-panel" hidden><h2>Nhiệm vụ hiện tại</h2><div class="quest-name" id="quest-name">Chưa có dữ liệu</div><div class="quest-step" id="quest-step">—</div><div id="quest-progress" class="quest-progress" hidden><div id="quest-progress-bar"></div></div><p id="quest-hint" class="feature-hint">Bot sẽ ưu tiên quái của nhiệm vụ khi xác định được mục tiêu.</p></section>
+        <section id="trade-section" class="card feature-panel" hidden><h2>Giao dịch</h2><p>Nhập ID nhân vật đối tác. Bot có thể mời và hoàn tất giao dịch trống để kiểm thử luồng server.</p><form id="trade-form" class="feature-form"><label>ID player giao dịch<input name="trade_partner" type="number" min="1" required></label><div class="feature-footer"><span id="trade-notice" role="status"></span><button class="button primary" type="submit">Lưu đối tác</button><button class="button outline-blue" id="trade-invite" type="button">⇄ Mời giao dịch</button></div></form></section>
+      </section>
+
+      <section id="create-view" hidden>
+        <div class="create-head"><span class="eyebrow">QUẢN LÝ BOT</span><h1>Tạo bot mới</h1><p>Tạo một bot hoặc nhiều tài khoản theo dãy số. Cấu hình được lưu để dùng lại sau khi mở ứng dụng.</p></div>
+        <div class="mode-switch" role="group" aria-label="Kiểu tạo bot"><button type="button" id="mode-single" class="active">Một bot</button><button type="button" id="mode-batch">Tạo hàng loạt</button></div>
+        <form id="create-form" class="create-grid">
+          <div class="card form-card"><h2>Thông tin bot</h2><div class="form-body">
+            <div id="single-fields"><label>Tên hiển thị<input name="name" placeholder="bot 123" maxlength="40" required></label><label>Tài khoản<input name="username" placeholder="abc123" autocomplete="off" required></label></div>
+            <div id="batch-fields" hidden><div class="field-row"><label>Tiền tố tên bot<input name="name_prefix" value="bot" maxlength="30" placeholder="bot"></label><label>Tiền tố tài khoản<input name="username_prefix" placeholder="abc" autocomplete="off"></label></div><div class="field-row"><label>Số bắt đầu<input name="start_number" type="number" min="0" max="999999" value="1"></label><label>Số lượng bot<input name="count" type="number" min="1" max="50" value="5"></label></div><p id="batch-preview" class="help">Ví dụ: bot 1 → abc1</p></div>
+            <label>Mật khẩu tài khoản<input name="password" type="password" autocomplete="new-password" required><small>Dùng chung cho các tài khoản trong lô; 5–18 ký tự khi tự đăng ký.</small></label>
+            <div class="field-row"><label>Game server<input name="host" value="103.116.52.124" required></label><label>Cổng<input name="port" type="number" value="14445" min="1" max="65535" required></label></div>
+            <label>Hệ nhân vật<select name="gender"><option value="0">Trái Đất</option><option value="1">Namếc</option><option value="2">Xayda</option></select><small>Áp dụng khi bot tạo nhân vật mới; cả lô dùng cùng hệ đã chọn.</small></label>
+            <label class="checkbox"><input name="auto_register" type="checkbox" checked><span>Tự tạo tài khoản và nhân vật nếu chưa có</span></label>
+          </div></div>
+          <div class="card form-card"><h2>Hành vi tự động</h2><div class="form-body"><p class="help">Bot tự làm nhiệm vụ, tìm quái, đánh và nhặt đồ. Chọn cách cộng chỉ số; cấu hình shop nếu cần thử mua đồ.</p><label>Cộng chỉ số<select name="stat"><option value="balanced">Cân bằng</option><option value="attack">Sức đánh</option><option value="hp">HP</option><option value="mp">KI</option><option value="def">Giáp</option><option value="off">Tắt</option></select></label><details><summary>Tùy chọn shop và giao dịch</summary><div class="field-row"><label>ID vật phẩm hồi phục<input name="heal_item" type="number" min="0" placeholder="Để trống"></label><label>ID player giao dịch<input name="trade_partner" type="number" min="0" placeholder="Để trống"></label></div><div class="field-row"><label>Map shop<input name="shop_map" type="number" min="0" placeholder="Map hiện tại"></label><label>ID NPC shop<input name="shop_npc" type="number" min="0" placeholder="Để trống"></label></div><label>Mục menu shop<input name="shop_menu" type="number" min="0" value="0"></label><div class="field-row"><label>ID món mua<input name="shop_item" type="number" min="0" placeholder="Để trống"></label><label>Mua khi dưới<input name="shop_min" type="number" min="0" placeholder="VD: 2"></label></div><label>Mua tới số lượng<input name="shop_target" type="number" min="0" placeholder="VD: 10"></label></details></div></div>
+          <div class="form-footer"><div id="notice" role="status"></div><button class="button primary" type="submit" id="create-submit">＋ Tạo và chạy bot</button></div>
+        </form>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

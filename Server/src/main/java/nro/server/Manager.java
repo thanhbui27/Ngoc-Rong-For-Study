@@ -542,17 +542,17 @@ public class Manager {
                     + "FROM task_main_template JOIN task_sub_template ON task_main_template.id = "
                     + "task_sub_template.task_main_id");
             rs = ps.executeQuery();
-            int taskId = -1;
-            TaskMain task = null;
+            Map<Integer, TaskMain> tasksById = new HashMap<>();
             while (rs.next()) {
                 int id = rs.getInt("id");
-                if (id != taskId) {
-                    taskId = id;
+                TaskMain task = tasksById.get(id);
+                if (task == null) {
                     task = new TaskMain();
-                    task.id = taskId;
+                    task.id = id;
                     task.name = rs.getString("name");
                     task.detail = rs.getString("detail");
                     TASKS.add(task);
+                    tasksById.put(id, task);
                 }
                 SubTaskMain subTask = new SubTaskMain();
                 subTask.name = rs.getString("sub_name");

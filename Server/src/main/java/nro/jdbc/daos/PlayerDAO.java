@@ -195,7 +195,7 @@ public class PlayerDAO {
 
             JSONArray dataTask = new JSONArray();
             dataTask.add(0);
-            dataTask.add(20);
+            dataTask.add(0);
             dataTask.add(0);
             String task = dataTask.toJSONString();
 
