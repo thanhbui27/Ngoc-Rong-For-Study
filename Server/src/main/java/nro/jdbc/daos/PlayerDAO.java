@@ -122,6 +122,14 @@ public class PlayerDAO {
                     item.put("temp_id", 457);
                     item.put("create_time", System.currentTimeMillis());
                     item.put("quantity", 10);
+                } else if (i == 1) {
+                    // Đậu thần cấp 10 để nhân vật mới có thể hồi KI khi farm.
+                    option.add(2);
+                    option.add(256);
+                    options.add(option);
+                    item.put("temp_id", 595);
+                    item.put("create_time", System.currentTimeMillis());
+                    item.put("quantity", 10000);
                 } else {
                     item.put("temp_id", -1);
                     item.put("create_time", 0);
