@@ -219,15 +219,6 @@ public class Map implements Runnable {
                 case 23:
                     itemMap = new ItemMap(zone, 74, 1, 633, 320, -1);
                     break;
-                case 42:
-                    itemMap = new ItemMap(zone, 78, 1, 70, 288, -1);
-                    break;
-                case 43:
-                    itemMap = new ItemMap(zone, 78, 1, 70, 264, -1);
-                    break;
-                case 44:
-                    itemMap = new ItemMap(zone, 78, 1, 70, 288, -1);
-                    break;
                 case 85: // 1 sao đen
                     itemMap = new ItemMap(zone, 372, 1, 0, 0, -1);
                     break;

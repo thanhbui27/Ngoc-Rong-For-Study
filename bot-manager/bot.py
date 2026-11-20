@@ -16,12 +16,41 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from protocol import ItemMap, Reader, Wire, java_utf, parse_map, parse_player, parse_shop, parse_stats, parse_task, read_items
+from movement import MovementUtility
 from routes import Routes
 from storage import ConfigStore
 
 LOG_DIR = Path(__file__).resolve().parent / "logs"
 ROUTES = Routes()
+MOVEMENT = MovementUtility(ROUTES)
 PEA_ITEMS = (13, 60, 61, 62, 63, 64, 65, 352, 523, 595)
+XAYDA_ENERGY_SKILL_IDS = frozenset(range(56, 63))
+HOME_NPC_IDS = (0, 2, 1)  # Gohan, Moori, Paragus
+PLANET_MAPS = (
+    frozenset((*range(0, 7), 21, 24, 39, 42)),
+    frozenset((*range(7, 14), 22, 25, 40, 43)),
+    frozenset((*range(14, 21), 23, 26, 41, 44)),
+)
+NICKNAME_BASES = (
+    "Bao", "Bap", "Bin", "BoSu", "CuTi", "Duc", "Goku", "Huy", "Khanh",
+    "KemDau", "Kiet", "Linh", "MeoMun", "Minh", "MiuMiu", "Nam", "Ngoc",
+    "Phuc", "Quang", "TuanAnh",
+)
+
+
+def human_nickname(seed: str) -> str:
+    """Build a short, game-safe nickname that looks like a player handle."""
+    digest = hashlib.sha256(seed.casefold().encode("utf-8")).digest()
+    base = NICKNAME_BASES[digest[0] % len(NICKNAME_BASES)]
+    suffix = 100 + int.from_bytes(digest[1:3], "big") % 900
+    return f"{base}{suffix}"
+
+
+def character_nickname(config: BotConfig) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9]", "", config.name)
+    if 5 <= len(cleaned) <= 10 and not cleaned.casefold().startswith("bot"):
+        return cleaned
+    return human_nickname(config.username)
 
 
 class AuthenticationError(Exception):
@@ -66,6 +95,8 @@ class BotRunner:
         self.log_seq = 0
         self.player_id = 0
         self.gender = 0
+        self.head_id = -1
+        self.learned_skill_ids: set[int] = set()
         self.character = ""
         self.map_id = -1
         self.map_name = ""
@@ -83,6 +114,11 @@ class BotRunner:
         self.bag: dict[int, int] = {}
         self.bag_slots: dict[int, int] = {}
         self.box_slots: dict[int, int] = {}
+        self.bag_details: dict[int, dict] = {}
+        self.box_details: dict[int, dict] = {}
+        self.worn_details: dict[int, dict] = {}
+        self._pending_item_action: tuple[str, int, int] | None = None
+        self._item_feedback = ""
         self.shop: dict = {}
         self.task: dict = {}
         self.kills = 0
@@ -112,13 +148,24 @@ class BotRunner:
         self._travel_map = -1
         self._travel_attempts = 0
         self._travel_next = 0.0
+        self._travel_step: tuple[int, int, str] | None = None
+        self._travel_phase = ""
+        self._travel_npc = -1
+        self._travel_menu = -1
+        self._travel_blocked: dict[tuple[int, int, str], float] = {}
+        self._travel_progress_at = 0.0
+        self._travel_last_distance = 0
         self._empty_maps: set[int] = set()
         self._focused_mob: int | None = None
         self._mob_last_killed: dict[int, float] = {}
+        self._mob_attack_watch: dict[int, tuple[int, float]] = {}
         self._quest_target_templates: set[int] = set()
         self._reconnect_attempt = 0
         self._recovering = False
+        self._recover_hp_target = False
+        self._recover_mp_target = False
         self._recover_due = 0.0
+        self._pending_recovery_bean: tuple[int, int, int] | None = None
         self._tree_peas = -1
         self._tree_seconds = 0
         self._tree_menu_open = False
@@ -160,6 +207,7 @@ class BotRunner:
                 "host": self.config.host, "port": self.config.port, "mode": self.config.mode,
                 "stat": self.config.stat, "auto_register": self.config.auto_register,
                 "create_gender": self.config.gender, "gender": self.gender,
+                "head_id": self.head_id, "avatar_id": ROUTES.avatar_by_head.get(self.head_id, -1),
                 "reconnect_attempt": self._reconnect_attempt,
                 "status": self.status, "action": self.action,
                 "error": self.error, "player_id": self.player_id, "character": self.character,
@@ -172,7 +220,10 @@ class BotRunner:
                 "items": len(self.items), "task": self.task.get("name", ""),
                 "task_step": self.task.get("index", -1), "last_packet": self.last_packet,
                 "task_title": self._task_title(), "task_count": self.task.get("count", 0),
-                "bag": dict(self.bag), "shop_item": self.config.shop_item,
+                "bag": dict(self.bag), "bag_details": self._named_items(self.bag_details),
+                "box_details": self._named_items(self.box_details), "worn_details": self._named_items(self.worn_details),
+                "item_feedback": self._item_feedback,
+                "shop_item": self.config.shop_item,
                 "shop_map": self.config.shop_map, "shop_npc": self.config.shop_npc,
                 "shop_menu": self.config.shop_menu, "shop_min": self.config.shop_min,
                 "shop_target": self.config.shop_target, "trade_partner": self.config.trade_partner,
@@ -185,6 +236,14 @@ class BotRunner:
             if include_logs:
                 result["logs"] = list(self.logs)
             return result
+
+    @staticmethod
+    def _named_items(items: dict[int, dict]) -> dict[int, dict]:
+        return {item_id: {**item, "name": ROUTES.item_names.get(item_id, f"Vật phẩm #{item_id}"),
+                          "description": ROUTES.item_descriptions.get(item_id, item.get("description", "")),
+                          "type": ROUTES.item_types.get(item_id, -1),
+                          "icon_id": ROUTES.item_icon_ids.get(item_id, -1)}
+                for item_id, item in items.items()}
 
     def start(self) -> bool:
         with self._lock:
@@ -199,13 +258,23 @@ class BotRunner:
             self._trade_phase = 0
             self._travel_goal = self._travel_map = -1
             self._travel_attempts = 0
+            self._travel_step = None
+            self._travel_phase = ""
+            self._travel_npc = self._travel_menu = -1
+            self._travel_blocked.clear()
+            self._travel_next = self._travel_progress_at = 0
+            self._travel_last_distance = 0
             self._empty_maps.clear()
             self._focused_mob = None
             self._mob_last_killed.clear()
+            self._mob_attack_watch.clear()
             self._quest_target_templates.clear()
             self._reconnect_attempt = 0
             self._recovering = False
+            self._recover_hp_target = False
+            self._recover_mp_target = False
             self._recover_due = 0
+            self._pending_recovery_bean = None
             self._tree_peas = -1
             self._tree_seconds = 0
             self._tree_menu_open = False
@@ -217,11 +286,14 @@ class BotRunner:
             self.player_id = 0
             self.character = ""
             self.gender = self.config.gender
+            self.learned_skill_ids.clear()
             self.power = self.potential = self.gold = 0
             self.hp = self.mp = self.max_hp = self.max_mp = 0
             self.damage = self.defense = 0
             self.home_map = self.map_id = -1
-            self.mobs, self.npcs, self.items, self.bag, self.bag_slots, self.box_slots, self.shop, self.task = {}, {}, {}, {}, {}, {}, {}, {}
+            self.mobs, self.npcs, self.items, self.bag, self.bag_slots, self.box_slots = {}, {}, {}, {}, {}, {}
+            self.bag_details, self.box_details, self.worn_details, self.shop, self.task = {}, {}, {}, {}, {}
+            self._pending_item_action = None
             self.status = "connecting"
             self.error = ""
             self._thread = threading.Thread(target=self._run, name=f"Bot-{self.id}", daemon=True)
@@ -259,6 +331,60 @@ class BotRunner:
         self._send(-86, bytes([0]) + struct.pack(">i", self.config.trade_partner))
         self.log(f"Mời giao dịch trống với player {self.config.trade_partner}")
 
+    def item_action(self, action: str, location: str, item_id: int) -> None:
+        if self.status != "running":
+            raise ValueError("Bot phải đang chạy để thao tác vật phẩm")
+        if location == "box":
+            slot = self.box_details.get(item_id, {}).get("slot")
+            if slot is None or action not in ("take", "take_use", "take_throw", "take_equip"):
+                raise ValueError("Không tìm thấy vật phẩm trong rương")
+            self._send(-40, bytes([0, slot]))
+            if action in ("take_use", "take_throw", "take_equip"):
+                self._pending_item_action = (action, item_id, 0)
+            self.log(f"Chuyển {self.box_details[item_id].get('info') or f'vật phẩm #{item_id}'} từ rương vào túi")
+            return
+        if location == "worn":
+            if action != "unequip" or item_id not in self.worn_details:
+                raise ValueError("Trang bị này không thể tháo")
+            slot = self.worn_details[item_id]["slot"]
+            self._send(-40, bytes([5, slot]))
+            self.log(f"Tháo {self.worn_details[item_id].get('info') or f'vật phẩm #{item_id}'} vào túi")
+            return
+        if location != "bag" or item_id not in self.bag_details:
+            raise ValueError("Không tìm thấy vật phẩm trong túi")
+        slot = self.bag_details[item_id]["slot"]
+        if action == "equip":
+            item_type = ROUTES.item_types.get(item_id, -1)
+            if item_type not in (0, 1, 2, 3, 4):
+                raise ValueError("Vật phẩm này không phải trang bị")
+            self._send(-40, bytes([4, slot]))
+            self.log(f"Mặc {ROUTES.item_names.get(item_id, f'vật phẩm #{item_id}')}")
+            return
+        if action == "use":
+            self._item_feedback = "Đã gửi yêu cầu sử dụng; chờ server phản hồi."
+            self._pending_item_action = ("use", 1, slot)
+            self._send(-43, bytes([0, 1, slot]))
+            self.log(f"Dùng {self.bag_details[item_id].get('info') or f'vật phẩm #{item_id}'}")
+        elif action == "throw":
+            self._item_feedback = "Đã gửi yêu cầu bỏ vật phẩm."
+            self._pending_item_action = ("throw", 1, slot)
+            self._send(-43, bytes([1, 1, slot]))
+            self.log(f"Bỏ {self.bag_details[item_id].get('info') or f'vật phẩm #{item_id}'}")
+        else:
+            raise ValueError("Thao tác vật phẩm không hợp lệ")
+
+    def request_box(self) -> None:
+        if self.status != "running":
+            raise ValueError("Bot phải đang chạy để mở rương")
+        home = 21 + self.gender
+        if self.map_id != home:
+            raise ValueError(f"Rương chỉ mở được ở nhà (map {home}); bot đang ở map {self.map_id}")
+        npc = self.npcs.get(3)
+        if npc is None or (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
+            raise ValueError("Bot cần đứng gần rương đồ trong nhà")
+        self._send(33, struct.pack(">h", 3))
+        self.log("Mở rương đồ để tải vật phẩm")
+
     def _reset_session(self) -> None:
         self._ready = self._client_ok = self._finish_sent = False
         self._auth_phase = ""
@@ -272,12 +398,21 @@ class BotRunner:
         self._travel_goal = self._travel_map = -1
         self._travel_attempts = 0
         self._travel_next = 0
+        self._travel_step = None
+        self._travel_phase = ""
+        self._travel_npc = self._travel_menu = -1
+        self._travel_blocked.clear()
+        self._travel_progress_at = self._travel_last_distance = 0
         self._empty_maps.clear()
         self._focused_mob = None
         self._mob_last_killed.clear()
+        self._mob_attack_watch.clear()
         self._quest_target_templates.clear()
         self._recovering = False
+        self._recover_hp_target = False
+        self._recover_mp_target = False
         self._recover_due = 0
+        self._pending_recovery_bean = None
         self._tree_peas = -1
         self._tree_seconds = 0
         self._tree_menu_open = False
@@ -285,11 +420,14 @@ class BotRunner:
         self.player_id = 0
         self.character = ""
         self.gender = self.config.gender
+        self.learned_skill_ids.clear()
         self.hp = self.mp = self.max_hp = self.max_mp = 0
         self.gold = self.power = self.potential = 0
         self.damage = self.defense = 0
         self.home_map = self.map_id = -1
         self.mobs, self.npcs, self.items, self.bag, self.bag_slots, self.box_slots, self.shop, self.task = {}, {}, {}, {}, {}, {}, {}, {}
+        self.bag_details = self.box_details = self.worn_details = {}
+        self._pending_item_action = None
 
     def _run(self) -> None:
         while not self._stop.is_set():
@@ -369,7 +507,7 @@ class BotRunner:
             elif command == -30:
                 self._subcommand(payload)
             elif command == 2 and self._auth_phase == "login":
-                self._character_name = "b" + hashlib.sha256(self.config.username.encode()).hexdigest()[:9]
+                self._character_name = character_nickname(self.config)
                 self._send(-28, bytes([2]) + java_utf(self._character_name) + bytes([self.config.gender, (64, 9, 6)[self.config.gender]]))
                 self.set_action("Tạo nhân vật")
                 self.log(f"Tài khoản chưa có nhân vật; đã gửi tạo nhân vật {self._character_name}")
@@ -388,6 +526,7 @@ class BotRunner:
                     self.mobs, self.npcs, self.items = data["mobs"], data["npcs"], data["items"]
                     self._focused_mob = None
                     self._mob_last_killed.clear()
+                    self._mob_attack_watch.clear()
                     self.waypoints = data["waypoints"]
                     self._ready = True
                     self._auth_phase = "ready"
@@ -396,17 +535,46 @@ class BotRunner:
                     self._reconnect_attempt = 0
                     self._travel_attempts = 0
                     self._travel_map = self.map_id
+                    self._travel_step = None
+                    self._travel_phase = ""
+                    self._travel_npc = self._travel_menu = -1
                 self._send(-39)
                 if not self._client_ok:
                     self._client_ok = True
                     self._send(-28, bytes([13]))
                 self._shop_phase = 0
                 self.log(f"Vào map {self.map_id} {self.map_name}, khu {self.zone}; {len(self.mobs)} quái")
+            elif command == 46:
+                with self._lock:
+                    self.x, self.y = reader.i16(), reader.i16()
+            elif command == 32:
+                npc_id, _ = reader.i16(), reader.utf()
+                option_count = reader.u8()
+                for _ in range(option_count):
+                    reader.utf()
+                step = self._travel_step
+                if (step and step[2] == "spaceship" and self._travel_phase == "menu"
+                        and npc_id == self._travel_npc):
+                    if 0 <= self._travel_menu < option_count:
+                        self._send(32, struct.pack(">hb", npc_id, self._travel_menu))
+                        self._travel_phase = "wait"
+                        self._travel_next = time.monotonic() + 8
+                        self.set_action(f"Đã chọn tàu từ map {step[0]} tới map {step[1]}")
+                    else:
+                        self._block_travel_step(time.monotonic(), "Menu tàu không có lựa chọn đích")
+            elif command == 38:
+                if self._travel_step and self._travel_step[2] == "spaceship" and self._travel_phase == "menu":
+                    npc_id = reader.i16()
+                    notice = reader.utf() if reader.pos < len(payload) else "NPC không mở menu tàu"
+                    self._block_travel_step(time.monotonic(), f"NPC {npc_id} từ chối vận chuyển: {notice[:100]}")
             elif command == -9:
                 mob_id, hp = reader.u8(), reader.i32()
                 with self._lock:
                     if mob_id in self.mobs:
-                        self.mobs[mob_id].hp = hp
+                        mob = self.mobs[mob_id]
+                        if mob.hp != hp:
+                            self._mob_attack_watch[mob_id] = (hp, time.monotonic())
+                        mob.hp = hp
             elif command == -12:
                 mob_id = reader.u8()
                 reader.raw(5)  # damage and critical flag
@@ -426,9 +594,22 @@ class BotRunner:
                 mob_id, template, level, hp = reader.u8(), reader.u8(), reader.u8(), reader.i32()
                 with self._lock:
                     if mob_id in self.mobs:
-                        self.mobs[mob_id].hp = hp
+                        mob = self.mobs[mob_id]
+                        if mob.hp != hp:
+                            self._mob_attack_watch[mob_id] = (hp, time.monotonic())
+                        mob.hp = hp
                         self.mobs[mob_id].template_id = template
                         self.mobs[mob_id].boss_level = level
+            elif command == 68:
+                item_map_id, item_id = reader.u16(), reader.u16()
+                x, y, owner_id = reader.i16(), reader.i16(), reader.i32()
+                if owner_id == -2 and reader.pos + 2 <= len(payload):
+                    reader.u16()  # range for items shared with everyone
+                item = ItemMap(item_map_id, item_id, x, y, owner_id)
+                with self._lock:
+                    self.items[item_map_id] = item
+                item_name = ROUTES.item_names.get(item_id, f"vật phẩm ID {item_id}")
+                self.log(f"Vật phẩm rơi: {item_name} (map ID {item_map_id}, chủ sở hữu {owner_id})")
             elif command in (-21, -20):
                 item_map_id = reader.u16()
                 with self._lock:
@@ -440,16 +621,61 @@ class BotRunner:
             elif command == -36:
                 if reader.u8() == 0:
                     slots: dict[int, int] = {}
-                    bag = read_items(reader, slots)
+                    details: dict[int, dict] = {}
+                    bag = read_items(reader, slots, details)
                     with self._lock:
                         self.bag = bag
                         self.bag_slots = slots
+                        self.bag_details = details
+                    recovery_bean = self._pending_recovery_bean
+                    if recovery_bean:
+                        item_id, count_before, level = recovery_bean
+                        if bag.get(item_id, 0) < count_before:
+                            self._pending_recovery_bean = None
+                            self.log(f"Server xác nhận đã ăn đậu thần cấp {level}; còn {bag.get(item_id, 0)} hạt")
+                    pending = self._pending_item_action
+                    if pending and pending[0] in ("take_use", "take_throw", "take_equip"):
+                        item_id = pending[1]
+                        slot = self.bag_details.get(item_id, {}).get("slot")
+                        if slot is not None:
+                            action = "use" if pending[0] == "take_use" else "throw" if pending[0] == "take_throw" else "equip"
+                            if action == "equip":
+                                self._send(-40, bytes([4, slot]))
+                            else:
+                                self._pending_item_action = (action, 1, slot)
+                                self._send(-43, bytes([0 if action == "use" else 1, 1, slot]))
+                            self.log(f"{'Dùng' if action == 'use' else 'Bỏ' if action == 'throw' else 'Mặc'} vật phẩm vừa chuyển vào túi (ID: {item_id})")
+                        else:
+                            self._pending_item_action = None
+            elif command == -37:
+                if reader.u8() == 0:
+                    reader.raw(2)  # head
+                    details: dict[int, dict] = {}
+                    read_items(reader, details=details)
+                    with self._lock:
+                        self.worn_details = details
             elif command == -35:
                 if reader.u8() == 0:
                     slots: dict[int, int] = {}
-                    read_items(reader, slots)
+                    details: dict[int, dict] = {}
+                    read_items(reader, slots, details)
                     with self._lock:
                         self.box_slots = slots
+                        self.box_details = details
+            elif command == -43:
+                kind, where, slot = reader.u8(), reader.u8(), reader.u8()
+                prompt = reader.utf() if reader.pos < len(payload) else ""
+                pending = self._pending_item_action
+                if pending and pending[1:] == (where, slot) and kind == 1 and pending[0] == "throw":
+                    self._send(-43, bytes([2, where, slot]))
+                    self._pending_item_action = None
+                    self.log("Server xác nhận bỏ vật phẩm")
+                elif pending and pending[1:] == (where, slot) and kind == 0 and pending[0] == "use":
+                    self._send(-43, bytes([3, where, slot]))
+                    self._pending_item_action = None
+                    self.log("Server xác nhận sử dụng vật phẩm")
+                elif prompt:
+                    self.log("Server yêu cầu xác nhận vật phẩm: " + prompt[:160])
             elif command == -34:
                 kind = reader.u8()
                 if kind == 0:
@@ -472,6 +698,26 @@ class BotRunner:
                     self.log(f"Thu hoạch xong; cây còn {self._tree_peas} hạt")
             elif command == 40:
                 task = parse_task(payload)
+                # The server template still resolves MAP_VACH_NUI to 39–41, which
+                # are dead ends without the baby item. The quest item is on 42–44.
+                if task["task_id"] == 3 and task["index"] == 1 and task["index"] < len(task["steps"]):
+                    gender = self.gender if self.gender in (0, 1, 2) else self.config.gender
+                    task["steps"][task["index"]]["map_id"] = 42 + gender
+                # The server DB stores map 0 for this race-specific flying-mob
+                # step, so route directly to each planet's intended hunting map.
+                if task["task_id"] == 7 and task["index"] < len(task["steps"]):
+                    gender = self.gender if self.gender in (0, 1, 2) else self.config.gender
+                    step = task["steps"][task["index"]]
+                    if task["index"] == 0:
+                        step["map_id"] = -1
+                    elif task["index"] == 1:
+                        step["map_id"] = (3, 11, 17)[gender]
+                    elif task["index"] == 2:
+                        step["map_id"] = (0, 7, 14)[gender]
+                        step["npc_id"] = 7 + gender
+                    elif task["index"] == 3:
+                        step["map_id"] = 21 + gender
+                        step["npc_id"] = HOME_NPC_IDS[gender]
                 with self._lock:
                     self.task = task
                     self._quest_step_done = ""
@@ -510,6 +756,8 @@ class BotRunner:
                 try:
                     notice = reader.utf()
                     self.log("Server: " + notice[:200])
+                    if self._pending_item_action:
+                        self._item_feedback = notice[:200]
                     self._auth_notice(notice)
                 except (ValueError, UnicodeError):
                     self.log(f"Server thông báo cmd {command}")
@@ -551,7 +799,10 @@ class BotRunner:
             info = parse_player(payload)
             with self._lock:
                 for key, value in info.items():
-                    setattr(self, key, value)
+                    if key == "skill_ids":
+                        self.learned_skill_ids = set(value)
+                    else:
+                        setattr(self, key, value)
             self.log(f"Nhân vật {self.character} (ID {self.player_id}) đã vào game")
         elif sub == 4:
             with self._lock:
@@ -573,6 +824,11 @@ class BotRunner:
         index = self.task.get("index", -1)
         steps = self.task.get("steps", [])
         return steps[index].get("title", "") if 0 <= index < len(steps) else ""
+
+    @staticmethod
+    def _npc_label(npc_id: int) -> str:
+        name = ROUTES.npc_names.get(npc_id)
+        return f"{name} (ID: {npc_id})" if name else f"NPC (ID: {npc_id})"
 
     def _trade_packet(self, reader: Reader) -> None:
         action = reader.u8()
@@ -618,9 +874,10 @@ class BotRunner:
             self._send(-15)
             self._next_action = now + 5
             return
-        if self.config.stat != "off" and now >= self._next_stat:
+        needs_potential_for_quest = self.task.get("task_id") == 3 and self.task.get("index") == 0
+        if (self.config.stat != "off" or needs_potential_for_quest) and now >= self._next_stat:
             self._next_stat = now + 3
-            self._upgrade_stat()
+            self._upgrade_stat(force=needs_potential_for_quest)
         if self._recover(now):
             return
         if self.config.heal_item > 0 and self.bag.get(self.config.heal_item, 0) > 0 and self.max_hp and self.hp * 100 < self.max_hp * 35 and now >= self._next_heal and self.config.heal_item in self.bag_slots:
@@ -675,39 +932,80 @@ class BotRunner:
                             -((mob.x - self.x) ** 2 + (mob.y - self.y) ** 2)))
         self._focused_mob = target.mob_id
         mob_name = ROUTES.mob_names.get(target.template_id, f"loại {target.template_id}")
-        if abs(target.x - self.x) > 55 or abs(target.y - self.y) > 55:
+        distance_squared = (target.x - self.x) ** 2 + (target.y - self.y) ** 2
+        # The game server rejects attacks beyond Skill.RANGE_ATTACK_CHIEU_DAM (50 px).
+        # Approach to 40 px to allow for coordinate rounding and movement updates.
+        if distance_squared > 40 ** 2:
             self._move_towards(target.x, target.y)
-            self.set_action(f"Đang đi tới quái {mob_name} (ID {target.mob_id})")
+            self.set_action(f"Đang áp sát quái {mob_name} (ID {target.mob_id})")
         else:
+            watch = self._mob_attack_watch.get(target.mob_id)
+            if watch is None or watch[0] != target.hp:
+                self._mob_attack_watch[target.mob_id] = (target.hp, now)
+            elif now - watch[1] >= 8:
+                # A focused mob with unchanged HP usually means the server considered
+                # the client out of range. Move directly toward it and retry.
+                self._mob_attack_watch[target.mob_id] = (target.hp, now)
+                self._move_towards(target.x, target.y)
+                self.set_action(f"Quái {mob_name} (ID {target.mob_id}) chưa mất HP; áp sát lại")
+                return
             self._send(54, bytes([target.mob_id]))
             self.set_action(f"Đang đánh quái {mob_name} (ID {target.mob_id}, HP {target.hp})")
 
     def _recover(self, now: float) -> bool:
-        if self.max_mp <= 0:
-            return False
-        low_ki = self.mp <= max(5, self.max_mp // 10)
-        if not self._recovering and not low_ki:
-            return False
-        if self._recovering and self.mp >= max(10, self.max_mp // 2):
+        low_hp = self.max_hp > 0 and self.hp * 100 <= self.max_hp * 35
+        low_ki = self.max_mp > 0 and self.mp * 100 <= self.max_mp * 20
+        if not self._recovering:
+            if not low_hp and not low_ki:
+                return False
+            self._recovering = True
+            self._recover_hp_target = low_hp
+            self._recover_mp_target = low_ki
+        if self._recover_hp_target and self.hp * 100 >= self.max_hp * 60:
+            self._recover_hp_target = False
+        if self._recover_mp_target and self.mp * 100 >= self.max_mp * 60:
+            self._recover_mp_target = False
+        if not self._recover_hp_target and not self._recover_mp_target:
             self._recovering = False
             self._harvest_attempts = 0
-            self.set_action("KI đã hồi; quay lại farm")
+            self.set_action("HP/KI đã hồi; quay lại farm")
             return False
-        self._recovering = True
         self._focused_mob = None
         if now < self._recover_due:
             return True
-        pea = next((item for item in PEA_ITEMS if self.bag.get(item, 0) > 0 and item in self.bag_slots), None)
-        if pea is not None:
-            self._send(-43, bytes([0, 1, self.bag_slots[pea]]))
+
+        # The server consumes the first bean in bag order, so select that slot
+        # and report the level that will actually be eaten.
+        peas = [(slot, item_id) for item_id, slot in self.bag_slots.items()
+                if item_id in PEA_ITEMS and self.bag.get(item_id, 0) > 0]
+        if peas:
+            slot, pea = min(peas)
+            level = PEA_ITEMS.index(pea) + 1
+            self._pending_recovery_bean = (pea, self.bag.get(pea, 0), level)
+            self._send(-43, bytes([0, 1, slot]))
             self._recover_due = now + 2
-            self.set_action(f"Ăn đậu thần cấp {PEA_ITEMS.index(pea) + 1} để hồi KI")
+            reason = "HP/KI thấp" if self._recover_hp_target and self._recover_mp_target else "HP thấp" if self._recover_hp_target else "KI thấp"
+            self.set_action(f"Ăn đậu thần cấp {level} ({reason})")
             return True
+
+        if self.config.heal_item > 0 and self.bag.get(self.config.heal_item, 0) > 0 and self.config.heal_item in self.bag_slots:
+            self._send(-43, bytes([0, 1, self.bag_slots[self.config.heal_item]]))
+            self._recover_due = now + 4
+            self.set_action(f"Dùng vật phẩm hồi phục {self.config.heal_item}")
+            return True
+
+        if self.gender == 2 and self.learned_skill_ids.intersection(XAYDA_ENERGY_SKILL_IDS):
+            self._send(34, struct.pack(">h", 8))
+            self._send(-45, bytes([1]))
+            self._recover_due = now + 8
+            self.set_action("Dùng skill Tái tạo năng lượng của Xayda")
+            return True
+
         home = 21 + self.gender
         if self.map_id != home:
             self._send(-15)
             self._recover_due = now + 5
-            self.set_action("Hết KI; về nhà thu hoạch đậu")
+            self.set_action("Thiếu đồ hồi phục; về nhà thu hoạch đậu")
             return True
         if self._tree_menu_open:
             self._send(22, bytes([0, 0]))
@@ -740,8 +1038,10 @@ class BotRunner:
         self._send(-7, bytes([0]) + struct.pack(">hh", x, y))
         self.x, self.y = x, y
 
-    def _upgrade_stat(self) -> None:
+    def _upgrade_stat(self, force: bool = False) -> None:
         choices = {"balanced": (0, 1, 2, 3), "hp": (0,), "mp": (1,), "attack": (2,), "def": (3,)}.get(self.config.stat, ())
+        if force and not choices:
+            choices = (0, 1, 2, 3)
         for offset in range(len(choices)):
             stat = choices[(self._stat_cursor + offset) % len(choices)]
             cost = (self.base_hp + 1000, self.base_mp + 1000, self.base_damage * 100,
@@ -830,17 +1130,17 @@ class BotRunner:
         if task_id == 0 and index == 3:
             npc = self.npcs.get(3)
             if npc is None:
-                self.set_action("Nhiệm vụ 0: chờ rương đồ trong nhà")
+                self.set_action(f"Nhiệm vụ 0: chờ {self._npc_label(3)}")
                 return True
             if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
                 self._move_towards(*npc)
-                self.set_action("Nhiệm vụ 0: đi tới rương đồ")
+                self.set_action(f"Nhiệm vụ 0: đi tới {self._npc_label(3)}")
                 return True
             if not self.box_slots:
                 if now >= self._quest_request_due:
                     self._send(33, struct.pack(">h", 3))
                     self._quest_request_due = now + 3
-                self.set_action("Nhiệm vụ 0: mở rương đồ")
+                self.set_action(f"Nhiệm vụ 0: mở {self._npc_label(3)}")
                 return True
             if now >= self._quest_request_due:
                 self._send(-40, bytes([0, min(self.box_slots.values())]))
@@ -859,9 +1159,46 @@ class BotRunner:
                 self._quest_request_due = now + 3
             self.set_action("Nhiệm vụ 0: mở cây đậu")
             return True
+        if task_id == 4 and index in (0, 1, 2):
+            if self._quest_planet(target=index, now=now):
+                return True
         npc_id = step["npc_id"]
         if npc_id < 0:
             title = step.get("title", "").casefold()
+            if task_id == 11 and index == 0:
+                npc_id = 13 + self.gender
+            elif task_id == 11 and index == 1:
+                npc_id = HOME_NPC_IDS[self.gender]
+            elif task_id == 7 and index == 2:
+                npc_id = 7 + self.gender
+            elif task_id == 7 and index == 3:
+                npc_id = HOME_NPC_IDS[self.gender]
+            elif task_id == 12 and index == 0:
+                self.set_action("Chờ được mời vào bang hội để tiếp tục nhiệm vụ")
+                return True
+            elif task_id == 12 and index == 1:
+                npc_id = 13 + self.gender
+            elif task_id == 16:
+                self.set_action("Nhiệm vụ cần thắng thách đấu PvP với người chơi khác")
+                return True
+            if npc_id >= 0:
+                key = f"{task_id}:{index}"
+                if self._quest_step_done == key and now < self._quest_request_due:
+                    self.set_action(f"Chờ server xác nhận nhiệm vụ NPC {npc_id}")
+                    return True
+                npc = self.npcs.get(npc_id)
+                if npc is None:
+                    self.set_action(f"Chờ {self._npc_label(npc_id)} nhiệm vụ")
+                    return True
+                if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
+                    self._move_towards(*npc)
+                    self.set_action(f"Đi tới {self._npc_label(npc_id)} nhiệm vụ")
+                    return True
+                self._send(33, struct.pack(">h", npc_id))
+                self._quest_step_done = key
+                self._quest_request_due = now + 5
+                self.set_action(f"Nói chuyện với {self._npc_label(npc_id)}")
+                return True
             if title.startswith(("tiêu diệt", "diệt ", "đánh ", "hạ ")):
                 matches = {template for template, name in ROUTES.mob_names.items() if name.casefold() in title}
                 if matches:
@@ -877,46 +1214,141 @@ class BotRunner:
             return True
         npc = self.npcs.get(npc_id)
         if npc is None:
-            self.set_action(f"Chờ NPC nhiệm vụ {npc_id}")
+            self.set_action(f"Chờ {self._npc_label(npc_id)} nhiệm vụ")
             return True
         if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
             self._move_towards(*npc)
-            self.set_action(f"Đi tới NPC nhiệm vụ {npc_id}")
+            self.set_action(f"Đi tới {self._npc_label(npc_id)} nhiệm vụ")
             return True
         self._send(33, struct.pack(">h", npc_id))
         self._quest_step_done = key
         self._quest_request_due = now + 5
-        self.set_action(f"Nói chuyện NPC nhiệm vụ {npc_id}")
+        self.set_action(f"Nói chuyện với {self._npc_label(npc_id)}")
         return True
+
+    def _quest_planet(self, target: int, now: float) -> bool:
+        """Keep challenge-quest farming on its target planet."""
+        if self.map_id in PLANET_MAPS[target]:
+            if self._quest_step_done.startswith("planet:"):
+                self._quest_step_done = ""
+                self._quest_request_due = 0
+            return False
+        return self._travel_to(24 + target, now)
+
+    def _block_travel_step(self, now: float, reason: str) -> None:
+        edge = self._travel_step
+        if edge:
+            self._travel_blocked[edge] = now + 30
+        self._travel_step = None
+        self._travel_phase = ""
+        self._travel_npc = self._travel_menu = -1
+        self._travel_attempts = 0
+        self.set_action(reason + "; thử tuyến khác")
 
     def _travel_to(self, goal: int, now: float) -> bool:
         if goal == self.map_id:
+            self._travel_goal = goal
+            self._travel_step = None
+            self._travel_attempts = 0
+            self._travel_phase = ""
+            self._travel_npc = self._travel_menu = -1
             return False
-        waypoint = ROUTES.next_hop(self.map_id, goal)
-        if waypoint is None:
-            self.set_action(f"Đứng yên: không có đường từ map {self.map_id} tới {goal}")
+
+        if self._travel_goal != goal:
+            self._travel_goal = goal
+            self._travel_step = None
+            self._travel_attempts = 0
+            self._travel_blocked.clear()
+            self._travel_phase = ""
+            self._travel_npc = self._travel_menu = -1
+        self._travel_blocked = {edge: expiry for edge, expiry in self._travel_blocked.items()
+                                if expiry > now}
+        blocked = set(self._travel_blocked)
+        step = MOVEMENT.next_step(self.map_id, goal, blocked)
+        if step is None:
+            self.set_action(f"Chưa có tuyến hợp lệ từ map {self.map_id} tới {goal}; đang chờ thử lại")
+            self._travel_next = now + 10
             return True
-        live = next((wp for wp in self.waypoints if tuple(wp["bounds"]) == waypoint["bounds"]), None)
+
+        edge = (step["from_map"], step["go_map"], step["kind"])
+        if edge != self._travel_step:
+            self._travel_step = edge
+            self._travel_attempts = 0
+            self._travel_phase = ""
+            self._travel_npc = step.get("npc_id", -1)
+            self._travel_menu = step.get("menu", -1)
+            self._travel_progress_at = now
+            self._travel_last_distance = 0
+
+        if step["kind"] == "spaceship":
+            npc_id = step["npc_id"]
+            npc = self.npcs.get(npc_id)
+            if npc is None:
+                self.set_action(f"Chờ {self._npc_label(npc_id)} tại trạm tàu map {self.map_id}")
+                return True
+            if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
+                self._move_towards(*npc)
+                self.set_action(f"Đi tới {self._npc_label(npc_id)} để sang map {step['go_map']}")
+                return True
+            if self._travel_phase == "menu":
+                if now < self._travel_next:
+                    self.set_action(f"Chờ xác nhận menu tàu tới map {step['go_map']}")
+                    return True
+                self._block_travel_step(now, f"NPC {self._npc_label(npc_id)} không mở menu tàu")
+                return True
+            if self._travel_phase == "wait":
+                if now < self._travel_next:
+                    self.set_action(f"Chờ tàu tới map {step['go_map']}")
+                    return True
+                self._travel_attempts += 1
+                if self._travel_attempts >= 2:
+                    self._block_travel_step(now, f"Tàu không chuyển map tới {step['go_map']}")
+                    return True
+            self._send(33, struct.pack(">h", npc_id))
+            self._travel_phase = "menu"
+            self._travel_next = now + 5
+            self.set_action(f"Xin menu tàu từ map {self.map_id} tới map {step['go_map']}")
+            return True
+
+        live = next((wp for wp in self.waypoints
+                     if tuple(wp["bounds"]) == tuple(step["bounds"])), None)
         if live is None:
-            self.set_action(f"Đứng yên: không thấy cổng sang map {waypoint['go_map']}")
+            self._travel_blocked[edge] = now + 30
+            self._travel_step = None
+            self.set_action(f"Không thấy cổng map {self.map_id} → {step['go_map']}; đổi tuyến")
             return True
+
         if self._travel_goal != goal or self._travel_map != self.map_id:
-            self._travel_goal, self._travel_map = goal, self.map_id
+            self._travel_map = self.map_id
             self._travel_attempts = 0
             self._travel_next = 0
         x1, y1, x2, y2 = live["bounds"]
         x, y = (x1 + x2) // 2, (y1 + y2) // 2
         if abs(x - self.x) > 12 or abs(y - self.y) > 12:
+            distance = (x - self.x) ** 2 + (y - self.y) ** 2
+            if distance < self._travel_last_distance:
+                self._travel_last_distance = distance
+                self._travel_progress_at = now
+            elif now - self._travel_progress_at >= 12:
+                self._travel_blocked[edge] = now + 30
+                self._travel_step = None
+                self.set_action(f"Không tiến được tới cổng map {step['go_map']}; thử đường khác")
+                return True
+            if not self._travel_last_distance:
+                self._travel_last_distance = distance
             self._move_towards(x, y)
-            self.set_action(f"Đang đi tới cổng sang map {waypoint['go_map']}")
+            self.set_action(f"Đang đi tới cổng sang map {step['go_map']}")
             return True
         if now >= self._travel_next and self._travel_attempts < 3:
             self._send(-23)
             self._travel_attempts += 1
             self._travel_next = now + 5
-            self.set_action(f"Đang qua cổng tới map {waypoint['go_map']} (lần {self._travel_attempts})")
+            self.set_action(f"Đang qua cổng tới map {step['go_map']} (lần {self._travel_attempts})")
         elif self._travel_attempts >= 3 and now >= self._travel_next:
-            self.set_action(f"Đứng yên: kẹt tại cổng sang map {waypoint['go_map']}")
+            self._travel_blocked[edge] = now + 30
+            self._travel_step = None
+            self._travel_attempts = 0
+            self.set_action(f"Cổng tới map {step['go_map']} không phản hồi; thử đường khác")
         return True
 
 
@@ -991,6 +1423,19 @@ class BotManager:
         with self._lock:
             self._bots.pop(bot_id, None)
             self._save()
+
+    def remove_all(self) -> int:
+        with self._lock:
+            bots = list(self._bots.values())
+            self._bots.clear()
+            try:
+                self._save()
+            except Exception:
+                self._bots.update((bot.id, bot) for bot in bots)
+                raise
+        for bot in bots:
+            bot.close()
+        return len(bots)
 
     def update_config(self, bot_id: str, config: BotConfig) -> BotRunner:
         with self._lock:

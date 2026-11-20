@@ -30,7 +30,6 @@ public class ItemMap {
     public boolean isBlackBall;
     public boolean isNamecBall;
     public boolean isPickedUp;
-
     public boolean isDoanhTraiBall;
 
     public ItemMap(Zone zone, int tempId, int quantity, int x, int y, long playerId) {
@@ -105,7 +104,9 @@ public class ItemMap {
                 ItemMapService.gI().removeItemMapAndSendClient(this);
             }
         }
-        if (Util.canDoWithTime(createTime, 15000)) {
+        boolean personalBabyQuestItem = this.itemTemplate.id == 78
+                && this.zone.map.mapId >= 42 && this.zone.map.mapId <= 44;
+        if (!personalBabyQuestItem && Util.canDoWithTime(createTime, 15000)) {
             this.playerId = -1;
         }
     }

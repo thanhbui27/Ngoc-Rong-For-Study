@@ -47,23 +47,46 @@ function setCreateMode(mode) {
 function previewBatch() {
   const form = $('create-form');
   const prefix = form.elements.username_prefix.value.trim() || 'abc';
-  const name = form.elements.name_prefix.value.trim() || 'bot';
   const first = Number(form.elements.start_number.value || 1);
   const count = Number(form.elements.count.value || 1);
-  $('batch-preview').textContent = `Sẽ tạo ${count} bot: ${name} ${first} → ${prefix}${first}` + (count > 1 ? `, …, ${name} ${first + count - 1} → ${prefix}${first + count - 1}` : '');
+  $('batch-preview').textContent = `Sẽ tự đặt nickname riêng cho từng bot (ví dụ: MiuMiu483, TuanAnh721); tài khoản: ${prefix}${first}` + (count > 1 ? ` → ${prefix}${first + count - 1}` : '');
 }
 
 function renderList() {
   $('bot-count').textContent = `(${bots.length})`;
+  $('start-all').disabled = bots.length === 0 || bots.every(bot => ['running','connecting','reconnecting'].includes(bot.status));
+  $('stop-all').disabled = bots.every(bot => ['stopped','disconnected','error'].includes(bot.status));
+  $('delete-all').disabled = bots.length === 0;
   const list = $('bot-list');
   const scroll = list.scrollTop;
   const query = $('bot-search').value.trim().toLowerCase();
   const filtered = bots.filter(bot => [bot.name,bot.username,bot.character,bot.map_name,String(bot.map_id),bot.id].some(value => String(value ?? '').toLowerCase().includes(query)));
-  list.innerHTML = filtered.length ? filtered.map(bot => `<button class="bot-row ${selected === bot.id ? 'active' : ''}" type="button" data-id="${esc(bot.id)}"><span class="dot ${esc(bot.status)}"></span><span class="row-text"><strong>${esc(bot.name)}</strong><small>${esc(bot.action)}</small></span></button>`).join('') : `<div class="empty-small">${bots.length ? 'Không tìm thấy bot' : 'Chưa có bot'}</div>`;
+  list.innerHTML = filtered.length ? filtered.map(bot => `<button class="bot-row ${selected === bot.id ? 'active' : ''}" type="button" data-id="${esc(bot.id)}"><span class="dot ${esc(bot.status)}"></span><span class="row-text"><strong>${esc(bot.character || bot.name)} (ID: ${esc(bot.player_id || bot.id)})</strong><small>${esc(bot.name)} · ${esc(bot.action)}</small></span></button>`).join('') : `<div class="empty-small">${bots.length ? 'Không tìm thấy bot' : 'Chưa có bot'}</div>`;
   list.scrollTop = scroll;
 }
 
 function fill(id, value) { $(id).textContent = value ?? '—'; }
+
+function renderItems(container, items, location, running) {
+  const entries = Object.values(items || {}).filter(item => Number(item.count) > 0);
+  if (!entries.length) {
+    container.textContent = location === 'bag' ? 'Chưa có vật phẩm trong túi' : location === 'worn' ? 'Chưa có trang bị đang mặc' : 'Chưa có vật phẩm trong rương';
+    return;
+  }
+  container.innerHTML = entries.map(item => {
+    const options = (item.options || []).map(option => `Chỉ số ${esc(option.id)}: ${esc(option.param)}`).join(' · ');
+    const action = location === 'box'
+      ? `<button class="button" data-item-action="take" data-location="box" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Chuyển vào túi</button>${[0,1,2,3,4].includes(Number(item.type)) ? `<button class="button success" data-item-action="take_equip" data-location="box" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Chuyển & mặc</button>` : `<button class="button success" data-item-action="take_use" data-location="box" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Chuyển & dùng</button>`}<button class="button danger" data-item-action="take_throw" data-location="box" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Chuyển & bỏ</button>`
+      : location === 'worn'
+        ? `<button class="button" data-item-action="unequip" data-location="worn" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Tháo vào túi</button>`
+      : `${[0,1,2,3,4].includes(Number(item.type)) ? `<button class="button success" data-item-action="equip" data-location="bag" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Mặc</button>` : `<button class="button success" data-item-action="use" data-location="bag" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Dùng</button>`}<button class="button danger" data-item-action="throw" data-location="bag" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Bỏ</button>`;
+    const iconId = Number(item.icon_id);
+    const icon = Number.isSafeInteger(iconId) && iconId >= 0
+      ? `<img class="item-icon" src="/assets/icon/${iconId}.png" alt="" loading="lazy" onerror="this.hidden=true">`
+      : '';
+    return `<article class="item-card">${icon}<strong>${esc(item.name || `Vật phẩm #${item.id}`)} <small>(ID: ${esc(item.id)}) × ${esc(item.count)}</small></strong><p>${esc(item.description || item.info || 'Không có mô tả')}</p>${options ? `<small>${options}</small>` : ''}<div class="item-actions">${action}</div></article>`;
+  }).join('');
+}
 
 function showTab(tab) {
   activeTab = tab;
@@ -89,7 +112,21 @@ function renderDetail(bot) {
   const changedBot = rendered !== bot.id;
   if (changedBot) { rendered = bot.id; logVersion = null; $('event-log').scrollTop = 0; populateConfig(bot); showTab('overview'); }
   fill('detail-name', bot.name);
-  fill('detail-identity', `ID: ${bot.player_id || bot.id}${bot.character ? ` · ${bot.character}` : ''}`);
+  const avatar = $('character-avatar');
+  const avatarFallback = $('character-avatar-fallback');
+  const avatarId = Number(bot.avatar_id);
+  if (Number.isSafeInteger(avatarId) && avatarId >= 0) {
+    const src = `/assets/icon/${avatarId}.png`;
+    if (avatar.getAttribute('src') !== src) avatar.src = src;
+    avatar.hidden = false;
+    avatarFallback.hidden = true;
+    avatar.onerror = () => { avatar.hidden = true; avatarFallback.hidden = false; };
+  } else {
+    avatar.hidden = true;
+    avatarFallback.hidden = false;
+    avatar.removeAttribute('src');
+  }
+  fill('detail-identity', `${bot.character || bot.name} (ID: ${bot.player_id || bot.id}) · bot ${bot.name}`);
   fill('detail-server', `${bot.host}:${bot.port}`);
   $('detail-status').textContent = statusNames[bot.status] || bot.status;
   $('detail-status').className = `status-pill ${bot.status}`;
@@ -124,8 +161,10 @@ function renderDetail(bot) {
   fill('character-damage', Number(bot.damage || 0).toLocaleString('vi-VN'));
   fill('character-defense', Number(bot.defense || 0).toLocaleString('vi-VN'));
   fill('character-location', bot.map_id >= 0 ? `${bot.map_id} · ${bot.map_name} (${bot.x}, ${bot.y})` : 'Chưa vào map');
-  const bag = Object.entries(bot.bag || {}).filter(([,count]) => Number(count) > 0);
-  $('character-bag').innerHTML = bag.length ? bag.map(([id,count]) => `<span>Item #${esc(id)} × ${esc(count)}</span>`).join('') : 'Chưa có vật phẩm';
+  renderItems($('character-worn'), bot.worn_details, 'worn', bot.status === 'running');
+  renderItems($('character-bag'), bot.bag_details, 'bag', bot.status === 'running');
+  renderItems($('character-box'), bot.box_details, 'box', bot.status === 'running');
+  fill('item-notice', bot.item_feedback || '');
   fill('quest-name', bot.task || 'Chưa có nhiệm vụ');
   fill('quest-step', bot.task_title ? `Bước ${bot.task_step + 1}: ${bot.task_title}${bot.task_count ? ` · ${bot.task_count}` : ''}` : 'Chưa có bước nhiệm vụ');
   const powerGoal = /Đạt\s+([\d.,]+)\s+triệu\s+sức mạnh/i.exec(bot.task_title || '');
@@ -195,6 +234,27 @@ async function command(action) {
   } catch (error) { alert(error.message); }
 }
 
+async function bulkCommand(action) {
+  const button = $(action);
+  if (action === 'delete-all' && !confirm(`Xóa toàn bộ ${bots.length} bot khỏi danh sách đã lưu và dừng bot đang chạy? Log cũ vẫn được giữ.`)) return;
+  button.disabled = true;
+  try {
+    const result = await request(`/api/bots/${action}`, {method:'POST',body:'{}'});
+    if (action === 'delete-all') {
+      bots = []; selected = null; rendered = null; showView('manage');
+      $('notice').textContent = `Đã xóa ${result.count} bot.`;
+    } else {
+      $('notice').textContent = action === 'start-all'
+        ? `Đã xếp chạy ${result.count} bot, giãn cách 0,3 giây mỗi bot.`
+        : `Đã gửi lệnh dừng ${result.count} bot.`;
+    }
+    await refresh();
+  } catch (error) {
+    $('notice').textContent = error.message;
+    button.disabled = false;
+  }
+}
+
 $('nav-manage').onclick = () => showView('manage');
 $('nav-create').onclick = () => showView('create');
 $('roster-create').onclick = () => showView('create');
@@ -202,6 +262,9 @@ $('empty-create').onclick = () => showView('create');
 $('mode-single').onclick = () => setCreateMode('single');
 $('mode-batch').onclick = () => setCreateMode('batch');
 $('bot-search').oninput = renderList;
+$('start-all').onclick = () => bulkCommand('start-all');
+$('stop-all').onclick = () => bulkCommand('stop-all');
+$('delete-all').onclick = () => bulkCommand('delete-all');
 $('bot-list').onclick = event => {
   const row = event.target.closest('[data-id]');
   if (!row) return;
@@ -213,6 +276,31 @@ $('bot-list').onclick = event => {
 $('overview-view').onclick = event => {
   const button = event.target.closest('[data-command]');
   if (button) command(button.dataset.command);
+};
+$('character-section').onclick = async event => {
+  if (event.target.closest('#load-box')) {
+    if (!selected) return;
+    try {
+      await request(`/api/bots/${selected}/box`, {method:'POST',body:'{}'});
+      $('item-notice').textContent = 'Đã yêu cầu mở rương; vật phẩm sẽ xuất hiện khi server gửi dữ liệu.';
+    } catch (error) { $('item-notice').textContent = error.message; }
+    return;
+  }
+  const button = event.target.closest('[data-item-action]');
+  if (!button || !selected) return;
+  const action = button.dataset.itemAction;
+  if (['throw','take_throw'].includes(action) && !confirm('Bỏ vật phẩm này?')) return;
+  button.disabled = true;
+  try {
+    await request(`/api/bots/${selected}/item`, {method:'POST',body:JSON.stringify({
+      action, location:button.dataset.location, item_id:Number(button.dataset.item)
+    })});
+    $('item-notice').textContent = ({take:'Đã yêu cầu chuyển vật phẩm vào túi.',use:'Đã gửi lệnh sử dụng vật phẩm.',throw:'Đã gửi lệnh bỏ vật phẩm.',take_use:'Sẽ chuyển vật phẩm vào túi rồi sử dụng.',take_throw:'Sẽ chuyển vật phẩm vào túi rồi bỏ.',take_equip:'Sẽ chuyển trang bị vào túi rồi mặc.',unequip:'Đã gửi lệnh tháo trang bị vào túi.',equip:'Đã gửi lệnh mặc trang bị.'})[action];
+    setTimeout(loadDetail, 500);
+  } catch (error) {
+    $('item-notice').textContent = error.message;
+    button.disabled = false;
+  }
 };
 document.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => showTab(button.dataset.tab));
 $('config-form').onsubmit = async event => {
@@ -240,7 +328,7 @@ $('trade-form').onsubmit = async event => {
 $('trade-invite').onclick = () => command('trade');
 $('auto-scroll').checked = localStorage.getItem('nro-bot-auto-scroll') !== 'false';
 $('auto-scroll').onchange = event => localStorage.setItem('nro-bot-auto-scroll', String(event.target.checked));
-['name_prefix','username_prefix','start_number','count'].forEach(name => $('create-form').elements[name].addEventListener('input', previewBatch));
+['username_prefix','start_number','count'].forEach(name => $('create-form').elements[name].addEventListener('input', previewBatch));
 $('create-form').onsubmit = async event => {
   event.preventDefault();
   const form = event.currentTarget;

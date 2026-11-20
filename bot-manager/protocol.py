@@ -170,21 +170,22 @@ class ItemMap:
     owner_id: int
 
 
-def read_items(reader: Reader, slots: dict[int, int] | None = None) -> dict[int, int]:
+def read_items(reader: Reader, slots: dict[int, int] | None = None,
+               details: dict[int, dict] | None = None) -> dict[int, int]:
     items: dict[int, int] = {}
     for index in range(reader.u8()):
         item_id = reader.i16()
         if item_id == -1:
             continue
         count = reader.i32()
-        reader.utf()  # item info
-        reader.utf()  # item description
-        for _ in range(reader.u8()):
-            reader.u8()
-            reader.u16()
+        info, description = reader.utf(), reader.utf()
+        options = [{"id": reader.u8(), "param": reader.u16()} for _ in range(reader.u8())]
         items[item_id] = items.get(item_id, 0) + count
         if slots is not None:
             slots.setdefault(item_id, index)
+        if details is not None:
+            details[item_id] = {"id": item_id, "count": count, "info": info,
+                                "description": description, "options": options, "slot": index}
     return items
 
 
@@ -195,20 +196,27 @@ def parse_player(payload: bytes) -> dict:
     player_id = reader.i32()
     reader.u8()  # task id
     gender = reader.u8()
-    reader.u16()  # head
+    head_id = reader.u16()
     name = reader.utf()
-    result = {"player_id": player_id, "character": name, "gender": gender}
+    result = {"player_id": player_id, "character": name, "gender": gender, "head_id": head_id}
     try:
         reader.raw(2)  # PK status
         result["power"] = reader.i64()
         reader.raw(5)  # two shorts and gender
-        reader.raw(2 * reader.u8())  # learned skill IDs
+        skill_count = reader.u8()
+        result["skill_ids"] = [reader.u16() for _ in range(skill_count)]
         result["gold"] = reader.i64()
         reader.raw(8)  # ruby and gems
-        read_items(reader)  # worn items
+        worn_slots: dict[int, int] = {}
+        worn_details: dict[int, dict] = {}
+        worn_items = read_items(reader, worn_slots, worn_details)
+        result["worn_items"] = worn_items
+        result["worn_details"] = worn_details
         slots: dict[int, int] = {}
-        result["bag"] = read_items(reader, slots)
+        details: dict[int, dict] = {}
+        result["bag"] = read_items(reader, slots, details)
         result["bag_slots"] = slots
+        result["bag_details"] = details
     except ValueError:
         pass
     return result

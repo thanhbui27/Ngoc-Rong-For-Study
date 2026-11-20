@@ -303,7 +303,19 @@ public class Zone {
 
     public List<ItemMap> getItemMapsForPlayer(Player player) {
         List<ItemMap> list = new ArrayList<>();
+        boolean needsBabyQuestItem = this.map.mapId >= 42 && this.map.mapId <= 44
+                && TaskService.gI().isCurrentTask(player, ConstTask.TASK_3_1);
         synchronized (items) {
+            if (needsBabyQuestItem) {
+                boolean hasPersonalBaby = items.stream().anyMatch(item -> item != null
+                        && item.itemTemplate != null && item.itemTemplate.id == 78
+                        && item.playerId == player.id);
+                if (!hasPersonalBaby) {
+                    int x = 70;
+                    int y = this.map.mapId == 43 ? 264 : 288;
+                    new ItemMap(this, 78, 1, x, y, player.id);
+                }
+            }
             for (ItemMap item : items) {
                 if (item instanceof NamekBall ball) {
                     if (ball.isHolding()) {
@@ -312,7 +324,7 @@ public class Zone {
                 }
                 if (item != null && item.itemTemplate != null) {
                     if (item.itemTemplate.id == 78) {
-                        if (TaskService.gI().getIdTask(player) != ConstTask.TASK_3_1) {
+                        if (!needsBabyQuestItem || item.playerId != player.id) {
                             continue;
                         }
                     }
@@ -368,7 +380,14 @@ public class Zone {
             return;
 
         synchronized (itemMap) {
-            if (itemMap.isPickedUp) {
+            boolean personalQuestItem = itemMap.itemTemplate.id == 78
+                    && this.map.mapId >= 42 && this.map.mapId <= 44;
+            if (personalQuestItem && (!TaskService.gI().isCurrentTask(player, ConstTask.TASK_3_1)
+                    || itemMap.playerId != player.id)) {
+                Service.getInstance().sendThongBao(player, "Không thể nhặt vật phẩm của người khác");
+                return;
+            }
+            if (!personalQuestItem && itemMap.isPickedUp) {
                 Service.getInstance().sendThongBao(player, "Không thể nhặt vật phẩm của người khác");
                 return;
             }
@@ -409,15 +428,16 @@ public class Zone {
 
             // Nếu nhặt thành công
             if (itemMap.itemTemplate.id != 74) {
-                itemMap.isPickedUp = true;
+                if (!personalQuestItem) {
+                    itemMap.isPickedUp = true;
+                }
             }
 
             sendPickupMessage(player, itemMap, item, itemMapId);
 
             // Xoá item khỏi bản đồ nếu không nằm trong vùng đặc biệt
             int mapID = this.map.mapId;
-            boolean isSpecialItem = (mapID >= 21 && mapID <= 23 && itemMap.itemTemplate.id == 74)
-                    || (mapID >= 42 && mapID <= 44 && itemMap.itemTemplate.id == 78);
+            boolean isSpecialItem = mapID >= 21 && mapID <= 23 && itemMap.itemTemplate.id == 74;
 
             if (!isSpecialItem) {
                 removeItemMap(itemMap);

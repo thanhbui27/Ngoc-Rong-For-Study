@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import re
 import threading
 import webbrowser
@@ -12,7 +13,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from bot import BotConfig, BotManager
+from bot import BotConfig, BotManager, human_nickname
 
 ROOT = Path(__file__).resolve().parent
 MANAGER = BotManager()
@@ -77,11 +78,21 @@ def valid_batch(raw: dict) -> list[BotConfig]:
         raise ValueError("Số lượng và số bắt đầu phải là số nguyên") from exc
     if not 1 <= count <= BotManager.MAX_BOTS or not 0 <= start_number <= 999999:
         raise ValueError(f"Số lượng phải từ 1–{BotManager.MAX_BOTS}; số bắt đầu từ 0–999999")
-    name_prefix = str(raw.get("name_prefix", "bot")).strip()
     username_prefix = str(raw.get("username_prefix", "")).strip()
     configs = []
+    nicknames = set()
     for number in range(start_number, start_number + count):
-        entry = dict(raw, name=f"{name_prefix} {number}", username=f"{username_prefix}{number}")
+        gender = raw.get("gender", 0)
+        if gender == "random":
+            gender = random.choice((0, 1, 2))
+        username = f"{username_prefix}{number}"
+        seed = username
+        name = human_nickname(seed)
+        while name.casefold() in nicknames:
+            seed += "_"
+            name = human_nickname(seed)
+        nicknames.add(name.casefold())
+        entry = dict(raw, name=name, username=username, gender=gender)
         configs.append(valid_config(entry))
     return configs
 
@@ -131,7 +142,20 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         try:
             parts = self._parts()
-            if parts == ["api", "bots"]:
+            if len(parts) == 3 and parts[:2] == ["assets", "icon"] and re.fullmatch(r"\d+\.png", parts[2]):
+                icon_id = int(parts[2][:-4])
+                image = ROOT.parent / "Server" / "resources" / "normal" / "image" / "3" / "icon" / f"{icon_id}.png"
+                if not image.is_file():
+                    self._json(404, {"error": "Không tìm thấy hình vật phẩm"})
+                    return
+                content = image.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            elif parts == ["api", "bots"]:
                 self._json(200, MANAGER.all())
             elif len(parts) == 3 and parts[:2] == ["api", "bots"]:
                 self._json(200, MANAGER.get(parts[2]).snapshot(include_logs=True))
@@ -161,7 +185,21 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         try:
             parts = self._parts()
-            if parts == ["api", "bots"]:
+            if parts == ["api", "bots", "start-all"]:
+                bots = MANAGER.all()
+                candidates = [MANAGER.get(item["id"]) for item in bots
+                              if item["status"] not in ("running", "connecting", "reconnecting")]
+                MANAGER.start_many(candidates)
+                self._json(200, {"ok": True, "count": len(candidates)})
+            elif parts == ["api", "bots", "delete-all"]:
+                self._json(200, {"ok": True, "count": MANAGER.remove_all()})
+            elif parts == ["api", "bots", "stop-all"]:
+                bots = MANAGER.all()
+                for item in bots:
+                    if item["status"] not in ("stopped", "disconnected", "error"):
+                        MANAGER.get(item["id"]).stop()
+                self._json(200, {"ok": True, "count": len(bots)})
+            elif parts == ["api", "bots"]:
                 bot = MANAGER.create(valid_config(self._body()))
                 bot.start()
                 self._json(201, bot.snapshot(include_logs=True))
@@ -177,6 +215,17 @@ class Handler(BaseHTTPRequestHandler):
                     bot.stop()
                 elif parts[3] == "trade":
                     bot.invite_trade()
+                elif parts[3] == "item":
+                    payload = self._body()
+                    try:
+                        item_id = int(payload.get("item_id", -1))
+                    except (TypeError, ValueError) as exc:
+                        raise ValueError("ID vật phẩm không hợp lệ") from exc
+                    if item_id < 0:
+                        raise ValueError("ID vật phẩm không hợp lệ")
+                    bot.item_action(str(payload.get("action", "")), str(payload.get("location", "")), item_id)
+                elif parts[3] == "box":
+                    bot.request_box()
                 elif parts[3] == "config":
                     bot = MANAGER.update_config(parts[2], valid_config_update(bot.config, self._body()))
                 else:

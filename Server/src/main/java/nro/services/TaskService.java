@@ -251,9 +251,9 @@ public class TaskService {
 
     // kiểm tra hoàn thành nhiệm vụ gia nhập bang hội
     public void checkDoneTaskJoinClan(Player player) {
-        // if (!player.isBoss && !player.isPet) {
-        // doneTask(player, ConstTask.TASK_12_0);
-        // }
+        if (player != null && !player.isBoss && !player.isPet && player.clan != null) {
+            doneTask(player, ConstTask.TASK_12_0);
+        }
     }
 
     // kiểm tra hoàn thành nhiệm vụ lấy item từ rương
@@ -1411,10 +1411,10 @@ public class TaskService {
                             : 15);
         } else if (id == ConstTask.MAP_VACH_NUI) {
             return player.gender == ConstPlayer.TRAI_DAT
-                    ? 39
+                    ? 42
                     : (player.gender == ConstPlayer.NAMEC
-                            ? 40
-                            : 41);
+                            ? 43
+                            : 44);
         } else if (id == ConstTask.MAP_200) {
             return player.gender == ConstPlayer.TRAI_DAT
                     ? 2
