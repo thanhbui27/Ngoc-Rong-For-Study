@@ -251,7 +251,9 @@ public class Zone {
 
     public void removePlayer(Player player) {
         if (player != null) {
-            this.humanoids.remove(player);
+            synchronized (humanoids) {
+                this.humanoids.remove(player);
+            }
             if (!player.isBoss) {
                 synchronized (notBosses) {
                     this.notBosses.remove(player);
@@ -552,8 +554,12 @@ public class Zone {
 
     public void loadAnotherToMe(Player player) { // load những player trong map và gửi cho player vào map
         try {
+            List<Player> humanoidsSnapshot;
+            synchronized (this.humanoids) {
+                humanoidsSnapshot = new ArrayList<>(this.humanoids);
+            }
             if (this.map.isMapOffline) {
-                for (Player pl : this.humanoids) {
+                for (Player pl : humanoidsSnapshot) {
                     if (pl != null) {
                         if (pl.id == -player.id) {
                             infoPlayer(player, pl);
@@ -561,7 +567,7 @@ public class Zone {
                         }
                     }
                 }
-                for (Player pl : this.humanoids) {
+                for (Player pl : humanoidsSnapshot) {
                     if (pl != null) {
                         if (pl != player) {
                             if (pl.idPlayerForNPC == player.idPlayerForNPC) {
@@ -575,7 +581,7 @@ public class Zone {
                 // player.zone.map.mapId == 154) {
                 //
                 // } else {
-                for (Player pl : this.humanoids) {
+                for (Player pl : humanoidsSnapshot) {
                     if (pl != null) {
                         if (player != pl) {
                             infoPlayer(player, pl);

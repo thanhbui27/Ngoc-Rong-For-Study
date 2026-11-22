@@ -57,7 +57,7 @@ public class Server {
     private void activeCommandLine() {
         new Thread(() -> {
             Scanner sc = new Scanner(System.in);
-            while (true) {
+            while (sc.hasNextLine()) {
                 String line = sc.nextLine();
                 if (line.equals("baotri")) {
                     shutdown();
@@ -65,7 +65,6 @@ public class Server {
                 }
 
             }
-            sc.close();
         }, "Active line").start();
     }
 
