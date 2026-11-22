@@ -143,6 +143,7 @@ public class GodGK {
 
                     // base info
                     player.id = rs.getInt("id");
+                    player.createTime = rs.getTimestamp("create_time").getTime();
                     player.name = rs.getString("name");
                     player.head = rs.getShort("head");
                     player.gender = rs.getByte("gender");

@@ -1118,7 +1118,7 @@ public class Service {
             msg.writer().writeByte(pl.fusion.typeFusion != ConstPlayer.NON_FUSION ? 1 : 0); // nhập thể
             // msg.writer().writeInt(1632811835); //deltatime
             msg.writer().writeInt(333); // deltatime
-            msg.writer().writeByte(pl.isNewMember ? 1 : 0); // is new member
+            msg.writer().writeByte(pl.hasNewMemberBadge() ? 1 : 0); // new member badge (30 days from character creation)
 
             // if (pl.isAdmin()) {
             msg.writer().writeShort(pl.getAura()); // idauraeff

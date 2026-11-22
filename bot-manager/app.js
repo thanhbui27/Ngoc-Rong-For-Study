@@ -132,8 +132,8 @@ function renderDetail(bot) {
   $('detail-status').className = `status-pill ${bot.status}`;
   fill('detail-action', `${bot.character || bot.name}: ${bot.action}`);
   fill('detail-action-detail', bot.recovering
-    ? `KI ${bot.mp}/${bot.max_mp} · Cây đậu ${bot.tree_peas >= 0 ? `${bot.tree_peas} hạt` : 'đang kiểm tra'}`
-    : bot.character ? `Nhân vật ${bot.character} · ${bot.map_name || 'chưa vào map'}` : `Tài khoản ${bot.username}`);
+    ? `KI ${bot.mp}/${bot.max_mp} · Thể lực ${bot.stamina}/${bot.max_stamina} · Cây đậu ${bot.tree_peas >= 0 ? `${bot.tree_peas} hạt` : 'đang kiểm tra'}`
+    : bot.character ? `Nhân vật ${bot.character} · Thể lực ${bot.stamina}/${bot.max_stamina} · ${bot.map_name || 'chưa vào map'}` : `Tài khoản ${bot.username}`);
   fill('activity-badge', bot.status === 'running' ? '● Đang hoạt động' : bot.status === 'connecting' ? '● Đang kết nối' : bot.status === 'reconnecting' ? '● Chờ kết nối lại' : bot.status === 'error' ? '● Có lỗi' : '● Đã dừng');
   $('activity-badge').className = `activity-badge ${bot.status}`;
   $('detail-error').hidden = !bot.error;
@@ -141,6 +141,7 @@ function renderDetail(bot) {
   fill('stat-map', bot.map_id >= 0 ? `${bot.map_id} · ${bot.map_name}` : '—');
   fill('stat-hp', `${bot.hp} / ${bot.max_hp}`);
   fill('stat-mp', `${bot.mp} / ${bot.max_mp}`);
+  fill('stat-stamina', `${bot.stamina} / ${bot.max_stamina}`);
   fill('stat-gold', Number(bot.gold).toLocaleString('vi-VN'));
   fill('stat-kills', bot.kills);
   fill('stat-picks', bot.picks);
@@ -173,6 +174,9 @@ function renderDetail(bot) {
     $('quest-progress').hidden = false;
     $('quest-progress-bar').style.width = `${Math.min(100, (bot.power || 0) / target * 100)}%`;
     fill('quest-hint', `Sức mạnh: ${Number(bot.power || 0).toLocaleString('vi-VN')} / ${target.toLocaleString('vi-VN')}. Bot sẽ đổi bãi quái khi đủ sức đánh.`);
+  } else if (/đi khám phá vật thể lạ/i.test(bot.task_title || '')) {
+    $('quest-progress').hidden = true;
+    fill('quest-hint', 'Bot ở vách núi trên hành tinh của nhân vật để tìm và nhặt vật thể nhiệm vụ; không chuyển sang hành tinh khác.');
   } else {
     $('quest-progress').hidden = true;
     fill('quest-hint', 'Bot ưu tiên quái của nhiệm vụ khi xác định được mục tiêu từ bước hiện tại.');

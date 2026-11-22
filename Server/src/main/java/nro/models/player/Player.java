@@ -226,8 +226,12 @@ public class Player {
     public long id;
     public String name;
     public byte gender;
-    public boolean isNewMember = true;
+    public long createTime;
     public short head;
+
+    public boolean hasNewMemberBadge() {
+        return createTime > 0 && System.currentTimeMillis() < createTime + 30L * 24 * 60 * 60 * 1000;
+    }
 
     public Timestamp lastimelogin;
 

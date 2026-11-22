@@ -10,9 +10,9 @@ STATION_NPCS = {24: 10, 25: 11, 26: 12}
 
 # The station menus are race-relative. Each pair is (destination map, menu index).
 SHIP_DESTINATIONS = {
-    24: ((25, 0), (26, 1)),  # Dr. Brief: Namek, Xayda
-    25: ((24, 0), (26, 1)),  # Cargo: Earth, Xayda
-    26: ((24, 0), (25, 1)),  # Cui: Earth, Namek
+    24: ((25, 0), (26, 1), (84, 2)),  # Dr. Brief: Namek, Xayda, supermarket
+    25: ((24, 0), (26, 1), (84, 2)),  # Cargo: Earth, Xayda, supermarket
+    26: ((24, 0), (25, 1), (84, 2)),  # Cui: Earth, Namek, supermarket
 }
 
 
@@ -28,7 +28,9 @@ class MovementUtility:
         self.routes = routes
 
     def plan(self, start: int, goal: int,
-             blocked_edges: set[tuple[int, int, str]] | None = None) -> list[dict] | None:
+             blocked_edges: set[tuple[int, int, str]] | None = None,
+             gender: int = 0,
+             allow_spaceships: bool = True) -> list[dict] | None:
         if start == goal:
             return []
         if start not in self.routes.maps or goal not in self.routes.maps:
@@ -44,11 +46,16 @@ class MovementUtility:
                 {**waypoint, "kind": "waypoint", "from_map": current}
                 for waypoint in self.routes.maps.get(current, ())
             ]
-            if current in SHIP_DESTINATIONS:
+            if allow_spaceships and current in SHIP_DESTINATIONS:
                 edges.extend({
                     "kind": "spaceship", "from_map": current, "go_map": destination,
                     "npc_id": STATION_NPCS[current], "menu": menu,
                 } for destination, menu in SHIP_DESTINATIONS[current])
+            if allow_spaceships and current == 84:
+                edges.append({
+                    "kind": "spaceship", "from_map": current, "go_map": 24 + min(max(gender, 0), 2),
+                    "npc_id": 10, "menu": 0,
+                })
 
             for edge in edges:
                 destination = edge["go_map"]
@@ -76,7 +83,9 @@ class MovementUtility:
         return path
 
     def next_step(self, start: int, goal: int,
-                  blocked_edges: set[tuple[int, int, str]] | None = None) -> dict | None:
-        path = self.plan(start, goal, blocked_edges)
+                  blocked_edges: set[tuple[int, int, str]] | None = None,
+                  gender: int = 0,
+                  allow_spaceships: bool = True) -> dict | None:
+        path = self.plan(start, goal, blocked_edges, gender, allow_spaceships)
         return path[0] if path else None
 

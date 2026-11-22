@@ -24,6 +24,22 @@ LOG_DIR = Path(__file__).resolve().parent / "logs"
 ROUTES = Routes()
 MOVEMENT = MovementUtility(ROUTES)
 PEA_ITEMS = (13, 60, 61, 62, 63, 64, 65, 352, 523, 595)
+GREEN_GRAPE_ID = 212
+PLANET_VILLAGE_MAPS = (0, 7, 14)  # Earth, Namek, Xayda
+PLANET_SHOP_NPCS = (7, 8, 9)  # Bunma, Dende, Appule
+DRAGON_BALL_7_STAR_ID = 20
+MOTHER_LIZARD_TEMPLATE_ID = 10
+MOTHER_LIZARD_MAP_ID = 4  # Rừng Xương, Trái Đất
+# Verified against Server/services/MobService.dropItemTask(): these are the
+# mobs that actually produce quest drops, paired with the race-specific maps.
+QUEST_ITEM_HUNT_RULES = {
+    (2, 0): {"maps": (1, 8, 15), "mobs": (1, 2, 3), "item": 73, "name": "đùi gà"},
+    (8, 1): {"maps": (MOTHER_LIZARD_MAP_ID,) * 3,
+             "mobs": (MOTHER_LIZARD_TEMPLATE_ID,) * 3, "item": DRAGON_BALL_7_STAR_ID,
+             "name": "Ngọc Rồng 7 sao"},
+    (14, 1): {"maps": (5, 13, 20), "mobs": (13, 14, 15), "item": 85,
+              "name": "Truyện Doremon tập 2"},
+}
 XAYDA_ENERGY_SKILL_IDS = frozenset(range(56, 63))
 HOME_NPC_IDS = (0, 2, 1)  # Gohan, Moori, Paragus
 PLANET_MAPS = (
@@ -104,6 +120,7 @@ class BotRunner:
         self.home_map = -1
         self.x = self.y = 0
         self.hp = self.mp = self.max_hp = self.max_mp = 0
+        self.stamina = self.max_stamina = 0
         self.gold = self.potential = self.power = 0
         self.damage = self.defense = 0
         self.base_hp = self.base_mp = self.base_damage = self.base_defense = 0
@@ -166,6 +183,14 @@ class BotRunner:
         self._recover_mp_target = False
         self._recover_due = 0.0
         self._pending_recovery_bean: tuple[int, int, int] | None = None
+        self._stamina_recovery = False
+        self._stamina_return_map = -1
+        self._stamina_shop_phase = 0
+        self._stamina_shop_next = 0.0
+        self._stamina_shop_attempts = 0
+        self._stamina_shop_before = -1
+        self._stamina_shop_target = 0
+        self._stamina_retry_after = 0.0
         self._tree_peas = -1
         self._tree_seconds = 0
         self._tree_menu_open = False
@@ -214,6 +239,7 @@ class BotRunner:
                 "map_id": self.map_id, "map_name": self.map_name, "zone": self.zone,
                 "x": self.x, "y": self.y,
                 "hp": self.hp, "max_hp": self.max_hp, "mp": self.mp, "max_mp": self.max_mp,
+                "stamina": self.stamina, "max_stamina": self.max_stamina,
                 "gold": self.gold, "power": self.power, "potential": self.potential,
                 "damage": self.damage, "defense": self.defense, "kills": self.kills,
                 "picks": self.picks, "purchases": self.purchases, "mobs": len(self.mobs),
@@ -275,6 +301,14 @@ class BotRunner:
             self._recover_mp_target = False
             self._recover_due = 0
             self._pending_recovery_bean = None
+            self._stamina_recovery = False
+            self._stamina_return_map = -1
+            self._stamina_shop_phase = 0
+            self._stamina_shop_next = 0
+            self._stamina_shop_attempts = 0
+            self._stamina_shop_before = -1
+            self._stamina_shop_target = 0
+            self._stamina_retry_after = 0
             self._tree_peas = -1
             self._tree_seconds = 0
             self._tree_menu_open = False
@@ -289,6 +323,7 @@ class BotRunner:
             self.learned_skill_ids.clear()
             self.power = self.potential = self.gold = 0
             self.hp = self.mp = self.max_hp = self.max_mp = 0
+            self.stamina = self.max_stamina = 0
             self.damage = self.defense = 0
             self.home_map = self.map_id = -1
             self.mobs, self.npcs, self.items, self.bag, self.bag_slots, self.box_slots = {}, {}, {}, {}, {}, {}
@@ -413,6 +448,14 @@ class BotRunner:
         self._recover_mp_target = False
         self._recover_due = 0
         self._pending_recovery_bean = None
+        self._stamina_recovery = False
+        self._stamina_return_map = -1
+        self._stamina_shop_phase = 0
+        self._stamina_shop_next = 0
+        self._stamina_shop_attempts = 0
+        self._stamina_shop_before = -1
+        self._stamina_shop_target = 0
+        self._stamina_retry_after = 0
         self._tree_peas = -1
         self._tree_seconds = 0
         self._tree_menu_open = False
@@ -422,6 +465,7 @@ class BotRunner:
         self.gender = self.config.gender
         self.learned_skill_ids.clear()
         self.hp = self.mp = self.max_hp = self.max_mp = 0
+        self.stamina = self.max_stamina = 0
         self.gold = self.power = self.potential = 0
         self.damage = self.defense = 0
         self.home_map = self.map_id = -1
@@ -516,6 +560,14 @@ class BotRunner:
                 with self._lock:
                     for key, value in stats.items():
                         setattr(self, key, value)
+            elif command == -68:
+                stamina = reader.i16()
+                previous_stamina = self.stamina
+                self.stamina = stamina
+                if self._stamina_recovery and stamina != previous_stamina:
+                    self.log(f"Thể lực: {stamina}/{self.max_stamina}")
+            elif command == -69:
+                self.max_stamina = reader.i16()
             elif command == -24:
                 data = parse_map(payload)
                 with self._lock:
@@ -623,10 +675,18 @@ class BotRunner:
                     slots: dict[int, int] = {}
                     details: dict[int, dict] = {}
                     bag = read_items(reader, slots, details)
+                    old_grapes = self.bag.get(GREEN_GRAPE_ID, 0)
+                    new_grapes = bag.get(GREEN_GRAPE_ID, 0)
                     with self._lock:
                         self.bag = bag
                         self.bag_slots = slots
                         self.bag_details = details
+                    if self._stamina_recovery and new_grapes > old_grapes:
+                        bought = new_grapes - old_grapes
+                        self.purchases += bought
+                        self.log(f"Mua Nho xanh thành công: +{bought}, trong túi {new_grapes}")
+                    elif self._stamina_recovery and new_grapes < old_grapes:
+                        self.log(f"Đã dùng Nho xanh: còn {new_grapes}")
                     recovery_bean = self._pending_recovery_bean
                     if recovery_bean:
                         item_id, count_before, level = recovery_bean
@@ -699,10 +759,10 @@ class BotRunner:
             elif command == 40:
                 task = parse_task(payload)
                 # The server template still resolves MAP_VACH_NUI to 39–41, which
-                # are dead ends without the baby item. The quest item is on 42–44.
+                # are dead ends without the baby item. Keep the quest on the
+                # planet where this character currently is (including saved map).
                 if task["task_id"] == 3 and task["index"] == 1 and task["index"] < len(task["steps"]):
-                    gender = self.gender if self.gender in (0, 1, 2) else self.config.gender
-                    task["steps"][task["index"]]["map_id"] = 42 + gender
+                    task["steps"][task["index"]]["map_id"] = 42 + self._planet_index()
                 # The server DB stores map 0 for this race-specific flying-mob
                 # step, so route directly to each planet's intended hunting map.
                 if task["task_id"] == 7 and task["index"] < len(task["steps"]):
@@ -880,6 +940,8 @@ class BotRunner:
             self._upgrade_stat(force=needs_potential_for_quest)
         if self._recover(now):
             return
+        if self._restore_stamina(now):
+            return
         if self.config.heal_item > 0 and self.bag.get(self.config.heal_item, 0) > 0 and self.max_hp and self.hp * 100 < self.max_hp * 35 and now >= self._next_heal and self.config.heal_item in self.bag_slots:
             self._send(-43, bytes([0, 1, self.bag_slots[self.config.heal_item]]))
             self._next_heal = now + 10
@@ -891,6 +953,12 @@ class BotRunner:
         if self._quest(now):
             return
         owned_items = [item for item in self.items.values() if item.owner_id in (-1, self.player_id)]
+        quest_hunt = (self.task.get("task_id"), self.task.get("index"))
+        if quest_hunt in QUEST_ITEM_HUNT_RULES:
+            quest_item_id = QUEST_ITEM_HUNT_RULES[quest_hunt]["item"]
+            quest_items = [item for item in owned_items if item.template_id == quest_item_id]
+            if quest_items:
+                owned_items = quest_items
         if owned_items:
             nearest = min(owned_items, key=lambda item: (item.x - self.x) ** 2 + (item.y - self.y) ** 2)
             if abs(nearest.x - self.x) <= 55 and abs(nearest.y - self.y) <= 55:
@@ -907,6 +975,9 @@ class BotRunner:
                 return
         living = [mob for mob in self.mobs.values() if mob.hp > 0 and mob.status not in (0, 1) and mob.boss_level == 0]
         if not living:
+            if self._quest_target_templates:
+                self.set_action("Đứng yên: chờ quái nhiệm vụ hồi sinh")
+                return
             if not self.mobs:
                 self._empty_maps.add(self.map_id)
                 farm_map = ROUTES.nearest_farm_map(self.map_id, self._empty_maps)
@@ -921,8 +992,7 @@ class BotRunner:
         suitable = [mob for mob in living if mob.level <= ROUTES.player_level(self.power) + 2 and mob.max_hp <= hp_limit]
         if self._quest_target_templates:
             quest_mobs = [mob for mob in living if mob.template_id in self._quest_target_templates]
-            if quest_mobs:
-                suitable = quest_mobs
+            suitable = quest_mobs
         if not suitable:
             self.set_action("Đứng yên: chờ quái phù hợp hồi sinh")
             return
@@ -1029,6 +1099,115 @@ class BotRunner:
         self.set_action("Đứng ở nhà chờ cây đậu kết hạt")
         return True
 
+    def _restore_stamina(self, now: float) -> bool:
+        if self.max_stamina <= 0:
+            return False
+        if not self._stamina_recovery:
+            if self.stamina > 0 or now < self._stamina_retry_after:
+                return False
+            self._stamina_recovery = True
+            self._stamina_return_map = self.map_id
+            self._stamina_shop_phase = 0
+            self.set_action("Hết thể lực; về làng mua Nho xanh")
+
+        if self.stamina * 100 > self.max_stamina * 50:
+            if self._stamina_return_map >= 0 and self.map_id != self._stamina_return_map:
+                if self._travel_to(self._stamina_return_map, now):
+                    self.set_action("Thể lực đã hồi; quay lại map trước đó")
+                    return True
+            self._stamina_recovery = False
+            self._stamina_return_map = -1
+            self._stamina_shop_phase = 0
+            self.set_action("Thể lực đã hồi; tiếp tục farm")
+            return False
+
+        if now < self._stamina_shop_next:
+            return True
+
+        grape_slot = self.bag_slots.get(GREEN_GRAPE_ID)
+        if self.bag.get(GREEN_GRAPE_ID, 0) > 0 and grape_slot is not None:
+            self._send(-43, bytes([0, 1, grape_slot]))
+            self._stamina_shop_next = now + 2
+            self.set_action(f"Ăn Nho xanh hồi thể lực ({self.stamina}/{self.max_stamina})")
+            return True
+
+        if self._stamina_shop_phase == 4:
+            if now < self._stamina_retry_after:
+                self.set_action("Chờ cửa hàng hành tinh sẵn sàng bán Nho xanh")
+                return True
+            self._stamina_shop_phase = 0
+            self._stamina_retry_after = now + 60
+
+        village_map = PLANET_VILLAGE_MAPS[min(max(self.gender, 0), len(PLANET_VILLAGE_MAPS) - 1)]
+        if self.map_id != village_map:
+            self._stamina_shop_phase = 0
+            if self._travel_to(village_map, now):
+                self.set_action("Đang về làng mua Nho xanh")
+                return True
+
+        npc_id = PLANET_SHOP_NPCS[min(max(self.gender, 0), len(PLANET_SHOP_NPCS) - 1)]
+        npc = self.npcs.get(npc_id)
+        if npc is None:
+            self.set_action(f"Chờ NPC cửa hàng ở làng (NPC {npc_id})")
+            return True
+        if abs(npc[0] - self.x) > 55 or abs(npc[1] - self.y) > 55:
+            self._move_towards(*npc)
+            self.set_action(f"Đi tới cửa hàng ở làng (NPC {npc_id})")
+            return True
+
+        if self._stamina_shop_phase == 0:
+            self.shop = {}
+            self._send(33, struct.pack(">h", npc_id))
+            self._stamina_shop_phase = 1
+            self._stamina_shop_next = now + 0.8
+            self.set_action("Mở cửa hàng ở làng")
+            return True
+        if self._stamina_shop_phase == 1:
+            self._send(32, struct.pack(">hb", npc_id, 0))
+            self._stamina_shop_phase = 2
+            self._stamina_shop_next = now + 8
+            self.set_action("Chờ shop Nho xanh")
+            return True
+        if self._stamina_shop_phase == 2:
+            price = self.shop.get(GREEN_GRAPE_ID)
+            if price and price["gold"] > 0 and price["gems"] == 0:
+                target_stamina = (self.max_stamina * 60 + 99) // 100
+                stamina_per_grape = max(1, self.max_stamina * 20 // 100)
+                target_count = max(1, (target_stamina - self.stamina + stamina_per_grape - 1)
+                                   // stamina_per_grape)
+                if self.gold < price["gold"] * target_count:
+                    self.set_action("Không đủ vàng mua Nho xanh hồi thể lực")
+                    self._stamina_shop_phase = 4
+                    self._stamina_retry_after = now + 60
+                    return True
+                self._stamina_shop_phase = 3
+                self._stamina_shop_attempts = 0
+                self._stamina_shop_before = -1
+                self._stamina_shop_target = target_count
+            elif now >= self._stamina_shop_next:
+                self.set_action("Shop ở làng không có Nho xanh; kiểm tra dữ liệu shop")
+                self._stamina_shop_phase = 4
+                self._stamina_retry_after = now + 60
+            return True
+        if self._stamina_shop_phase == 3:
+            count = self.bag.get(GREEN_GRAPE_ID, 0)
+            target_count = self._stamina_shop_target or 1
+            if count >= target_count:
+                self._stamina_shop_phase = 0
+                self.set_action(f"Đã mua {count} Nho xanh; dùng để hồi thể lực")
+            elif count == self._stamina_shop_before and self._stamina_shop_attempts >= 3:
+                self.set_action("Dừng mua Nho xanh: túi không tăng sau 3 lần")
+                self._stamina_shop_phase = 4
+                self._stamina_retry_after = now + 60
+            elif now >= self._stamina_shop_next:
+                self._stamina_shop_attempts = self._stamina_shop_attempts + 1 if count == self._stamina_shop_before else 1
+                self._stamina_shop_before = count
+                self._send(6, bytes([0]) + struct.pack(">h", GREEN_GRAPE_ID))
+                self._stamina_shop_next = now + 1.3
+                self.set_action(f"Mua Nho xanh ({count}/{target_count})")
+            return True
+        return True
+
     def _move_towards(self, target_x: int, target_y: int) -> None:
         dx, dy = target_x - self.x, target_y - self.y
         x = self.x + max(-42, min(42, dx))
@@ -1124,6 +1303,106 @@ class BotRunner:
                 return self._travel_to(training_map, now)
             self._move_towards(650, self.y)
             self.set_action("Nhiệm vụ 0: đi tới mũi tên trong nhà")
+            return True
+        if task_id == 3 and index == 1:
+            # This objective is the personal baby item on the character's own
+            # planet cliff. It is not a generic farming step: don't let the
+            # power-based farm planner send the bot to another planet.
+            quest_map = 42 + self._planet_index()
+            if self.map_id != quest_map:
+                return self._travel_to(quest_map, now, allow_spaceships=False)
+            quest_item = next((item for item in self.items.values()
+                               if item.template_id == 78
+                               and item.owner_id in (-1, self.player_id)), None)
+            if quest_item:
+                self.set_action("Đang tìm vật thể lạ: Đứa bé")
+                return False  # Let the common item handler approach and pick it up.
+            self.set_action(f"Chờ vật thể lạ xuất hiện trên hành tinh của mình (map {quest_map})")
+            return True
+        if task_id == 3 and index == 2:
+            home_map = 21 + self.gender
+            if self.map_id != home_map:
+                return self._travel_to(home_map, now)
+            npc_id = HOME_NPC_IDS[self.gender]
+            key = f"{task_id}:{index}"
+            if self._quest_step_done == key and now < self._quest_request_due:
+                self.set_action("Chờ server xác nhận đã báo cáo nhiệm vụ sao băng")
+                return True
+            npc = self.npcs.get(npc_id)
+            if npc is None:
+                self.set_action(f"Chờ {self._npc_label(npc_id)} ở nhà để báo cáo nhiệm vụ sao băng")
+                return True
+            if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
+                self._move_towards(*npc)
+                self.set_action(f"Về gặp {self._npc_label(npc_id)} báo cáo nhiệm vụ sao băng")
+                return True
+            self._send(33, struct.pack(">h", npc_id))
+            self._quest_step_done = key
+            self._quest_request_due = now + 5
+            self.set_action(f"Báo cáo nhiệm vụ sao băng với {self._npc_label(npc_id)}")
+            return True
+        hunt_rule = QUEST_ITEM_HUNT_RULES.get((task_id, index))
+        if hunt_rule:
+            planet = min(max(self.gender, 0), 2)
+            target_map = hunt_rule["maps"][planet]
+            target_mob = hunt_rule["mobs"][planet]
+            self._quest_target_templates = {target_mob}
+            mob_name = ROUTES.mob_names.get(target_mob, f"quái ID {target_mob}")
+            if self.map_id != target_map:
+                self.set_action(f"Đang tới map {target_map} săn {mob_name} lấy {hunt_rule['name']}")
+                return self._travel_to(target_map, now)
+            self.set_action(f"Nhiệm vụ: săn {mob_name} để nhặt {hunt_rule['name']}")
+            return False  # Farm only the mob verified to drop this quest item.
+        if task_id == 8 and index == 2:
+            home_map = 21 + self.gender
+            if self.map_id != home_map:
+                return self._travel_to(home_map, now)
+            npc_id = HOME_NPC_IDS[self.gender]
+            key = f"{task_id}:{index}"
+            if self._quest_step_done == key and now < self._quest_request_due:
+                self.set_action("Chờ server xác nhận đã đem Ngọc Rồng 7 sao về nhà")
+                return True
+            npc = self.npcs.get(npc_id)
+            if npc is None:
+                self.set_action(f"Chờ {self._npc_label(npc_id)} để giao Ngọc Rồng 7 sao")
+                return True
+            if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
+                self._move_towards(*npc)
+                self.set_action(f"Đem Ngọc Rồng 7 sao về cho {self._npc_label(npc_id)}")
+                return True
+            self._send(33, struct.pack(">h", npc_id))
+            self._quest_step_done = key
+            self._quest_request_due = now + 5
+            self.set_action(f"Báo cáo Ngọc Rồng 7 sao với {self._npc_label(npc_id)}")
+            return True
+        if task_id == 8 and index == 3:
+            karin_forest_map = 47
+            if self.map_id != karin_forest_map:
+                return self._travel_to(karin_forest_map, now)
+            self.set_action("Đã tới Rừng Karin; chờ server cập nhật nhiệm vụ")
+            return True
+        if task_id == 14 and index == 2:
+            planet = min(max(self.gender, 0), 2)
+            npc_id = 13 + planet  # Quy Lão, Trưởng lão Guru, or Vua Vegeta
+            target_map = (5, 13, 20)[planet]
+            if self.map_id != target_map:
+                return self._travel_to(target_map, now)
+            npc = self.npcs.get(npc_id)
+            if npc is None:
+                self.set_action(f"Chờ {self._npc_label(npc_id)} để giao Truyện Doremon tập 2")
+                return True
+            if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
+                self._move_towards(*npc)
+                self.set_action(f"Đem Truyện Doremon tập 2 về cho {self._npc_label(npc_id)}")
+                return True
+            key = f"{task_id}:{index}"
+            if self._quest_step_done == key and now < self._quest_request_due:
+                self.set_action("Chờ server xác nhận đã giao Truyện Doremon tập 2")
+                return True
+            self._send(33, struct.pack(">h", npc_id))
+            self._quest_step_done = key
+            self._quest_request_due = now + 5
+            self.set_action(f"Báo cáo Truyện Doremon tập 2 với {self._npc_label(npc_id)}")
             return True
         if step["map_id"] >= 0 and step["map_id"] != self.map_id:
             return self._travel_to(step["map_id"], now)
@@ -1226,6 +1505,14 @@ class BotRunner:
         self.set_action(f"Nói chuyện với {self._npc_label(npc_id)}")
         return True
 
+    def _planet_index(self) -> int:
+        """Infer the active planet from the character's actual map, not race."""
+        for map_id in (self.home_map, self.map_id):
+            for planet, maps in enumerate(PLANET_MAPS):
+                if map_id in maps:
+                    return planet
+        return self.gender if self.gender in (0, 1, 2) else self.config.gender
+
     def _quest_planet(self, target: int, now: float) -> bool:
         """Keep challenge-quest farming on its target planet."""
         if self.map_id in PLANET_MAPS[target]:
@@ -1245,7 +1532,7 @@ class BotRunner:
         self._travel_attempts = 0
         self.set_action(reason + "; thử tuyến khác")
 
-    def _travel_to(self, goal: int, now: float) -> bool:
+    def _travel_to(self, goal: int, now: float, allow_spaceships: bool = True) -> bool:
         if goal == self.map_id:
             self._travel_goal = goal
             self._travel_step = None
@@ -1264,7 +1551,7 @@ class BotRunner:
         self._travel_blocked = {edge: expiry for edge, expiry in self._travel_blocked.items()
                                 if expiry > now}
         blocked = set(self._travel_blocked)
-        step = MOVEMENT.next_step(self.map_id, goal, blocked)
+        step = MOVEMENT.next_step(self.map_id, goal, blocked, self.gender, allow_spaceships)
         if step is None:
             self.set_action(f"Chưa có tuyến hợp lệ từ map {self.map_id} tới {goal}; đang chờ thử lại")
             self._travel_next = now + 10
