@@ -4,6 +4,9 @@ set -euo pipefail
 APP_DIR="/opt/apps/Ngoc-Rong-For-Study"
 cd "$APP_DIR"
 
+echo "=== Backup database ==="
+sudo -n /usr/local/sbin/nro-db-backup
+
 echo "=== Pull latest code ==="
 git fetch origin main
 git merge --ff-only origin/main

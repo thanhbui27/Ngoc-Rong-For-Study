@@ -351,7 +351,15 @@ WorkingDirectory là bắt buộc vì Java đọc tài nguyên theo đường d�
 
 ### Quyền restart cho user deploy
 
-`deploy.sh` gọi hai lệnh `sudo systemctl restart`. Tạo rule giới hạn:
+`deploy.sh` gọi helper backup DB root-owned và hai lệnh `sudo systemctl restart`. Cài helper một lần bằng tài khoản quản trị:
+
+```bash
+cd /opt/apps/Ngoc-Rong-For-Study
+sudo install -o root -g root -m 755 ops/nro-db-backup.sh /usr/local/sbin/nro-db-backup
+sudo install -d -o root -g root -m 700 /var/backups/game-nro
+```
+
+Helper cố định trong `/usr/local/sbin` để user `deploy` không thể sửa lệnh chạy dưới quyền root. Tạo rule giới hạn:
 
 ```bash
 sudo visudo -f /etc/sudoers.d/nro-deploy
@@ -360,7 +368,7 @@ sudo visudo -f /etc/sudoers.d/nro-deploy
 Nội dung:
 
 ```text
-deploy ALL=(root) NOPASSWD: /usr/bin/systemctl restart nro-login, /usr/bin/systemctl restart nro-server
+deploy ALL=(root) NOPASSWD: /usr/local/sbin/nro-db-backup, /usr/bin/systemctl restart nro-login, /usr/bin/systemctl restart nro-server
 ```
 
 Kiểm tra:
@@ -380,15 +388,15 @@ User `deploy` không cần `sudo` toàn quyền cho pipeline này. Nếu VPS cũ
 
 Deploy bình thường **không import lại** `ngocrong.sql` hay `ngocrong-clean.sql`. Hai file này là dump/seed; Compose chỉ dùng seed khi khởi tạo volume DB mới. Thay đổi cho database đang chạy phải được viết thành migration riêng trong `db/migrations/`.
 
-Mỗi migration có version tăng dần và tên dạng `V2__ten_thay_doi.sql`. Không sửa file đã áp dụng; tạo version mới. `deploy.sh` build server trước, rồi chạy `nro.db.MigrationRunner` trước khi thay JAR/restart service. Runner chỉ chạy migration chưa có trong `schema_migrations`, lưu SHA-256 để phát hiện ai sửa file đã chạy, và làm deploy dừng nếu migration lỗi. Có thể xem trước migration bằng cách chạy runner không có `--apply` từ thư mục repo:
+Mỗi migration có version tăng dần và tên dạng `V2__ten_thay_doi.sql`. Không sửa file đã áp dụng; tạo version mới. `deploy.sh` backup DB trước, build server, rồi chạy `nro.db.MigrationRunner` trước khi thay JAR/restart service. Runner chỉ chạy migration chưa có trong `schema_migrations`, lưu SHA-256 để phát hiện ai sửa file đã chạy, và làm deploy dừng nếu migration lỗi. Có thể xem trước migration bằng cách chạy runner không có `--apply` từ thư mục repo:
 
 ```bash
 java -cp Server/target/TeaMobi-1.0-RELEASE-jar-with-dependencies.jar nro.db.MigrationRunner
 ```
 
-Để giữ dữ liệu người chơi, migration nên chỉ thêm bảng/cột/index hoặc thêm dữ liệu template còn thiếu. Không dùng dump seed trên DB đang chạy; tránh `DROP`, `TRUNCATE`, xóa hàng loạt hay ghi đè bảng. Migration hiện tại `V1` chỉ thêm option template cho các set mới bằng `INSERT IGNORE`; nếu DB đã có các ID đó thì hàng hiện hữu được giữ nguyên. Với ID bị dùng cho dữ liệu khác, cần kiểm tra và xử lý xung đột trước khi deploy.
+Để giữ dữ liệu người chơi, migration chỉ thay đổi dữ liệu cấu hình cần thiết; không dùng dump seed trên DB đang chạy, tránh `DROP`, `TRUNCATE`, xóa hàng loạt hay ghi đè bảng. `V1` thêm option template cho các set mới bằng `INSERT IGNORE`. `V2` cập nhật riêng cột `damage` của 10 hàng `power_limit` đầu để khớp các mốc sức đánh gốc; hai hàng cao nhất và các chỉ số khác được giữ nguyên.
 
-Trước khi push một thay đổi có migration (push sẽ tự deploy), tạo backup theo mục 9.2. Nếu migration có `ALTER TABLE`/DDL, kiểm thử trên bản DB staging/backup trước: MariaDB có các DDL tự commit, nên rollback transaction không thể hoàn tác một phần cấu trúc đã đổi. Sau deploy, kiểm tra log hai service và giữ backup cho tới khi xác nhận game chạy đúng.
+Mỗi lần deploy (push `main` hoặc chạy workflow thủ công), `deploy.sh` tạo backup DB trước khi fetch code mới và trước khi chạy migration. Nếu backup lỗi, deploy dừng lại. Nếu migration có `ALTER TABLE`/DDL, kiểm thử trên bản DB staging/backup trước: MariaDB có các DDL tự commit, nên rollback transaction không thể hoàn tác một phần cấu trúc đã đổi. Sau deploy, kiểm tra log hai service và giữ backup cho tới khi xác nhận game chạy đúng.
 
 **Trên VPS, dùng user `deploy`:**
 

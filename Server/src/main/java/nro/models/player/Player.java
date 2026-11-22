@@ -228,9 +228,24 @@ public class Player {
     public byte gender;
     public long createTime;
     public short head;
+    private volatile boolean newMemberBadgeSentToClient;
+    private volatile boolean newMemberBadgeExpiryNotified;
 
     public boolean hasNewMemberBadge() {
         return createTime > 0 && System.currentTimeMillis() < createTime + 30L * 24 * 60 * 60 * 1000;
+    }
+
+    public void markNewMemberBadgeSentToClient() {
+        newMemberBadgeSentToClient = hasNewMemberBadge();
+        newMemberBadgeExpiryNotified = false;
+    }
+
+    private void updateNewMemberBadge() {
+        if (newMemberBadgeSentToClient && !newMemberBadgeExpiryNotified && !hasNewMemberBadge()) {
+            newMemberBadgeExpiryNotified = true;
+            newMemberBadgeSentToClient = false;
+            Service.getInstance().sendNewMemberBadgeExpired(this);
+        }
     }
 
     public Timestamp lastimelogin;
@@ -481,6 +496,7 @@ public class Player {
     public void update() {
         if (!this.beforeDispose) {
             try {
+                updateNewMemberBadge();
                 if (!isBan) {
                     if (!this.isBoss) {
                         this.idPlayerForNPC = this.id;

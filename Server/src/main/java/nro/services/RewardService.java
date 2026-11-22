@@ -135,7 +135,7 @@ public class RewardService {
                             || ItemService.gI().getTemplate(ir.tempId).gender > 2) {
 
                         // up SKH
-                        if (isRewardSuccessful(player, 1, 1000)) {
+                        if (player.hasNewMemberBadge() && isRewardSuccessful(player, 1, 1000)) {
                             ItemMap itemMap = null;
                             if (Util.isTrue(90, 100)) {
                                 itemMap = new ItemMap(mob.zone,

@@ -1125,6 +1125,17 @@ public class Service {
             msg.writer().writeByte(pl.getEffFront());
             // }
             pl.sendMessage(msg);
+            pl.markNewMemberBadgeSentToClient();
+            msg.cleanup();
+        } catch (Exception e) {
+            Log.error(Service.class, e);
+        }
+    }
+
+    public void sendNewMemberBadgeExpired(Player player) {
+        try {
+            Message msg = messageSubCommand((byte) 70);
+            player.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
             Log.error(Service.class, e);
