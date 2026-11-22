@@ -11,6 +11,12 @@ import nro.models.item.ItemOption;
  */
 public class SetClothes {
 
+    public static final int SET_KAIO = 251;
+    public static final int SET_CADIC_M = 255;
+    public static final int SET_NAIL = 259;
+    public static final int SET_GOHAN = 263;
+    public static final int SET_CHAMPA = 265;
+
     private Player player;
 
     public SetClothes(Player player) {
@@ -28,6 +34,12 @@ public class SetClothes {
     public byte kakarot;
     public byte cadic;
     public byte nappa;
+
+    public byte kaio;
+    public byte cadicM;
+    public byte nail;
+    public byte gohan;
+    public byte champa;
 
     public boolean godClothes;
     public int ctHaiTac = -1;
@@ -118,13 +130,31 @@ public class SetClothes {
                             isActSet = true;
                             cadic++;
                             break;
+                        case SET_KAIO:
+                            isActSet = true;
+                            kaio++;
+                            break;
+                        case SET_CADIC_M:
+                            isActSet = true;
+                            cadicM++;
+                            break;
+                        case SET_NAIL:
+                            isActSet = true;
+                            nail++;
+                            break;
+                        case SET_GOHAN:
+                            isActSet = true;
+                            gohan++;
+                            break;
+                        case SET_CHAMPA:
+                            isActSet = true;
+                            champa++;
+                            break;
                     }
                     if (isActSet) {
                         break;
                     }
                 }
-            } else {
-                break;
             }
         }
     }
@@ -139,8 +169,57 @@ public class SetClothes {
         this.kakarot = 0;
         this.cadic = 0;
         this.nappa = 0;
+        this.kaio = 0;
+        this.cadicM = 0;
+        this.nail = 0;
+        this.gohan = 0;
+        this.champa = 0;
         this.godClothes = false;
         this.ctHaiTac = -1;
+    }
+
+    public int getKaioCriticalBonus() {
+        return kaio >= 2 ? 10 : 0;
+    }
+
+    public int getKaiokenCostReduction() {
+        return kaio >= 5 ? 25 : kaio >= 2 ? 10 : 0;
+    }
+
+    public int getKaiokenDamageBonus() {
+        return kaio >= 5 ? 25 : 0;
+    }
+
+    public int getCadicMExplosionDamageBonus() {
+        return cadicM >= 5 ? 30 : cadicM >= 4 ? 10 : 0;
+    }
+
+    public int getCadicMExplosionRangeBonus() {
+        return cadicM >= 2 ? 10 : 0;
+    }
+
+    public int getNailCriticalDamageBonus() {
+        return nail >= 2 ? 10 : 0;
+    }
+
+    public int getNailMasenkoDamageBonus() {
+        return nail >= 5 ? 20 : 0;
+    }
+
+    public int getNailMasenkoCooldownReduction() {
+        return nail >= 5 ? 30 : nail >= 4 ? 10 : 0;
+    }
+
+    public int getChampaBossDamageBonus() {
+        return champa >= 5 ? 50 : champa >= 4 ? 25 : champa >= 2 ? 10 : 0;
+    }
+
+    public int getChampaCriticalDamageBonus() {
+        return champa >= 5 ? 20 : 0;
+    }
+
+    public int getGohanLuckBonus() {
+        return gohan >= 5 ? 300 : 0;
     }
 
     public void dispose() {

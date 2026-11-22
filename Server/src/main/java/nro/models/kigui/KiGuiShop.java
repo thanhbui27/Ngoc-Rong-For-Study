@@ -429,7 +429,7 @@ public class KiGuiShop {
                 ds.writeByte(item.getConsignorID() == player.id ? 0 : 1); // isMe
                 ds.writeByte(item.itemOptions.size());
                 for (ItemOption option : item.itemOptions) {
-                    ds.writeByte(option.optionTemplate.id);
+                    ds.writeShort(option.optionTemplate.id);
                     ds.writeShort(option.param);
                 }
                 ds.writeByte(0);
@@ -484,7 +484,7 @@ public class KiGuiShop {
                     }
                     ds.writeByte(item.itemOptions.size());
                     for (ItemOption option : item.itemOptions) {
-                        ds.writeByte(option.optionTemplate.id);
+                        ds.writeShort(option.optionTemplate.id);
                         ds.writeShort(option.param);
                     }
                     ds.writeByte(0);
@@ -529,7 +529,7 @@ public class KiGuiShop {
             ds.writeByte(item.getConsignorID() == player.id ? 0 : 1); // isMe
             ds.writeByte(item.itemOptions.size());
             for (ItemOption option : item.itemOptions) {
-                ds.writeByte(option.optionTemplate.id);
+                ds.writeShort(option.optionTemplate.id);
                 ds.writeShort(option.param);
             }
             ds.writeByte(0);

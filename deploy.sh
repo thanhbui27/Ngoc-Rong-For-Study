@@ -25,6 +25,9 @@ if (( ${#login_jars[@]} != 1 || ${#server_jars[@]} != 1 )); then
   exit 1
 fi
 
+echo "=== Apply pending database migrations ==="
+java -cp "${server_jars[0]}" nro.db.MigrationRunner --apply
+
 cp "${login_jars[0]}" Login/Login.jar
 cp "${server_jars[0]}" Server/Server.jar
 

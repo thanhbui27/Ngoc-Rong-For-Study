@@ -290,7 +290,7 @@ public class ShopService {
                         msg.writer().writeInt(itemShop.gem);
                         msg.writer().writeByte(itemShop.options.size());
                         for (ItemOption option : itemShop.options) {
-                            msg.writer().writeByte(option.optionTemplate.id);
+                            msg.writer().writeShort(option.optionTemplate.id);
                             msg.writer().writeShort(option.param);
                         }
                         msg.writer().writeByte(itemShop.isNew ? 1 : 0);
@@ -331,7 +331,7 @@ public class ShopService {
                         msg.writer().writeInt(itemShop.costSpec);
                         msg.writer().writeByte(itemShop.options.size());
                         for (ItemOption option : itemShop.options) {
-                            msg.writer().writeByte(option.optionTemplate.id);
+                            msg.writer().writeShort(option.optionTemplate.id);
                             msg.writer().writeShort(option.param);
                         }
                         msg.writer().writeByte(itemShop.isNew ? 1 : 0);
@@ -648,7 +648,7 @@ public class ShopService {
                 List<ItemOption> itemOptions = item.getDisplayOptions();
                 msg.writer().writeByte(itemOptions.size());
                 for (ItemOption io : itemOptions) {
-                    msg.writer().writeByte(io.optionTemplate.id);
+                    msg.writer().writeShort(io.optionTemplate.id);
                     msg.writer().writeShort(io.param);
                 }
                 msg.writer().writeByte(1);
@@ -736,7 +736,7 @@ public class ShopService {
                 List<ItemOption> itemOptions = item.getDisplayOptions();
                 msg.writer().writeByte(itemOptions.size() + 1);
                 for (ItemOption io : itemOptions) {
-                    msg.writer().writeByte(io.optionTemplate.id);
+                    msg.writer().writeShort(io.optionTemplate.id);
                     msg.writer().writeShort(io.param);
                 }
                 // số lượng

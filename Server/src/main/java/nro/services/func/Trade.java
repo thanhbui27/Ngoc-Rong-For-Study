@@ -316,7 +316,7 @@ public class Trade {
                     List<ItemOption> itemOptions = item.getDisplayOptions();
                     ds.writeByte(itemOptions.size());
                     for (ItemOption io : itemOptions) {
-                        ds.writeByte(io.optionTemplate.id);
+                        ds.writeShort(io.optionTemplate.id);
                         ds.writeShort(io.param);
                     }
                 }
@@ -335,7 +335,7 @@ public class Trade {
                     List<ItemOption> itemOptions = item.getDisplayOptions();
                     ds.writeByte(itemOptions.size());
                     for (ItemOption io : itemOptions) {
-                        ds.writeByte(io.optionTemplate.id);
+                        ds.writeShort(io.optionTemplate.id);
                         ds.writeShort(io.param);
                     }
                 }

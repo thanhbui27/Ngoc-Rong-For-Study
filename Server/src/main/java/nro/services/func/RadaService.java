@@ -128,7 +128,7 @@ public class RadaService {
                 List<ItemOption> options = cardT.getOptions();
                 ds.writeByte(options.size());
                 for (ItemOption option : options) {
-                    ds.writeByte(option.optionTemplate.id);
+                    ds.writeShort(option.optionTemplate.id);
                     ds.writeShort(option.param);
                     ds.writeByte(option.activeCard);
                 }

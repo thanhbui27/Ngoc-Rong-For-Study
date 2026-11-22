@@ -131,6 +131,11 @@ public class NPoint {
     public short tlGold;
 
     /**
+     * Tỉ lệ may mắn cộng thêm khi nhận vật phẩm từ quái
+     */
+    public int tlMayMan;
+
+    /**
      * Tỉ lệ né đòn
      */
     public short tlNeDon;
@@ -309,6 +314,9 @@ public class NPoint {
                 break;
             case 100: // +#% vàng từ quái
                 this.tlGold += io.param;
+                break;
+            case 269: // +#% tỉ lệ nhận vật phẩm
+                this.tlMayMan += io.param;
                 break;
             case 101: // +#% TN,SM
                 this.tlTNSM.add(io.param);
@@ -574,6 +582,9 @@ public class NPoint {
         // set nappa
         if (this.player.setClothes.nappa == 5) {
             this.hpMax = clampStat((long) this.hpMax * 2L);
+        }
+        if (this.player.setClothes.cadicM >= 2) {
+            this.hpMax = clampStat((long) this.hpMax * 110L / 100L);
         }
         // ngọc rồng đen 2 sao
         if (this.player.rewardBlackBall.timeOutOfDateReward[1] > System.currentTimeMillis()) {
@@ -979,6 +990,7 @@ public class NPoint {
         if (player.getBuff() == Buff.BUFF_CRIT) {
             crit += 10;
         }
+        crit += this.player.setClothes.getKaioCriticalBonus();
     }
 
     private void setSpeed() {
@@ -1017,6 +1029,7 @@ public class NPoint {
         this.tlDameAttMob.clear();
         this.tlDameCrit.clear();
         this.tlGold = 0;
+        this.tlMayMan = 0;
         this.tlNeDon = 0;
         this.tlSDDep.clear();
         this.tlSubSD = 0;
@@ -1145,6 +1158,7 @@ public class NPoint {
                     percentDameIntrinsic = intrinsic.param1;
                 }
                 percentDameSkill = skillSelect.damage;
+                percentXDame += this.player.setClothes.getNailMasenkoDamageBonus();
                 // if (this.player.effectSkin.xDameChuong) {
                 // percentXDame += tlDameChuong * 100;
                 // this.player.effectSkin.xDameChuong = false;
@@ -1152,6 +1166,7 @@ public class NPoint {
                 break;
             case Skill.KAIOKEN:
                 percentDameSkill = skillSelect.damage;
+                percentXDame += this.player.setClothes.getKaiokenDamageBonus();
                 break;
             case Skill.LIEN_HOAN:
                 if (intrinsic.id == 13) {
@@ -1199,6 +1214,8 @@ public class NPoint {
             dameAttack *= 2;
             dameAttack = addOptionPercent(dameAttack, sumOptionPercent(this.tlDameCrit));
             dameAttack = addCriticalEffectBonuses(dameAttack);
+            dameAttack += calPercent(dameAttack, this.player.setClothes.getNailCriticalDamageBonus()
+                    + this.player.setClothes.getChampaCriticalDamageBonus());
         }
         dameAttack += calPercent(dameAttack, percentXDame);
         return rollDamage(dameAttack);
@@ -1212,6 +1229,10 @@ public class NPoint {
         int percentDameSkill = 0;
         int percentXDame = 0;
         switch (skillSelect.template.id) {
+            case Skill.MASENKO:
+                percentDameSkill = skillSelect.damage;
+                percentXDame = this.player.setClothes.getNailMasenkoDamageBonus();
+                break;
             case Skill.SUPER_KAME:
             case Skill.SUPER_ANTOMIC:
                 percentDameSkill = skillSelect.damage;
@@ -1233,9 +1254,15 @@ public class NPoint {
             dameAttack *= 2;
             dameAttack = addOptionPercent(dameAttack, sumOptionPercent(this.tlDameCrit));
             dameAttack = addCriticalEffectBonuses(dameAttack);
+            dameAttack += calPercent(dameAttack, this.player.setClothes.getNailCriticalDamageBonus()
+                    + this.player.setClothes.getChampaCriticalDamageBonus());
         }
         dameAttack += calPercent(dameAttack, percentXDame);
         return rollDamage(dameAttack);
+    }
+
+    public int applyChampaBossDamage(int damage) {
+        return clampStat(addOptionPercent(damage, this.player.setClothes.getChampaBossDamageBonus()));
     }
 
     public int getCurrPercentHP() {

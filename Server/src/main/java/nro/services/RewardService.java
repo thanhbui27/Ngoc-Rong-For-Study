@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -134,7 +135,7 @@ public class RewardService {
                             || ItemService.gI().getTemplate(ir.tempId).gender > 2) {
 
                         // up SKH
-                        if (Util.isTrue(1, 1000000)) {
+                        if (isRewardSuccessful(player, 1, 1000)) {
                             ItemMap itemMap = null;
                             if (Util.isTrue(90, 100)) {
                                 itemMap = new ItemMap(mob.zone,
@@ -152,7 +153,7 @@ public class RewardService {
                             list.add(itemMap);
                             ServerNotify.gI().notify(player.name + " vừa nhặt được " + itemMap.itemTemplate.name
                                     + " Set Kích Hoạt");
-                        } else if (Util.isTrue(ir.ratio, ir.typeRatio)) {
+                        } else if (isRewardSuccessful(player, ir.ratio, ir.typeRatio)) {
                             ItemMap itemMap = new ItemMap(mob.zone, ir.tempId, 1, x, yEnd, player.id);
                             // init option
                             switch (itemMap.itemTemplate.type) {
@@ -192,7 +193,7 @@ public class RewardService {
                 if (cskbSize > 0) {
                     if (player.itemTime.isUseMayDo) {
                         ItemReward cskb = mobReward.capsuleKyBi.get(Util.nextInt(0, cskbSize - 1));
-                        if (Util.isTrue(cskb.ratio, cskb.typeRatio)) {
+                        if (isRewardSuccessful(player, cskb.ratio, cskb.typeRatio)) {
                             ItemMap itemMap = new ItemMap(mob.zone, cskb.tempId, 1, x, yEnd, player.id);
                             list.add(itemMap);
                         }
@@ -201,7 +202,7 @@ public class RewardService {
                 if (foodSize > 0) {
                     if (player.setClothes.godClothes) {
                         ItemReward food = mobReward.foods.get(Util.nextInt(0, foodSize - 1));
-                        if (Util.isTrue(food.ratio, food.typeRatio)) {
+                        if (isRewardSuccessful(player, food.ratio, food.typeRatio)) {
                             ItemMap itemMap = new ItemMap(mob.zone, food.tempId, 1, x, yEnd, player.id);
                             list.add(itemMap);
                         }
@@ -210,7 +211,7 @@ public class RewardService {
                 if (biKiepSize > 0) {
                     if (player.cFlag > 0) {
                         ItemReward biKiep = mobReward.biKieps.get(Util.nextInt(0, biKiepSize - 1));
-                        if (Util.isTrue(biKiep.ratio, biKiep.typeRatio)) {
+                        if (isRewardSuccessful(player, biKiep.ratio, biKiep.typeRatio)) {
                             ItemMap itemMap = new ItemMap(mob.zone, biKiep.tempId, 1, x, yEnd, player.id);
                             list.add(itemMap);
                         }
@@ -218,9 +219,10 @@ public class RewardService {
                 }
                 if (goldSize > 0 && biKiepSize <= 0 && foodSize <= 0 && cskbSize <= 0) {
                     ItemReward gr = mobReward.goldRewards.get(Util.nextInt(0, goldSize - 1));
-                    if (Util.isTrue(gr.ratio, gr.typeRatio)) {
+                    if (isRewardSuccessful(player, gr.ratio, gr.typeRatio)) {
                         ItemMap itemMap = new ItemMap(mob.zone, gr.tempId, 1, x, yEnd, player.id);
                         initQuantityGold(itemMap);
+                        applyGohanGoldBonus(player, itemMap);
                         list.add(itemMap);
                     }
                 }
@@ -230,7 +232,7 @@ public class RewardService {
                     rd.add(20, 861);
                     rd.add(5, 15);
                     rd.add(10, 17);
-                    if (Util.isTrue(39, 100)) {
+                    if (isRewardSuccessful(player, 39, 100)) {
                         ItemMap trungMabu = new ItemMap(mob.zone, (short) 568, 1, x, yEnd, player.id);
                         list.add(trungMabu);
                     }
@@ -242,10 +244,11 @@ public class RewardService {
                     }
                     for (int i = 0; i < 10; i++) {
                         ItemReward gr = mobReward.goldRewards.get(Util.nextInt(0, goldSize - 1));
-                        if (Util.isTrue(gr.ratio, gr.typeRatio)) {
+                        if (isRewardSuccessful(player, gr.ratio, gr.typeRatio)) {
                             ItemMap itemMap = new ItemMap(mob.zone, gr.tempId, 1, x + Util.nextInt(-50, 50), yEnd,
                                     player.id);
                             initQuantityGold(itemMap);
+                            applyGohanGoldBonus(player, itemMap);
                             list.add(itemMap);
                         }
                     }
@@ -253,12 +256,12 @@ public class RewardService {
 
                 if (mapid >= 169 && mapid <= 171) {
                     // Up Hồng Ngọc
-                    if (Util.isTrue(1, 10)) {
+                    if (isRewardSuccessful(player, 1, 10)) {
                         Item HONG_NGOC = ItemService.gI().createNewItem((short) ConstItem.HONG_NGOC);
                         InventoryService.gI().addItemBag(player, HONG_NGOC, 1);
                         InventoryService.gI().sendItemBags(player);
                     }
-                    if (Util.isTrue(1, 10)) {
+                    if (isRewardSuccessful(player, 1, 10)) {
                         Item THOI_VANG = ItemService.gI().createNewItem((short) ConstItem.THOI_VANG);
                         InventoryService.gI().addItemBag(player, THOI_VANG, 1);
                         InventoryService.gI().sendItemBags(player);
@@ -274,24 +277,24 @@ public class RewardService {
 
                 // sk ngu hanh son
                 if (MapService.gI().isMapNguHanhSon(mapid)) {
-                    if (Util.isTrue(1, 500)) {
+                    if (isRewardSuccessful(player, 1, 500)) {
                         ItemMap itemMap = new ItemMap(mob.zone, ConstItem.QUA_HONG_DAO, 1, x, yEnd, player.id);
                         itemMap.options.add(new ItemOption(74, 0));
                         list.add(itemMap);
                     }
-                    if (Util.isTrue(1, 1000)) {
+                    if (isRewardSuccessful(player, 1, 1000)) {
                         ItemMap itemMap = new ItemMap(mob.zone, ConstItem.CHU_AN, 1, x, yEnd, player.id);
                         itemMap.options.add(new ItemOption(74, 0));
                         list.add(itemMap);
                     }
                 } else if (MapService.gI().isMapDoanhTrai(mapid)) {
-                    if (Util.isTrue(1, 30)) {
+                    if (isRewardSuccessful(player, 1, 30)) {
                         ItemMap itemMap = new ItemMap(mob.zone, ConstItem.CHU_KHAI, 1, x, yEnd, player.id);
                         itemMap.options.add(new ItemOption(74, 0));
                         list.add(itemMap);
                     }
                 } else if (MapService.gI().isMapBanDoKhoBau(mapid)) {
-                    if (Util.isTrue(1, 30)) {
+                    if (isRewardSuccessful(player, 1, 30)) {
                         ItemMap itemMap = new ItemMap(mob.zone, ConstItem.CHU_PHONG, 1, x, yEnd, player.id);
                         itemMap.options.add(new ItemOption(74, 0));
                         list.add(itemMap);
@@ -299,7 +302,7 @@ public class RewardService {
                 }
                 // rừng nguyên thủy
                 if (mapid >= 160 && mapid <= 163) {
-                    if (Util.isTrue(1, 1000)) {
+                    if (isRewardSuccessful(player, 1, 1000)) {
                         ItemMap itemMap = new ItemMap(mob.zone,
                                 Util.nextInt(ConstItem.MANH_AO, ConstItem.MANH_GANG_TAY), 1,
                                 x, yEnd, player.id);
@@ -312,18 +315,18 @@ public class RewardService {
                 if (mapid == 153) {// map bang
                     int numMenber = player.zone.getPlayersSameClan(player.clan.id).size();
                     if (numMenber >= 2) {
-                        if (Util.isTrue(1, 500)) {
+                        if (isRewardSuccessful(player, 1, 500)) {
                             player.clanMember.memberPoint++;
                             Service.getInstance().sendThongBao(player, "Bạn nhận được capsule bang hội");
                         }
                     }
                 }
 
-                if (mapid >= 168 && mapid <= 171 && Util.isTrue(1, 100)) {
+                if (mapid >= 168 && mapid <= 171 && isRewardSuccessful(player, 1, 100)) {
                     list.add(new ItemMap(mob.zone, 2150, 1, x, yEnd, player.id));
                 }
                 // BDKB
-                if (mapid >= 135 && mapid <= 138 && Util.isTrue(50, 100)) {
+                if (mapid >= 135 && mapid <= 138 && isRewardSuccessful(player, 50, 100)) {
                     int soluong = 1;
                     list.add(new ItemMap(mob.zone, 934, soluong, x, yEnd, player.id));
                 }
@@ -350,6 +353,22 @@ public class RewardService {
         Attribute at = ServerManager.gI().getAttributeManager().find(ConstAttribute.VANG);
         if (at != null && !at.isExpired()) {
             item.quantity += item.quantity * at.getValue() / 100;
+        }
+    }
+
+    private boolean isRewardSuccessful(Player player, int ratio, int ratioTotal) {
+        if (ratioTotal <= 0 || ratio <= 0) {
+            return false;
+        }
+        int luckBonus = Math.max(0, player.nPoint.tlMayMan) + player.setClothes.getGohanLuckBonus();
+        double boostedRatio = Math.min((double) ratioTotal,
+                (double) ratio * (100L + luckBonus) / 100.0);
+        return ThreadLocalRandom.current().nextDouble(ratioTotal) < boostedRatio;
+    }
+
+    private void applyGohanGoldBonus(Player player, ItemMap item) {
+        if (player.setClothes.gohan >= 5 && item != null) {
+            item.quantity += item.quantity / 2;
         }
     }
 
@@ -1130,29 +1149,33 @@ public class RewardService {
     // set kích hoạt
     public void initActivationOption(int gender, int type, List<ItemOption> list) {
         if (type <= 4) {
-            int[] idOption;
+            if (gender < 0 || gender >= ACTIVATION_SET.length) {
+                return;
+            }
+            List<int[]> availableSets = new ArrayList<>();
+            for (int[] set : ACTIVATION_SET[gender]) {
+                // Các set cũ có thêm 2 cột tỉ lệ; chỉ dùng ID tên set và ID mô tả hiệu ứng.
+                availableSets.add(new int[] { set[0], set[1] });
+            }
             if (gender == 0) {
-                if (Util.isTrue(80, 100)) {
-                    idOption = ACTIVATION_SET[gender][Util.nextInt(1, 2)];
-                } else {
-                    idOption = ACTIVATION_SET[gender][0];
-                }
+                availableSets.add(new int[] { nro.models.player.SetClothes.SET_KAIO, 252, 253, 254 });
             } else if (gender == 1) {
-                if (Util.isTrue(80, 100)) {
-                    idOption = ACTIVATION_SET[gender][1];
-                } else {
-                    idOption = ACTIVATION_SET[gender][Util.nextInt(0, 2)];
-                }
+                availableSets.add(new int[] { nro.models.player.SetClothes.SET_NAIL, 260, 261, 262 });
             } else {
-                if (Util.isTrue(90, 100)) {
-                    idOption = ACTIVATION_SET[gender][Util.nextInt(1, 2)];
-                } else {
-                    idOption = ACTIVATION_SET[gender][1];
+                availableSets.add(new int[] { nro.models.player.SetClothes.SET_CADIC_M, 256, 257, 258 });
+            }
+            availableSets.add(new int[] { nro.models.player.SetClothes.SET_GOHAN, 264 });
+            availableSets.add(new int[] { nro.models.player.SetClothes.SET_CHAMPA, 266, 267, 268 });
+
+            int[] selectedSet = availableSets.get(Util.nextInt(0, availableSets.size() - 1));
+            list.add(new ItemOption(selectedSet[0], 1)); // tên set
+            if (selectedSet[0] < nro.models.player.SetClothes.SET_KAIO) {
+                list.add(new ItemOption(selectedSet[1], 100)); // mô tả set cũ; tham số dùng hiển thị %
+            } else {
+                for (int i = 1; i < selectedSet.length; i++) {
+                    list.add(new ItemOption(selectedSet[i], 0)); // mô tả mốc hiệu ứng mới
                 }
             }
-
-            list.add(new ItemOption(idOption[0], 1)); // tên set
-            list.add(new ItemOption(idOption[1], 100)); // hiệu ứng set
             list.add(new ItemOption(30, 0)); // không thể giao dịch
             list.add(new ItemOption(73, 0));
         }

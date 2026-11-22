@@ -143,11 +143,11 @@ public class SkillService {
         boolean miss = false;
         switch (player.playerSkill.skillSelect.template.id) {
             case Skill.KAIOKEN: // kaioken
-                int hpUse = player.nPoint.hpMax / 100 * 10;
+                int hpUse = getKaiokenHpCost(player);
                 if (player.nPoint.hp <= hpUse) {
                     break;
                 } else {
-                    player.nPoint.setHp(player.nPoint.mp - hpUse);
+                    player.nPoint.setHp(player.nPoint.hp - hpUse);
                     PlayerService.gI().sendInfoHpMpMoney(player);
                     Service.getInstance().Send_Info_NV(player);
                 }
@@ -397,25 +397,30 @@ public class SkillService {
     }
 
     public void handleTuSat(Player player) {
+        if (player == null || player.zone == null || player.playerSkill == null
+                || player.playerSkill.skillSelect == null) {
+            return;
+        }
         player.playerSkill.prepareTuSat = false;
         int rangeBom = SkillUtil.getRangeBom(player.playerSkill.skillSelect.point);
+        rangeBom += (int) ((long) rangeBom * player.setClothes.getCadicMExplosionRangeBonus() / 100);
         int dame = player.nPoint.hpMax;
         if (player.effectSkill.isMonkey) {
             dame = (int) (dame / 2.4);
         } else {
             dame /= 2;
         }
-        for (Mob mob : player.zone.mobs) {
-            if (Util.getDistance(player, mob) <= rangeBom) {
+        dame = (int) Math.min(Integer.MAX_VALUE,
+                (long) dame * (100L + player.setClothes.getCadicMExplosionDamageBonus()) / 100L);
+        for (Mob mob : new ArrayList<>(player.zone.mobs)) {
+            if (mob != null && !mob.isDie() && Util.getDistance(player, mob) <= rangeBom) {
                 mob.injured(player, dame, true);
             }
         }
-        for (int j = 0; j < player.zone.getHumanoids().size(); j++) {
-            Player pl = player.zone.getHumanoids().get(j);
+        for (Player pl : new ArrayList<>(player.zone.getHumanoids())) {
             if (pl != null && !player.equals(pl) && (canAttackPlayer(player, pl) || player.isBoss)) {
-                // && Util.getDistance(player, pl) <= rangeBom) { // Xóa điều kiện khoảng cách
-                // player
-                pl.injured(player, pl.isBoss ? dame : dame, false, false);
+                int damage = pl.isBoss ? player.nPoint.applyChampaBossDamage(dame) : dame;
+                pl.injured(player, damage, false, false);
                 PlayerService.gI().sendInfoHpMpMoney(pl);
                 Service.getInstance().Send_Info_NV(pl);
             }
@@ -597,8 +602,11 @@ public class SkillService {
         if (plInjure.effectSkill.anTroi) {
             plAtt.nPoint.isCrit100 = true;
         }
-        int dameHit = plInjure.injured(plAtt, miss ? 0 : damage != -1 ? damage : plAtt.nPoint.getDameAttack(false),
-                false, false);
+        int attackDamage = miss ? 0 : damage != -1 ? damage : plAtt.nPoint.getDameAttack(false);
+        if (plInjure.isBoss && attackDamage > 0) {
+            attackDamage = plAtt.nPoint.applyChampaBossDamage(attackDamage);
+        }
+        int dameHit = plInjure.injured(plAtt, attackDamage, false, false);
         phanSatThuong(plAtt, plInjure, dameHit);
         hutHPMP(plAtt, dameHit, false);
         Message msg;
@@ -697,17 +705,19 @@ public class SkillService {
     public boolean canUseSkillWithMana(Player player) {
         if (player.playerSkill.skillSelect != null) {
             if (player.playerSkill.skillSelect.template.id == Skill.KAIOKEN) {
-                int hpUse = player.nPoint.hpMax / 100 * 10;
+                int hpUse = getKaiokenHpCost(player);
                 if (player.nPoint.hp <= hpUse) {
                     return false;
                 }
             }
             switch (player.playerSkill.skillSelect.template.manaUseType) {
                 case 0 -> {
-                    return player.nPoint.mp >= player.playerSkill.skillSelect.manaUse;
+                    return player.nPoint.mp >= getManaCostAfterSet(player,
+                            player.playerSkill.skillSelect.manaUse);
                 }
                 case 1 -> {
                     long mpUse = (long) player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100;
+                    mpUse = getManaCostAfterSet(player, mpUse);
                     return player.nPoint.mp >= mpUse;
                 }
                 case 2 -> {
@@ -759,21 +769,41 @@ public class SkillService {
         if (player.playerSkill.skillSelect != null) {
             switch (player.playerSkill.skillSelect.template.manaUseType) {
                 case 0 -> {
-                    if (player.nPoint.mp >= player.playerSkill.skillSelect.manaUse) {
-                        player.nPoint.setMp(player.nPoint.mp - player.playerSkill.skillSelect.manaUse);
-                    }
-                }
-                case 1 -> {
-                    long mpUse = (long) player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100;
+                    long mpUse = getManaCostAfterSet(player, player.playerSkill.skillSelect.manaUse);
                     if (player.nPoint.mp >= mpUse) {
                         player.nPoint.setMp(player.nPoint.mp - mpUse);
                     }
                 }
-                case 2 ->
-                    player.nPoint.setMp(0);
+                case 1 -> {
+                    long mpUse = (long) player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100;
+                    mpUse = getManaCostAfterSet(player, mpUse);
+                    if (player.nPoint.mp >= mpUse) {
+                        player.nPoint.setMp(player.nPoint.mp - mpUse);
+                    }
+                }
+                case 2 -> {
+                    int reduction = player.playerSkill.skillSelect.template.id == Skill.KAIOKEN
+                            ? player.setClothes.getKaiokenCostReduction() : 0;
+                    player.nPoint.setMp(reduction > 0
+                            ? player.nPoint.mp * reduction / 100
+                            : 0);
+                }
             }
             PlayerService.gI().sendInfoHpMpMoney(player);
         }
+    }
+
+    private long getManaCostAfterSet(Player player, long manaCost) {
+        if (player.playerSkill.skillSelect.template.id != Skill.KAIOKEN) {
+            return manaCost;
+        }
+        int reduction = player.setClothes.getKaiokenCostReduction();
+        return manaCost * (100 - reduction) / 100;
+    }
+
+    private int getKaiokenHpCost(Player player) {
+        int reduction = player.setClothes.getKaiokenCostReduction();
+        return player.nPoint.hpMax / 100 * 10 * (100 - reduction) / 100;
     }
 
     private void setLastTimeUseSkill(Player player, int skillId) {
@@ -804,6 +834,9 @@ public class SkillService {
                 if (intrinsic.id == 11) {
                     subTimeParam = intrinsic.param1;
                 }
+            }
+            case Skill.MASENKO -> {
+                subTimeParam = player.setClothes.getNailMasenkoCooldownReduction();
             }
             case Skill.DE_TRUNG -> {
                 if (intrinsic.id == 12) {

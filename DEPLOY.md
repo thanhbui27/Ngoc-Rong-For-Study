@@ -376,6 +376,20 @@ User `deploy` không cần `sudo` toàn quyền cho pipeline này. Nếu VPS cũ
 
 ## 6. Deploy tay lần đầu
 
+### Cập nhật database an toàn
+
+Deploy bình thường **không import lại** `ngocrong.sql` hay `ngocrong-clean.sql`. Hai file này là dump/seed; Compose chỉ dùng seed khi khởi tạo volume DB mới. Thay đổi cho database đang chạy phải được viết thành migration riêng trong `db/migrations/`.
+
+Mỗi migration có version tăng dần và tên dạng `V2__ten_thay_doi.sql`. Không sửa file đã áp dụng; tạo version mới. `deploy.sh` build server trước, rồi chạy `nro.db.MigrationRunner` trước khi thay JAR/restart service. Runner chỉ chạy migration chưa có trong `schema_migrations`, lưu SHA-256 để phát hiện ai sửa file đã chạy, và làm deploy dừng nếu migration lỗi. Có thể xem trước migration bằng cách chạy runner không có `--apply` từ thư mục repo:
+
+```bash
+java -cp Server/target/TeaMobi-1.0-RELEASE-jar-with-dependencies.jar nro.db.MigrationRunner
+```
+
+Để giữ dữ liệu người chơi, migration nên chỉ thêm bảng/cột/index hoặc thêm dữ liệu template còn thiếu. Không dùng dump seed trên DB đang chạy; tránh `DROP`, `TRUNCATE`, xóa hàng loạt hay ghi đè bảng. Migration hiện tại `V1` chỉ thêm option template cho các set mới bằng `INSERT IGNORE`; nếu DB đã có các ID đó thì hàng hiện hữu được giữ nguyên. Với ID bị dùng cho dữ liệu khác, cần kiểm tra và xử lý xung đột trước khi deploy.
+
+Trước khi push một thay đổi có migration (push sẽ tự deploy), tạo backup theo mục 9.2. Nếu migration có `ALTER TABLE`/DDL, kiểm thử trên bản DB staging/backup trước: MariaDB có các DDL tự commit, nên rollback transaction không thể hoàn tác một phần cấu trúc đã đổi. Sau deploy, kiểm tra log hai service và giữ backup cho tới khi xác nhận game chạy đúng.
+
 **Trên VPS, dùng user `deploy`:**
 
 ```bash
