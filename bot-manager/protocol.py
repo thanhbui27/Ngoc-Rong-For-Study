@@ -179,7 +179,7 @@ def read_items(reader: Reader, slots: dict[int, int] | None = None,
             continue
         count = reader.i32()
         info, description = reader.utf(), reader.utf()
-        options = [{"id": reader.u8(), "param": reader.u16()} for _ in range(reader.u8())]
+        options = [{"id": reader.u16(), "param": reader.u16()} for _ in range(reader.u8())]
         items[item_id] = items.get(item_id, 0) + count
         if slots is not None:
             slots.setdefault(item_id, index)
