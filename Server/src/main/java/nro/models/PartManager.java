@@ -43,7 +43,8 @@ public class PartManager {
     public void load() {
         try (java.sql.Connection con = DBService.gI().getConnectionForGame()) {
             Gson gson = new Gson();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM part");
+            // Part IDs are positions in the binary data sent to clients.
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM part ORDER BY id");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 short id = rs.getShort("id");

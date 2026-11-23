@@ -218,6 +218,9 @@ public abstract class Npc implements IAtionNpc {
     }
 
     public boolean canOpenNpc(Player player) {
+        if (this.tempId == ConstNpc.ADMIN_ITEM_CATALOG && !player.isAdmin()) {
+            return false;
+        }
         if (this.tempId == ConstNpc.DAU_THAN) {
             if (player.zone.map.mapId == 21
                     || player.zone.map.mapId == 22

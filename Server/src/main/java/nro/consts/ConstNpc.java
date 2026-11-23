@@ -124,11 +124,14 @@ public class ConstNpc {
         public static final byte CAY_THONG = 77;
         public static final byte OBITO = 78;
         public static final byte GOGETA_SSJ4 = 79;
+        public static final byte ADMIN_ITEM_CATALOG = 80;
 
         // ----------------------index menu------------------------------------------
         // index menu base
         public static final int IGNORE_MENU = 712002;
         public static final int BASE_MENU = 752002;
+        public static final int ADMIN_ITEM_CATALOG_PAGE_MENU = 752004;
+        public static final int ADMIN_ITEM_CATALOG_SHOP = 752005;
         public static final int ESCORT_QILIN_MENU = 7520033;
 
         public static final int MENU_OPEN_KGHD = 500;

@@ -1,0 +1,7817 @@
+{
+  "summary": {
+    "description": 347,
+    "icon_id": 264,
+    "name": 266,
+    "type": 272,
+    "gender": 202,
+    "part_id": 24,
+    "power_required": 9
+  },
+  "mismatches": [
+    {
+      "id": 196,
+      "name": "Avatar",
+      "differences": {
+        "description": {
+          "local": "Dùng để thay  khuôn mặt",
+          "observed": "Dùng để thay đổi khuôn mặt"
+        }
+      }
+    },
+    {
+      "id": 197,
+      "name": "Avatar",
+      "differences": {
+        "description": {
+          "local": "Dùng để thay khuôn mặt",
+          "observed": "Dùng để thay đổi khuôn mặt"
+        }
+      }
+    },
+    {
+      "id": 283,
+      "name": "Cải trang",
+      "differences": {
+        "description": {
+          "local": "Cải trang thành Yarirne",
+          "observed": "Cải trang thành Yarirobe"
+        }
+      }
+    },
+    {
+      "id": 386,
+      "name": "Nón Noel Xám",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 387,
+      "name": "Nón Noel Đỏ",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 388,
+      "name": "Nón Noel Xanh",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 389,
+      "name": "Nón Noel Xám",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 390,
+      "name": "Nón Noel Đỏ",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 391,
+      "name": "Nón Noel Xanh",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 392,
+      "name": "Nón Noel Xám",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 393,
+      "name": "Nón Noel Đỏ",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 394,
+      "name": "Nón Noel Xanh",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất khi sự kiện kết thúc",
+          "observed": "Vật phẩm sự kiện, biến mất khi sự kiện kết thúc"
+        }
+      }
+    },
+    {
+      "id": 547,
+      "name": "Cải trang",
+      "differences": {
+        "description": {
+          "local": "Cải trang thành Tôn Ngộ Không Nhỏ",
+          "observed": "Cải trang thành Tôn Ngộ Không (chỉ dành cho đệ tử)"
+        }
+      }
+    },
+    {
+      "id": 548,
+      "name": "Cải trang",
+      "differences": {
+        "description": {
+          "local": "Cải trang thành Bát Giới Nhỏ",
+          "observed": "Cải trang thành Bát Giới (chỉ dành cho đệ tử)"
+        }
+      }
+    },
+    {
+      "id": 598,
+      "name": "Avatar",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất vào ngày 11/2",
+          "observed": "Vật phẩm sự kiện, biến mất vào ngày 11/2"
+        }
+      }
+    },
+    {
+      "id": 599,
+      "name": "Avatar",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất vào ngày 11/2",
+          "observed": "Vật phẩm sự kiện, biến mất vào ngày 11/2"
+        }
+      }
+    },
+    {
+      "id": 600,
+      "name": "Avatar",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK, biến mất vào ngày 11/2",
+          "observed": "Vật phẩm sự kiện, biến mất vào ngày 11/2"
+        }
+      }
+    },
+    {
+      "id": 642,
+      "name": "Cải trang ma trơi",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 643,
+      "name": "Cải trang dơi nhí",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 644,
+      "name": "Cải trang bộ xương",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 5101,
+          "observed": 11750
+        }
+      }
+    },
+    {
+      "id": 645,
+      "name": "Cải trang bộ xương",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 5105,
+          "observed": 11754
+        }
+      }
+    },
+    {
+      "id": 646,
+      "name": "Cải trang bộ xương",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 5103,
+          "observed": 11752
+        }
+      }
+    },
+    {
+      "id": 754,
+      "name": "Nón Chuột may mắn",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 755,
+      "name": "Nón Chuột may mắn",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 756,
+      "name": "Nón Chuột may mắn",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 843,
+      "name": "Cải trang Trâu vàng",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 844,
+      "name": "Cải trang Trâu đen",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 845,
+      "name": "Cải trang Trâu trắng",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 846,
+      "name": "Nón Trâu may mắn",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 847,
+      "name": "Nón Trâu may mắn",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 848,
+      "name": "Nón Trâu may mắn",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 853,
+      "name": "Cải trang Trâu Nâu",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 854,
+      "name": "Cải trang Trâu Nâu",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 855,
+      "name": "Cải trang Trâu Nâu",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 856,
+      "name": "Cải trang Trâu Đốm",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 857,
+      "name": "Cải trang Trâu Đốm",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 858,
+      "name": "Cải trang Trâu Đốm",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 860,
+      "name": "Cải trang Mị Nương",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 875,
+      "name": "Cải trang Cadic",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 876,
+      "name": "Cải trang Gohan",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 877,
+      "name": "Cải trang Pocolo",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 878,
+      "name": "Cải trang Cooler vàng",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 879,
+      "name": "Cải trang Thống Chế Kilo",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 883,
+      "name": "Cải trang Black Gohan Rose",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 884,
+      "name": "Cải trang Hit",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 885,
+      "name": "CT Lích Tên béo",
+      "differences": {
+        "name": {
+          "local": "Cải trang Lích Tên",
+          "observed": "CT Lích Tên béo"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 892,
+      "name": "Thỏ xám",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 893,
+      "name": "Thỏ trắng",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 898,
+      "name": "Cải trang Zamasu",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 904,
+      "name": "Cải trang Black Goku SSJ White",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 905,
+      "name": "Cải trang Siêu Thần Trái Đất",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 906,
+      "name": "Cải trang Mighty Mask",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 907,
+      "name": "Cải trang Siêu thần Namếc",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 908,
+      "name": "Ma phong ba",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 909,
+      "name": "Thần chết cute",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 910,
+      "name": "Bí ngô nhí nhảnh",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 911,
+      "name": "Cải trang Siêu Thần Xayda",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 912,
+      "name": "Cải trang Gohan áo xanh",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 913,
+      "name": "Cải trang Póc áo đỏ",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 914,
+      "name": "Cải trang Búp bê Arale",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 916,
+      "name": "Lính bảo vệ tam giác",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 917,
+      "name": "Lính bảo vệ vuông",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 918,
+      "name": "Lính bảo vệ tròn",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 919,
+      "name": "Búp bê",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 922,
+      "name": "Cải trang Goku Noel",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 923,
+      "name": "Cải trang Pico Noel",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 924,
+      "name": "Cải trang Ca đíc Noel",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 936,
+      "name": "Tuần lộc nhí",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 937,
+      "name": "Cải trang Mabư Noel",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 938,
+      "name": "Cải trang Goku thời trang",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 939,
+      "name": "Cải trang Pôcôlô thời trang",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 940,
+      "name": "Cải trang Ca Đíc thời trang",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 942,
+      "name": "Hổ mặp vàng",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 943,
+      "name": "Hổ mặp trắng",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 944,
+      "name": "Hổ mặp xanh",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 945,
+      "name": "Cải trang Goku Tarzan",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 948,
+      "name": "Cải trang Hổ vàng",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 951,
+      "name": "Cải trang Siêu Goku Tarzan",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 952,
+      "name": "Cải trang Hổ trắng",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 953,
+      "name": "Cải trang Hổ xanh",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 967,
+      "name": "Sao la",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 968,
+      "name": "Số 7 Goku",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 969,
+      "name": "Số 11 Gohan",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 970,
+      "name": "Số 6 Cađíc",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 971,
+      "name": "Số 2 Krilin",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 972,
+      "name": "Số 4 Thên Xin Hăng",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 973,
+      "name": "Số 10 Pôcôlô",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 974,
+      "name": "Số 1 Mabư",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 975,
+      "name": "Số 8 Biden",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 976,
+      "name": "Số 9 Quy lão Kamê",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 977,
+      "name": "Số 3 Poc",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 978,
+      "name": "Số 5 Pic",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 985,
+      "name": "Cải trang Chill",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 986,
+      "name": "Cải trang Chill cấp 2",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 989,
+      "name": "Cải trang Gohan Siêu Nhân",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "0",
+          "observed": "Cải trang Gohan Siêu Nhân"
+        },
+        "description": {
+          "local": "0",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 0,
+          "observed": 9407
+        },
+        "part_id": {
+          "local": 0,
+          "observed": -1
+        }
+      }
+    },
+    {
+      "id": 990,
+      "name": "Cải trang Biđen Siêu Nhân",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 991,
+      "name": "Cải trang Bản Cô Nương Siêu Nhân",
+      "differences": {
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        }
+      }
+    },
+    {
+      "id": 1008,
+      "name": "Cua đỏ",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1010,
+      "name": "Cải trang Áo vịt cam",
+      "differences": {
+        "icon_id": {
+          "local": 9494,
+          "observed": 9497
+        }
+      }
+    },
+    {
+      "id": 1011,
+      "name": "Cải trang Áo trắng hoa",
+      "differences": {
+        "icon_id": {
+          "local": 9525,
+          "observed": 9528
+        }
+      }
+    },
+    {
+      "id": 1039,
+      "name": "Pet Thỏ ốm",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1040,
+      "name": "Pet Thỏ mập",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1046,
+      "name": "Pet Khỉ Bong Bóng",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1107,
+      "name": "Pet Bí Ma Vương",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1114,
+      "name": "Pet Ma vàng phù thủy",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1155,
+      "name": "Noel Goku",
+      "differences": {
+        "name": {
+          "local": "Noel 2022 Goku",
+          "observed": "Noel Goku"
+        }
+      }
+    },
+    {
+      "id": 1156,
+      "name": "Noel Cađíc",
+      "differences": {
+        "name": {
+          "local": "Noel 2022 Cađíc",
+          "observed": "Noel Cađíc"
+        }
+      }
+    },
+    {
+      "id": 1157,
+      "name": "Noel Pôcôlô",
+      "differences": {
+        "name": {
+          "local": "Noel 2022 Pôcôlô",
+          "observed": "Noel Pôcôlô"
+        }
+      }
+    },
+    {
+      "id": 1188,
+      "name": "Pet mèo đen đuôi vàng",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Tăng 5% chí mạng cho chủ nhân trong 5 giây, hồi skill 20 giây"
+        }
+      }
+    },
+    {
+      "id": 1202,
+      "name": "Pet mèo trắng đuôi vàng",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1203,
+      "name": "Pet mèo trắng đuôi vàng",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1207,
+      "name": "Pet Minion",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1224,
+      "name": "Pet Voi Chín Ngà",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1225,
+      "name": "Pet Gà Chín Cựa",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1226,
+      "name": "Pet Ngựa Chín Hồng mao",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1234,
+      "name": "Cải trang Pic Thợ Lặn",
+      "differences": {
+        "name": {
+          "local": "Cải trang Pic Thợ Lặn 2023",
+          "observed": "Cải trang Pic Thợ Lặn"
+        },
+        "description": {
+          "local": "Giảm 5% sức đánh của người xung quanh, tối đa ảnh hưởng 10 người 1 lúc. Nếu đang mặc cải trang hè 2023 sẽ không bị ảnh hưởng lên người",
+          "observed": "Giảm 5% sức đánh của người xung quanh, tối đa ảnh hưởng 10 người 1 lúc. Nếu đang mặc cải trang hè Pic, Poc, King Kong hè sẽ không bị ảnh hưởng lên người"
+        }
+      }
+    },
+    {
+      "id": 1235,
+      "name": "Cải trang Poc Bikini",
+      "differences": {
+        "name": {
+          "local": "Cải trang Poc Bikini 2023",
+          "observed": "Cải trang Poc Bikini"
+        },
+        "description": {
+          "local": "Giảm 5% sức đánh của người xung quanh, tối đa ảnh hưởng 10 người 1 lúc. Nếu đang mặc cải trang hè 2023 sẽ không bị ảnh hưởng lên người",
+          "observed": "Giảm 5% sức đánh của người xung quanh, tối đa ảnh hưởng 10 người 1 lúc. Nếu đang mặc cải trang hè Pic, Poc, King Kong hè sẽ không bị ảnh hưởng lên người"
+        }
+      }
+    },
+    {
+      "id": 1236,
+      "name": "Cải trang King Kong Sành Điệu",
+      "differences": {
+        "name": {
+          "local": "Cải trang King Kong Sành Điệu 2023",
+          "observed": "Cải trang King Kong Sành Điệu"
+        },
+        "description": {
+          "local": "Giảm 5% sức đánh của người xung quanh, tối đa ảnh hưởng 10 người 1 lúc. Nếu đang mặc cải trang hè 2023 sẽ không bị ảnh hưởng lên người",
+          "observed": "Giảm 5% sức đánh của người xung quanh, tối đa ảnh hưởng 10 người 1 lúc. Nếu đang mặc cải trang hè Pic, Poc, King Kong hè sẽ không bị ảnh hưởng lên người"
+        }
+      }
+    },
+    {
+      "id": 1243,
+      "name": "Pet bọ cánh cứng",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1244,
+      "name": "Pet ngài đêm",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 18
+        }
+      }
+    },
+    {
+      "id": 1255,
+      "name": "Cải trang Mabư Còm",
+      "differences": {
+        "name": {
+          "local": "Toppo Hakai",
+          "observed": "Cải trang Mabư Còm"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20092,
+          "observed": 11455
+        }
+      }
+    },
+    {
+      "id": 1256,
+      "name": "Pet heo bướm",
+      "differences": {
+        "type": {
+          "local": 5,
+          "observed": 18
+        },
+        "name": {
+          "local": "Cumber",
+          "observed": "Pet heo bướm"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20126,
+          "observed": 11462
+        }
+      }
+    },
+    {
+      "id": 1257,
+      "name": "Xe triều đình",
+      "differences": {
+        "name": {
+          "local": "Trunks",
+          "observed": "Xe triều đình"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20160,
+          "observed": 11463
+        }
+      }
+    },
+    {
+      "id": 1265,
+      "name": "Yajirobe Zoro",
+      "differences": {
+        "name": {
+          "local": "Cumber Saiyan",
+          "observed": "Yajirobe Zoro"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11530,
+          "observed": 11526
+        }
+      }
+    },
+    {
+      "id": 1266,
+      "name": "Avatar Gohan sẹo",
+      "differences": {
+        "gender": {
+          "local": 3,
+          "observed": 0
+        },
+        "name": {
+          "local": "Buu",
+          "observed": "Avatar Gohan sẹo"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11455,
+          "observed": 10680
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1164
+        }
+      }
+    },
+    {
+      "id": 1267,
+      "name": "Avatar Gohan sẹo",
+      "differences": {
+        "gender": {
+          "local": 3,
+          "observed": 1
+        },
+        "name": {
+          "local": "Krillin Cảnh Sát",
+          "observed": "Avatar Gohan sẹo"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11463,
+          "observed": 11477
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1274
+        }
+      }
+    },
+    {
+      "id": 1268,
+      "name": "Avatar Gohan sẹo",
+      "differences": {
+        "gender": {
+          "local": 3,
+          "observed": 2
+        },
+        "name": {
+          "local": "Krillin Cảnh Sát",
+          "observed": "Avatar Gohan sẹo"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11465,
+          "observed": 10680
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1164
+        }
+      }
+    },
+    {
+      "id": 1269,
+      "name": "Avatar Gohan Blue sẹo",
+      "differences": {
+        "gender": {
+          "local": 3,
+          "observed": 0
+        },
+        "name": {
+          "local": "Yachirobe Xa Lánh",
+          "observed": "Avatar Gohan Blue sẹo"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11494,
+          "observed": 10682
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1165
+        }
+      }
+    },
+    {
+      "id": 1270,
+      "name": "Avatar Gohan Blue sẹo",
+      "differences": {
+        "gender": {
+          "local": 3,
+          "observed": 1
+        },
+        "name": {
+          "local": "Nhật Thần",
+          "observed": "Avatar Gohan Blue sẹo"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11531,
+          "observed": 11480
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1275
+        }
+      }
+    },
+    {
+      "id": 1271,
+      "name": "Avatar Gohan Blue sẹo",
+      "differences": {
+        "gender": {
+          "local": 3,
+          "observed": 2
+        },
+        "name": {
+          "local": "Nguyệt Thần",
+          "observed": "Avatar Gohan Blue sẹo"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11641,
+          "observed": 10682
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1165
+        }
+      }
+    },
+    {
+      "id": 1274,
+      "name": "Cải trang Cumber",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 5
+        },
+        "name": {
+          "local": "Mèo Phù Thủy Bí Ngô",
+          "observed": "Cải trang Cumber"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11731,
+          "observed": 11529
+        }
+      }
+    },
+    {
+      "id": 1275,
+      "name": "Cải trang Cumber SSJ",
+      "differences": {
+        "type": {
+          "local": 21,
+          "observed": 5
+        },
+        "name": {
+          "local": "Pet Virus",
+          "observed": "Cải trang Cumber SSJ"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11720,
+          "observed": 11530
+        }
+      }
+    },
+    {
+      "id": 1276,
+      "name": "Cải trang Nguyệt thần",
+      "differences": {
+        "name": {
+          "local": "Zamasu Tối Thượng",
+          "observed": "Cải trang Nguyệt thần"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 14015,
+          "observed": 11531
+        }
+      }
+    },
+    {
+      "id": 1277,
+      "name": "Cải trang Nhật thần",
+      "differences": {
+        "type": {
+          "local": 11,
+          "observed": 5
+        },
+        "name": {
+          "local": "Thổ Thần Lasuna",
+          "observed": "Cải trang Nhật thần"
+        },
+        "icon_id": {
+          "local": 14048,
+          "observed": 11641
+        },
+        "part_id": {
+          "local": 83,
+          "observed": -1
+        }
+      }
+    },
+    {
+      "id": 1302,
+      "name": "Cải trang",
+      "differences": {
+        "type": {
+          "local": 11,
+          "observed": 5
+        },
+        "name": {
+          "local": "Búa Black Pink",
+          "observed": "Cải trang"
+        },
+        "description": {
+          "local": "Vật phẩm sự kiện",
+          "observed": "Cải trang thành Sa tăng (chỉ dành cho đệ tử)"
+        },
+        "icon_id": {
+          "local": 11422,
+          "observed": 11621
+        },
+        "part_id": {
+          "local": 206,
+          "observed": -1
+        }
+      }
+    },
+    {
+      "id": 1309,
+      "name": "Bunma Ả rập Xê út",
+      "differences": {
+        "type": {
+          "local": 99,
+          "observed": 5
+        },
+        "name": {
+          "local": "Cap thời trang 7 ngày",
+          "observed": "Bunma Ả rập Xê út"
+        },
+        "icon_id": {
+          "local": 9109,
+          "observed": 11680
+        }
+      }
+    },
+    {
+      "id": 1318,
+      "name": "Pet Mông Quỷ",
+      "differences": {
+        "type": {
+          "local": 99,
+          "observed": 18
+        },
+        "name": {
+          "local": "Hộp quà thời không",
+          "observed": "Pet Mông Quỷ"
+        },
+        "icon_id": {
+          "local": 20591,
+          "observed": 11726
+        }
+      }
+    },
+    {
+      "id": 1347,
+      "name": "Pet Mèo Phù Thủy",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Mèo Phù Thủy"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11729
+        }
+      }
+    },
+    {
+      "id": 1362,
+      "name": "Cải trang Thầy giáo Ca Lích",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thầy giáo Ca Lích"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11760
+        }
+      }
+    },
+    {
+      "id": 1371,
+      "name": "Cải trang đệ tử Tí",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang đệ tử Tí"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện (chỉ dành cho đệ tử)"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11878
+        }
+      }
+    },
+    {
+      "id": 1378,
+      "name": "Cải trang Thầy giáo Cađíc",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 2
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thầy giáo Cađíc"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11913
+        }
+      }
+    },
+    {
+      "id": 1379,
+      "name": "Cải trang Thầy giáo Pô cô lô",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 1
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thầy giáo Pô cô lô"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11946
+        }
+      }
+    },
+    {
+      "id": 1380,
+      "name": "Cải trang đệ tử Sửu",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang đệ tử Sửu"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện (chỉ dành cho đệ tử)"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11979
+        }
+      }
+    },
+    {
+      "id": 1381,
+      "name": "Cải trang đệ tử Dần",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang đệ tử Dần"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện (chỉ dành cho đệ tử)"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12090
+        }
+      }
+    },
+    {
+      "id": 1383,
+      "name": "Cải trang Thầy giáo Raddit",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thầy giáo Raddit"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12024
+        }
+      }
+    },
+    {
+      "id": 1384,
+      "name": "Cải trang Thầy giáo Goku",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thầy giáo Goku"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12057
+        }
+      }
+    },
+    {
+      "id": 1385,
+      "name": "Cải trang Thầy giáo Quy Lão",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thầy giáo Quy Lão"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11844
+        }
+      }
+    },
+    {
+      "id": 1389,
+      "name": "Avatar Cử nhân",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "name": {
+          "local": "",
+          "observed": "Avatar Cử nhân"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11989
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1329
+        }
+      }
+    },
+    {
+      "id": 1390,
+      "name": "Avatar Cử nhân",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 1
+        },
+        "name": {
+          "local": "",
+          "observed": "Avatar Cử nhân"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11991
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1331
+        }
+      }
+    },
+    {
+      "id": 1391,
+      "name": "Avatar Cử nhân",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 2
+        },
+        "name": {
+          "local": "",
+          "observed": "Avatar Cử nhân"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11990
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1330
+        }
+      }
+    },
+    {
+      "id": 1396,
+      "name": "Cải trang Super Píc",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Super Píc"
+        },
+        "description": {
+          "local": "",
+          "observed": "Cải trang thành Siêu Android sát thủ"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 5932
+        }
+      }
+    },
+    {
+      "id": 1414,
+      "name": "Pet Shiba",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Shiba"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12096
+        }
+      }
+    },
+    {
+      "id": 1415,
+      "name": "Cải trang Dr Myuu",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Dr Myuu"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12098
+        }
+      }
+    },
+    {
+      "id": 1424,
+      "name": "Cải trang Goku Santa",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Goku Santa"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12099
+        }
+      }
+    },
+    {
+      "id": 1435,
+      "name": "Pet chim cánh cụt",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet chim cánh cụt"
+        },
+        "description": {
+          "local": "",
+          "observed": "Tăng 5% chí mạng cho chủ nhân trong 5 giây, hồi skill 20 giây"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12138
+        }
+      }
+    },
+    {
+      "id": 1436,
+      "name": "Cải trang Chi Chi tuần lộc",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Chi Chi tuần lộc"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12173
+        }
+      }
+    },
+    {
+      "id": 1437,
+      "name": "Cải trang Bông Băng Vàng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Bông Băng Vàng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12223
+        }
+      }
+    },
+    {
+      "id": 1442,
+      "name": "Cải trang Super Xayda God",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Super Xayda God"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12305
+        }
+      }
+    },
+    {
+      "id": 1450,
+      "name": "Cải trang S",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang S"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12272
+        }
+      }
+    },
+    {
+      "id": 1452,
+      "name": "Pet Ông già Noel",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Ông già Noel"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12313
+        }
+      }
+    },
+    {
+      "id": 1454,
+      "name": "Cải trang Super Black Goku Rose",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Super Black Goku Rose"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 5173
+        }
+      }
+    },
+    {
+      "id": 1458,
+      "name": "Pet Shiba đeo nơ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Shiba đeo nơ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12333
+        }
+      }
+    },
+    {
+      "id": 1469,
+      "name": "Avatar mũ rồng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "name": {
+          "local": "",
+          "observed": "Avatar mũ rồng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12341
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1374
+        }
+      }
+    },
+    {
+      "id": 1470,
+      "name": "Avatar mũ rồng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 1
+        },
+        "name": {
+          "local": "",
+          "observed": "Avatar mũ rồng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12345
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1376
+        }
+      }
+    },
+    {
+      "id": 1471,
+      "name": "Avatar mũ rồng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 2
+        },
+        "name": {
+          "local": "",
+          "observed": "Avatar mũ rồng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12343
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1375
+        }
+      }
+    },
+    {
+      "id": 1476,
+      "name": "Cải trang Bunma rực rỡ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Bunma rực rỡ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12388
+        }
+      }
+    },
+    {
+      "id": 1482,
+      "name": "Pet rồng Pikachu thanh long",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet rồng Pikachu thanh long"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12548
+        }
+      }
+    },
+    {
+      "id": 1483,
+      "name": "Cải trang Bunma thanh lịch",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Bunma thanh lịch"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12541
+        }
+      }
+    },
+    {
+      "id": 1484,
+      "name": "Cải trang Thần tài",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thần tài"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12506
+        }
+      }
+    },
+    {
+      "id": 1485,
+      "name": "Cải trang Thần tài",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 1
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thần tài"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12508
+        }
+      }
+    },
+    {
+      "id": 1486,
+      "name": "Cải trang Thần tài",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 2
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thần tài"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12507
+        }
+      }
+    },
+    {
+      "id": 1497,
+      "name": "Pet rồng con thần tài",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet rồng con thần tài"
+        },
+        "description": {
+          "local": "",
+          "observed": "Tăng 10% giáp cho chủ nhân trong 5 giây, hồi skill 20 giây"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12558
+        }
+      }
+    },
+    {
+      "id": 1498,
+      "name": "Cải trang Goku Dragon",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Goku Dragon"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12653
+        }
+      }
+    },
+    {
+      "id": 1499,
+      "name": "Cải trang Pôcôlô Dragon",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 1
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Pôcôlô Dragon"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12657
+        }
+      }
+    },
+    {
+      "id": 1500,
+      "name": "Cải trang Cađíc Dragon",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 2
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Cađíc Dragon"
+        },
+        "description": {
+          "local": "",
+          "observed": "Tăng 10% giáp trong 30 giây, mỗi 120 giây"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12655
+        }
+      }
+    },
+    {
+      "id": 1503,
+      "name": "CT Lý Tiểu Nương hầu gái xanh",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Lý Tiểu Nương hầu gái xanh"
+        },
+        "description": {
+          "local": "",
+          "observed": "+5% sức đánh, tối đa 12% khi ở gần Lý Tiểu Nương : Hầu Gái xanh,hồng,bikini"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12692
+        }
+      }
+    },
+    {
+      "id": 1504,
+      "name": "CT Lý Tiểu Nương hầu gái hồng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Lý Tiểu Nương hầu gái hồng"
+        },
+        "description": {
+          "local": "",
+          "observed": "+5% sức đánh, tối đa 12% khi ở gần Lý Tiểu Nương : Hầu Gái xanh,hồng,bikini"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12758
+        }
+      }
+    },
+    {
+      "id": 1512,
+      "name": "CT Lý Tiểu Nương Bikini",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Lý Tiểu Nương Bikini"
+        },
+        "description": {
+          "local": "",
+          "observed": "+5% sức đánh, tối đa 12% khi ở gần Lý Tiểu Nương : Hầu Gái xanh,hồng,bikini"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12725
+        }
+      }
+    },
+    {
+      "id": 1550,
+      "name": "Pet Godzilla",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Godzilla"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12852
+        }
+      }
+    },
+    {
+      "id": 1551,
+      "name": "Pet Kong",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Kong"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12853
+        }
+      }
+    },
+    {
+      "id": 1553,
+      "name": "CT Goku SSJ4",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku SSJ4"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12898
+        }
+      }
+    },
+    {
+      "id": 1557,
+      "name": "CT Hắc Mị Nương",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Hắc Mị Nương"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12901
+        }
+      }
+    },
+    {
+      "id": 1564,
+      "name": "Pet Po",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Po"
+        },
+        "description": {
+          "local": "",
+          "observed": "Biến mọi người xung quanh thành bánh bao"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12997
+        }
+      }
+    },
+    {
+      "id": 1566,
+      "name": "CT Lích Tên béo",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Lích Tên béo"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 8147
+        }
+      }
+    },
+    {
+      "id": 1567,
+      "name": "CT Frieren",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Frieren"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12987
+        }
+      }
+    },
+    {
+      "id": 1568,
+      "name": "Pet Shimo",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Shimo"
+        },
+        "description": {
+          "local": "",
+          "observed": "Tạo khí lạnh gây ảnh hưởng xung quanh. Đóng băng mọi người xung quanh mỗi 30 giây"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12993
+        }
+      }
+    },
+    {
+      "id": 1573,
+      "name": "Xe tăng Santa",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Xe tăng Santa"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 12999
+        }
+      }
+    },
+    {
+      "id": 1587,
+      "name": "CT Goku SSJ3",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku SSJ3"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13209
+        }
+      }
+    },
+    {
+      "id": 1588,
+      "name": "CT Goku",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 17
+        }
+      }
+    },
+    {
+      "id": 1589,
+      "name": "CT Goku SSJ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku SSJ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 1330
+        }
+      }
+    },
+    {
+      "id": 1590,
+      "name": "CT Goku SSJ Blue",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku SSJ Blue"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13223
+        }
+      }
+    },
+    {
+      "id": 1593,
+      "name": "CT Goku SSJ God",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku SSJ God"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13298
+        }
+      }
+    },
+    {
+      "id": 1595,
+      "name": "CT Goku SSJ2",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku SSJ2"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13215
+        }
+      }
+    },
+    {
+      "id": 1596,
+      "name": "Pet Albart",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Albart"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13276
+        }
+      }
+    },
+    {
+      "id": 1597,
+      "name": "Pet Albart Cup",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Albart Cup"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13277
+        }
+      }
+    },
+    {
+      "id": 1599,
+      "name": "CT Fide nhí",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Fide nhí"
+        },
+        "description": {
+          "local": "",
+          "observed": "+5% sức đánh, tối đa 10% khi ở gần Fide nhí, Xên nhí, Mabư nhí"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13302
+        }
+      }
+    },
+    {
+      "id": 1600,
+      "name": "CT Xên nhí",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Xên nhí"
+        },
+        "description": {
+          "local": "",
+          "observed": "+5% sức đánh, tối đa 10% khi ở gần Fide nhí, Xên nhí, Mabư nhí"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13304
+        }
+      }
+    },
+    {
+      "id": 1601,
+      "name": "CT Mabư nhí",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Mabư nhí"
+        },
+        "description": {
+          "local": "",
+          "observed": "+5% sức đánh, tối đa 10% khi ở gần Fide nhí, Xên nhí, Mabư nhí"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13303
+        }
+      }
+    },
+    {
+      "id": 1602,
+      "name": "CT Android 21 kid",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Android 21 kid"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13430
+        }
+      }
+    },
+    {
+      "id": 1604,
+      "name": "CT Sư",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Sư"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13303
+        }
+      }
+    },
+    {
+      "id": 1611,
+      "name": "Pet Minion Otto",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Minion Otto"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13451
+        }
+      }
+    },
+    {
+      "id": 1620,
+      "name": "Pet Baby Shark",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Baby Shark"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13487
+        }
+      }
+    },
+    {
+      "id": 1621,
+      "name": "Pet Baby Shark",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Baby Shark"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13487
+        }
+      }
+    },
+    {
+      "id": 1622,
+      "name": "Pet Baby Shark",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Baby Shark"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13487
+        }
+      }
+    },
+    {
+      "id": 1629,
+      "name": "Pet Capybara đeo ba lô",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Capybara đeo ba lô"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13542
+        }
+      }
+    },
+    {
+      "id": 1630,
+      "name": "Pet Capybara xì mũi",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Capybara xì mũi"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13541
+        }
+      }
+    },
+    {
+      "id": 1631,
+      "name": "Pet Zịt vàng bối rối",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Zịt vàng bối rối"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13571
+        }
+      }
+    },
+    {
+      "id": 1632,
+      "name": "CT Himmel",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Himmel"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13604
+        }
+      }
+    },
+    {
+      "id": 1633,
+      "name": "Pet Mini Desutoron Gas",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Mini Desutoron Gas"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13617
+        }
+      }
+    },
+    {
+      "id": 1654,
+      "name": "Pet Cerberus",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Cerberus"
+        },
+        "description": {
+          "local": "",
+          "observed": "Chống lạnh cho sư phụ và đệ tử"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13631
+        }
+      }
+    },
+    {
+      "id": 1657,
+      "name": "CT Gohan đi biển",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Gohan đi biển"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13696
+        }
+      }
+    },
+    {
+      "id": 1658,
+      "name": "Đầu trâu",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "name": {
+          "local": "",
+          "observed": "Đầu trâu"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13649
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1531
+        }
+      }
+    },
+    {
+      "id": 1659,
+      "name": "Đầu trâu",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 1
+        },
+        "name": {
+          "local": "",
+          "observed": "Đầu trâu"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13657
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1535
+        }
+      }
+    },
+    {
+      "id": 1660,
+      "name": "Đầu trâu",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 2
+        },
+        "name": {
+          "local": "",
+          "observed": "Đầu trâu"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13641
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1533
+        }
+      }
+    },
+    {
+      "id": 1661,
+      "name": "Mặt ngựa",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "name": {
+          "local": "",
+          "observed": "Mặt ngựa"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13653
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1537
+        }
+      }
+    },
+    {
+      "id": 1662,
+      "name": "Mặt ngựa",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 1
+        },
+        "name": {
+          "local": "",
+          "observed": "Mặt ngựa"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13661
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1541
+        }
+      }
+    },
+    {
+      "id": 1663,
+      "name": "Mặt ngựa",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 2
+        },
+        "name": {
+          "local": "",
+          "observed": "Mặt ngựa"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13645
+        },
+        "part_id": {
+          "local": -1,
+          "observed": 1539
+        }
+      }
+    },
+    {
+      "id": 1667,
+      "name": "CT Gohan kính mát",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Gohan kính mát"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13732
+        }
+      }
+    },
+    {
+      "id": 1668,
+      "name": "Pet Capybara hồng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Capybara hồng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13740
+        }
+      }
+    },
+    {
+      "id": 1674,
+      "name": "CT Pikkon",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Pikkon"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13798
+        }
+      }
+    },
+    {
+      "id": 1682,
+      "name": "Pet Hải Ly",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Hải Ly"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13877
+        }
+      }
+    },
+    {
+      "id": 1683,
+      "name": "Pet Hải Ly Ong Vàng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Hải Ly Ong Vàng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13878
+        }
+      }
+    },
+    {
+      "id": 1684,
+      "name": "CT Kirin múa lân",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Kirin múa lân"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13914
+        }
+      }
+    },
+    {
+      "id": 1685,
+      "name": "CT Omega",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Omega"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13947
+        }
+      }
+    },
+    {
+      "id": 1686,
+      "name": "Pet Thỏ Ú",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Thỏ Ú"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13953
+        }
+      }
+    },
+    {
+      "id": 1693,
+      "name": "CT Cađíc SSJ4",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Cađíc SSJ4"
+        },
+        "description": {
+          "local": "",
+          "observed": "Hợp thể với Goku SSJ4 biến thành Gogeta SSJ4 tăng 5%HP, Sức Đánh"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13992
+        }
+      }
+    },
+    {
+      "id": 1697,
+      "name": "CT Gogeta",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Gogeta"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14047
+        }
+      }
+    },
+    {
+      "id": 1698,
+      "name": "CT Urôn Trư Bát Giới",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Urôn Trư Bát Giới"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi cùng Bồ cào 9 răng +5% sức đánh, 10% sức đánh chí mạng"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14082
+        }
+      }
+    },
+    {
+      "id": 1700,
+      "name": "CT Hằng Nga",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Hằng Nga"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi cùng với cải trang Uron Trư Bát Giới giảm 10% sát thương"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14115
+        }
+      }
+    },
+    {
+      "id": 1705,
+      "name": "Cải Trang Chi Chi Võ Đài",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải Trang Chi Chi Võ Đài"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi cùng Pet Giru: +15% Sức Đánh Chí Mạng"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14149
+        }
+      }
+    },
+    {
+      "id": 1708,
+      "name": "CT Android 21 Thân Thiện",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Android 21 Thân Thiện"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi cùng Android  21 Evil+5% giảm sát thương"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14186
+        }
+      }
+    },
+    {
+      "id": 1709,
+      "name": "CT Android 21 Evil",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Android 21 Evil"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Cùng Android  21 Thân Thiện +10% chí mạng"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14194
+        }
+      }
+    },
+    {
+      "id": 1710,
+      "name": "CT Android 21 Tiến Sĩ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Android 21 Tiến Sĩ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14241
+        }
+      }
+    },
+    {
+      "id": 1712,
+      "name": "Pet Rồng xương",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Rồng xương"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14258
+        }
+      }
+    },
+    {
+      "id": 1714,
+      "name": "Pet Giru",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Giru"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi cùng  Khủng Long Thơ Mộng: +15% Chí Mạng"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14204
+        }
+      }
+    },
+    {
+      "id": 1723,
+      "name": "Cải trang Chan Xư",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Chan Xư"
+        },
+        "description": {
+          "local": "",
+          "observed": "Cải trang thành Chan Xư"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 3682
+        }
+      }
+    },
+    {
+      "id": 1727,
+      "name": "Pet Ma cầu mưa",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Ma cầu mưa"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14282
+        }
+      }
+    },
+    {
+      "id": 1729,
+      "name": "Pet Rồng Xanh",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Rồng Xanh"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14294
+        }
+      }
+    },
+    {
+      "id": 1731,
+      "name": "CT Black Goku Rose",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Black Goku Rose"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Cùng Lưỡi Hái Hồng Tăng 5% Sức Đánh Chí Mạng"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14336
+        }
+      }
+    },
+    {
+      "id": 1732,
+      "name": "CT Black Goku",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Black Goku"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Cùng Black Goku Rose Tăng 5% HP"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14334
+        }
+      }
+    },
+    {
+      "id": 1741,
+      "name": "CT Cađíc",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Cađíc"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14376
+        }
+      }
+    },
+    {
+      "id": 1742,
+      "name": "CT Cađíc SSJ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Cađíc SSJ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14377
+        }
+      }
+    },
+    {
+      "id": 1743,
+      "name": "CT Cađíc SSJ2",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Cađíc SSJ2"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14378
+        }
+      }
+    },
+    {
+      "id": 1744,
+      "name": "CT Cađíc SSJ2 M",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Cađíc SSJ2 M"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14379
+        }
+      }
+    },
+    {
+      "id": 1745,
+      "name": "CT Cađíc SSJ3",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Cađíc SSJ3"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14380
+        }
+      }
+    },
+    {
+      "id": 1746,
+      "name": "CT Cađíc SSJ Blue",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Cađíc SSJ Blue"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14381
+        }
+      }
+    },
+    {
+      "id": 1748,
+      "name": "Pet Tuần Lộc Cute",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Tuần Lộc Cute"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14509
+        }
+      }
+    },
+    {
+      "id": 1750,
+      "name": "Pet Khủng Long ngok",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Khủng Long ngok"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 13259
+        }
+      }
+    },
+    {
+      "id": 1762,
+      "name": "CT Baby",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Baby"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14567
+        }
+      }
+    },
+    {
+      "id": 1763,
+      "name": "CT Baby",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Baby"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14600
+        }
+      }
+    },
+    {
+      "id": 1764,
+      "name": "CT Baby",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Baby"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14631
+        }
+      }
+    },
+    {
+      "id": 1774,
+      "name": "Pet rắn cute",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet rắn cute"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi cùng với Rắn bay tăng 5% Chí Mạng"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14659
+        }
+      }
+    },
+    {
+      "id": 1775,
+      "name": "CT Broly SSJ4",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Broly SSJ4"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14712
+        }
+      }
+    },
+    {
+      "id": 1777,
+      "name": "CT Broly SSJ God",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Broly SSJ God"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14736
+        }
+      }
+    },
+    {
+      "id": 1778,
+      "name": "CT Lý Tiểu Nương Rực Rỡ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Lý Tiểu Nương Rực Rỡ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14769
+        }
+      }
+    },
+    {
+      "id": 1785,
+      "name": "Karin Kid Lân 2025",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Karin Kid Lân 2025"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 11008
+        }
+      }
+    },
+    {
+      "id": 1786,
+      "name": "Pet cá mặp Koi bốn chân",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet cá mặp Koi bốn chân"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14785
+        }
+      }
+    },
+    {
+      "id": 1790,
+      "name": "CT Đặng Văn Chiến",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Đặng Văn Chiến"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14794
+        }
+      }
+    },
+    {
+      "id": 1791,
+      "name": "Pet Secret",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Secret"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14795
+        }
+      }
+    },
+    {
+      "id": 1792,
+      "name": "Pet Rabbit",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Rabbit"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14796
+        }
+      }
+    },
+    {
+      "id": 1793,
+      "name": "Pet Dino",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Dino"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14797
+        }
+      }
+    },
+    {
+      "id": 1794,
+      "name": "Pet Panda",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Panda"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14798
+        }
+      }
+    },
+    {
+      "id": 1795,
+      "name": "CT Chi Chi Hoa Hồng Xanh",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Chi Chi Hoa Hồng Xanh"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14863
+        }
+      }
+    },
+    {
+      "id": 1797,
+      "name": "CT Bunma Rider",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Bunma Rider"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14896
+        }
+      }
+    },
+    {
+      "id": 1800,
+      "name": "Cải trang Chan Xư S+",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Chan Xư S+"
+        },
+        "description": {
+          "local": "",
+          "observed": "Cải trang sự kiện KOL"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 3682
+        }
+      }
+    },
+    {
+      "id": 1801,
+      "name": "Pet Mắt Long Lanh",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Mắt Long Lanh"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14907
+        }
+      }
+    },
+    {
+      "id": 1802,
+      "name": "Pet Mắt Rưng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Mắt Rưng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14915
+        }
+      }
+    },
+    {
+      "id": 1803,
+      "name": "CT Goku SSJ 4 Red",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku SSJ 4 Red"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14952
+        }
+      }
+    },
+    {
+      "id": 1805,
+      "name": "CT Goku SSJ 4 nhí",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "CT Goku SSJ 4 nhí"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 14985
+        }
+      }
+    },
+    {
+      "id": 1810,
+      "name": "Mị Hoàng Kim",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Mị Hoàng Kim"
+        },
+        "description": {
+          "local": "",
+          "observed": "Tăng 12% giảm sát thương cho đồng minh."
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15035
+        }
+      }
+    },
+    {
+      "id": 1811,
+      "name": "Vua Vegeta",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Vua Vegeta"
+        },
+        "description": {
+          "local": "",
+          "observed": "Giảm 50% sát thương từ quái"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15068
+        }
+      }
+    },
+    {
+      "id": 1813,
+      "name": "Rồng nhí 1 sao",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Rồng nhí 1 sao"
+        },
+        "description": {
+          "local": "",
+          "observed": "Sở hữu 7 Pet Rồng Nhí sẽ tăng 1% HP, Sức Đánh, KI"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15125
+        }
+      }
+    },
+    {
+      "id": 1814,
+      "name": "Rồng nhí 2 sao",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Rồng nhí 2 sao"
+        },
+        "description": {
+          "local": "",
+          "observed": "Sở hữu 7 Pet Rồng Nhí sẽ tăng 1% HP, Sức Đánh, KI"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15117
+        }
+      }
+    },
+    {
+      "id": 1815,
+      "name": "Rồng nhí 3 sao",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Rồng nhí 3 sao"
+        },
+        "description": {
+          "local": "",
+          "observed": "Sở hữu 7 Pet Rồng Nhí sẽ tăng 1% HP, Sức Đánh, KI"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15109
+        }
+      }
+    },
+    {
+      "id": 1816,
+      "name": "Rồng nhí 4 sao",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Rồng nhí 4 sao"
+        },
+        "description": {
+          "local": "",
+          "observed": "Sở hữu 7 Pet Rồng Nhí sẽ tăng 1% HP, Sức Đánh, KI"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15101
+        }
+      }
+    },
+    {
+      "id": 1817,
+      "name": "Rồng nhí 5 sao",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Rồng nhí 5 sao"
+        },
+        "description": {
+          "local": "",
+          "observed": "Sở hữu 7 Pet Rồng Nhí sẽ tăng 1% HP, Sức Đánh, KI"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15093
+        }
+      }
+    },
+    {
+      "id": 1818,
+      "name": "Rồng nhí 6 sao",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Rồng nhí 6 sao"
+        },
+        "description": {
+          "local": "",
+          "observed": "Sở hữu 7 Pet Rồng Nhí sẽ tăng 1% HP, Sức Đánh, KI"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15085
+        }
+      }
+    },
+    {
+      "id": 1819,
+      "name": "Rồng nhí 7 sao",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Rồng nhí 7 sao"
+        },
+        "description": {
+          "local": "",
+          "observed": "Sở hữu 7 Pet Rồng Nhí sẽ tăng 1% HP, Sức Đánh, KI"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15077
+        }
+      }
+    },
+    {
+      "id": 1826,
+      "name": "Cải trang Sơn Tinh",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Sơn Tinh"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15163
+        }
+      }
+    },
+    {
+      "id": 1827,
+      "name": "Cải trang Thủy Tinh",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thủy Tinh"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15196
+        }
+      }
+    },
+    {
+      "id": 1829,
+      "name": "Cải trang Pôcôlô",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Pôcôlô"
+        },
+        "description": {
+          "local": "",
+          "observed": "Khi chịu sát thương mà HP còn dưới 10% có 0.5% tỉ lệ hồi 50% HP"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15232
+        }
+      }
+    },
+    {
+      "id": 1830,
+      "name": "Pet Thỏ Vui Vẻ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Thỏ Vui Vẻ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15247
+        }
+      }
+    },
+    {
+      "id": 1832,
+      "name": "Cải trang Gohan Beast",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Gohan Beast"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15283
+        }
+      }
+    },
+    {
+      "id": 1839,
+      "name": "Cải trang Fide chai",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Fide chai"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15327
+        }
+      }
+    },
+    {
+      "id": 1845,
+      "name": "Pet cá Dory",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet cá Dory"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15354
+        }
+      }
+    },
+    {
+      "id": 1846,
+      "name": "Pet cá Nemo",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet cá Nemo"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15355
+        }
+      }
+    },
+    {
+      "id": 1849,
+      "name": "Cải trang Test",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Test"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15327
+        }
+      }
+    },
+    {
+      "id": 1853,
+      "name": "Cải trang Cađíc đi biển",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Cađíc đi biển"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15450
+        }
+      }
+    },
+    {
+      "id": 1854,
+      "name": "Cải trang Bun ma đi biển",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Bun ma đi biển"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15483
+        }
+      }
+    },
+    {
+      "id": 1865,
+      "name": "Cải trang Gogeta SSJ Blue",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Gogeta SSJ Blue"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15537
+        }
+      }
+    },
+    {
+      "id": 1866,
+      "name": "Cải trang Vegito SSJ Blue",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Vegito SSJ Blue"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15574
+        }
+      }
+    },
+    {
+      "id": 1867,
+      "name": "Cải trang Super Pôcôlô",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Super Pôcôlô"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15611
+        }
+      }
+    },
+    {
+      "id": 1869,
+      "name": "Cải trang Đích Ku SSJ Blue",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Đích Ku SSJ Blue"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15622
+        }
+      }
+    },
+    {
+      "id": 1870,
+      "name": "Pet Pikachu",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Pikachu"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15680
+        }
+      }
+    },
+    {
+      "id": 1871,
+      "name": "Pet Charmander",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Charmander"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15682
+        }
+      }
+    },
+    {
+      "id": 1872,
+      "name": "Pet Squirtle",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Squirtle"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15681
+        }
+      }
+    },
+    {
+      "id": 1873,
+      "name": "Pet Bullbasaur",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Bullbasaur"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15683
+        }
+      }
+    },
+    {
+      "id": 1874,
+      "name": "Pet MewTwo",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet MewTwo"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15684
+        }
+      }
+    },
+    {
+      "id": 1879,
+      "name": "Cải trang Kochiro",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Kochiro"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15723
+        }
+      }
+    },
+    {
+      "id": 1880,
+      "name": "Cải trang Musashi",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Musashi"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15756
+        }
+      }
+    },
+    {
+      "id": 1881,
+      "name": "Pet Meowth",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Meowth"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15765
+        }
+      }
+    },
+    {
+      "id": 1886,
+      "name": "Cải trang Póc Thỏ Đen",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Póc Thỏ Đen"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Cùng với Cuội tăng 10% Né."
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15800
+        }
+      }
+    },
+    {
+      "id": 1889,
+      "name": "Cải trang Kirin chú cuội",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Kirin chú cuội"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Cùng với Póc Thỏ Đen tăng 10% Chí Mạng"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15813
+        }
+      }
+    },
+    {
+      "id": 1905,
+      "name": "Cải trang Sida",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Sida"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15948
+        }
+      }
+    },
+    {
+      "id": 1906,
+      "name": "Cải trang Bill",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Bill"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 4847
+        }
+      }
+    },
+    {
+      "id": 1907,
+      "name": "Cải trang Champa",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Champa"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 4879
+        }
+      }
+    },
+    {
+      "id": 1908,
+      "name": "Cải trang Heles",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Heles"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 15977
+        }
+      }
+    },
+    {
+      "id": 1911,
+      "name": "Cải trang Rumsshi",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Rumsshi"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16007
+        }
+      }
+    },
+    {
+      "id": 1912,
+      "name": "Cải trang Mosco",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Mosco"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16009
+        }
+      }
+    },
+    {
+      "id": 1913,
+      "name": "Cải trang Black Fide",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Black Fide"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16064
+        }
+      }
+    },
+    {
+      "id": 1914,
+      "name": "Pet Gấu Dâu",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Gấu Dâu"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16074
+        }
+      }
+    },
+    {
+      "id": 1919,
+      "name": "Cải trang Chi Chi Áo Cưới Mới",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Chi Chi Áo Cưới Mới"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16102
+        }
+      }
+    },
+    {
+      "id": 1921,
+      "name": "Cải trang Pan VIP",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Pan VIP"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi chung với SKH Gohan Tăng 20% sức Đánh 50% may mắn."
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16131
+        }
+      }
+    },
+    {
+      "id": 1926,
+      "name": "Cải trang Ác Ma Pico",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Ác Ma Pico"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Cùng Cú con cưng tăng 7% Sức Đánh, HP"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16172
+        }
+      }
+    },
+    {
+      "id": 1929,
+      "name": "Pet Ma tốc độ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Ma tốc độ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Bất tử 3s khi HP dưới 5%, 120s hồi kĩ năng."
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16187
+        }
+      }
+    },
+    {
+      "id": 1931,
+      "name": "Cải trang Janemba",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Janemba"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16215
+        }
+      }
+    },
+    {
+      "id": 1933,
+      "name": "Cải trang Gohan học đường",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Gohan học đường"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi cùng Balo ngọc rồng tăng 10% Sát thương lên boss"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16252
+        }
+      }
+    },
+    {
+      "id": 1934,
+      "name": "Cải trang Videl học đường",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Videl học đường"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi cùng Balo ngọc rồng tăng 10% Sát thương lên boss"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16280
+        }
+      }
+    },
+    {
+      "id": 1935,
+      "name": "Pet cậu vàng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet cậu vàng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16290
+        }
+      }
+    },
+    {
+      "id": 1937,
+      "name": "Cải trang Giáo sư Bunma",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Giáo sư Bunma"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16318
+        }
+      }
+    },
+    {
+      "id": 1945,
+      "name": "Pet ngựa KPI",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet ngựa KPI"
+        },
+        "description": {
+          "local": "",
+          "observed": "Cái gì không làm được thì...vừa khóc vừa làm"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16339
+        }
+      }
+    },
+    {
+      "id": 1946,
+      "name": "Cải trang Thiên sư phụ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Thiên sư phụ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Tạo ra phân thân gây mù đối phương CD 300 giây"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16367
+        }
+      }
+    },
+    {
+      "id": 1949,
+      "name": "Cải trang Kirin tuần lộc",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Kirin tuần lộc"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Với Póc 18 Noel Giảm Sát Thương 10%"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16398
+        }
+      }
+    },
+    {
+      "id": 1952,
+      "name": "Cải trang Póc Noel",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Póc Noel"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Với Kilin Tuần Lộc Tăng Sát Thương Chí Mạng 10%"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16433
+        }
+      }
+    },
+    {
+      "id": 1953,
+      "name": "Pet Bư Noel",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Bư Noel"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16442
+        }
+      }
+    },
+    {
+      "id": 1955,
+      "name": "Cải trang Goku GT Kid",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Goku GT Kid"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16482
+        }
+      }
+    },
+    {
+      "id": 1956,
+      "name": "Pet tuần lộc ngố",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet tuần lộc ngố"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi chung với Cờ Hoa Tuyết Tăng Né 20%"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16492
+        }
+      }
+    },
+    {
+      "id": 1957,
+      "name": "Cải trang Goku GT",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Goku GT"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16520
+        }
+      }
+    },
+    {
+      "id": 1962,
+      "name": "Pet ngựa chiến",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet ngựa chiến"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Cùng Cờ Pháo Hoa NRO Tăng 10% sát thương lên Boss"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16530
+        }
+      }
+    },
+    {
+      "id": 1964,
+      "name": "Pet Ngựa Thần Tài",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Ngựa Thần Tài"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16549
+        }
+      }
+    },
+    {
+      "id": 1968,
+      "name": "Cải trang Goku Tết",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Goku Tết"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16614
+        }
+      }
+    },
+    {
+      "id": 1972,
+      "name": "Cải trang Chi Chi Tết",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Chi Chi Tết"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16643
+        }
+      }
+    },
+    {
+      "id": 1973,
+      "name": "Pet Ngựa Đỏ",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Ngựa Đỏ"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16650
+        }
+      }
+    },
+    {
+      "id": 1974,
+      "name": "Pet Ngựa Be",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Ngựa Be"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16658
+        }
+      }
+    },
+    {
+      "id": 1975,
+      "name": "Pet Ngựa Trắng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Ngựa Trắng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16666
+        }
+      }
+    },
+    {
+      "id": 1980,
+      "name": "Pet Kirby",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 18
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Pet Kirby"
+        },
+        "description": {
+          "local": "",
+          "observed": "Đi Chung vs Cớt Hồng tăng 10% Giảm Sát Thương"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16710
+        }
+      }
+    },
+    {
+      "id": 1982,
+      "name": "Cải trang Arale",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Arale"
+        },
+        "description": {
+          "local": "",
+          "observed": "Khi HP còn dưới 20% có 2% Hồi phục 70% HP CD 120s"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16721
+        }
+      }
+    },
+    {
+      "id": 1991,
+      "name": "Thủy Thủ Mặt Trăng",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Thủy Thủ Mặt Trăng"
+        },
+        "description": {
+          "local": "",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 16761
+        }
+      }
+    },
+    {
+      "id": 1992,
+      "name": "Cải trang Xuka",
+      "differences": {
+        "type": {
+          "local": 0,
+          "observed": 5
+        },
+        "gender": {
+          "local": 0,
+          "observed": 3
+        },
+        "name": {
+          "local": "",
+          "observed": "Cải trang Xuka"
+        },
+        "description": {
+          "local": "",
+          "observed": "Xinh đẹp, hiền lành, học giỏi đúng chuẩn con nhà người ta."
+        },
+        "icon_id": {
+          "local": -1,
+          "observed": 7357
+        }
+      }
+    },
+    {
+      "id": 1996,
+      "name": "Cải trang Goku giỗ tổ",
+      "differences": {
+        "type": {
+          "local": 11,
+          "observed": 5
+        },
+        "name": {
+          "local": "Ngọc Rồng Namek 4 Sao",
+          "observed": "Cải trang Goku giỗ tổ"
+        },
+        "description": {
+          "local": "Mang về cho mẹ",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 2283,
+          "observed": 16788
+        }
+      }
+    },
+    {
+      "id": 1997,
+      "name": "Cải trang Chi Chi giỗ tổ",
+      "differences": {
+        "type": {
+          "local": 11,
+          "observed": 5
+        },
+        "name": {
+          "local": "Ngọc Rồng Namek 5 Sao",
+          "observed": "Cải trang Chi Chi giỗ tổ"
+        },
+        "description": {
+          "local": "Mang về cho mẹ",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 2284,
+          "observed": 16819
+        }
+      }
+    },
+    {
+      "id": 1999,
+      "name": "Cải trang Gohan chiến binh",
+      "differences": {
+        "type": {
+          "local": 11,
+          "observed": 5
+        },
+        "name": {
+          "local": "Ngọc Rồng Namek 7 Sao",
+          "observed": "Cải trang Gohan chiến binh"
+        },
+        "description": {
+          "local": "Mang về cho mẹ",
+          "observed": "Đi Cùng Videl Chiến Binh tăng giảm sát thương 5%"
+        },
+        "icon_id": {
+          "local": 2286,
+          "observed": 16862
+        }
+      }
+    },
+    {
+      "id": 2005,
+      "name": "Cải trang Videl chiến binh",
+      "differences": {
+        "type": {
+          "local": 50,
+          "observed": 5
+        },
+        "name": {
+          "local": "Vé đổi nhẫn hủy diệt",
+          "observed": "Cải trang Videl chiến binh"
+        },
+        "description": {
+          "local": "Tới gặp Bill để sử dụng",
+          "observed": "Đi Cùng Gohan Chiến Binh tăng sát thương chí mạng 10%"
+        },
+        "icon_id": {
+          "local": 15016,
+          "observed": 16891
+        }
+      }
+    },
+    {
+      "id": 2014,
+      "name": "Pet hươu",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Bánh Quy Halloween",
+          "observed": "Pet hươu"
+        },
+        "icon_id": {
+          "local": 15022,
+          "observed": 16928
+        }
+      }
+    },
+    {
+      "id": 2015,
+      "name": "Pet hổ",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Bí Ngô Halloween",
+          "observed": "Pet hổ"
+        },
+        "icon_id": {
+          "local": 15023,
+          "observed": 16929
+        }
+      }
+    },
+    {
+      "id": 2016,
+      "name": "Pet đại bàng",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Giỏ Kẹo Bí Ngô",
+          "observed": "Pet đại bàng"
+        },
+        "icon_id": {
+          "local": 15024,
+          "observed": 16930
+        }
+      }
+    },
+    {
+      "id": 2019,
+      "name": "Pet Cửu Vĩ Hồ",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Túi Bảo Vệ",
+          "observed": "Pet Cửu Vĩ Hồ"
+        },
+        "description": {
+          "local": "Giúp bảo vệ vật phẩm nâng cấp không bị giảm chỉ số",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 11716,
+          "observed": 16944
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2020,
+      "name": "Cải trang Goku cận vô cực",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Viên Capsule 20/10",
+          "observed": "Cải trang Goku cận vô cực"
+        },
+        "icon_id": {
+          "local": 15028,
+          "observed": 16976
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2025,
+      "name": "Pet Mèo thần tài",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Bùa Đệ Tử Mabư Thông MInh",
+          "observed": "Pet Mèo thần tài"
+        },
+        "description": {
+          "local": "Giúp đệ tử của bạn thông minh hơn,tự động ăn đậu khi hết thể lực",
+          "observed": "Đủ 4 món Mèo thần tài, ván sao băng, bóng ngôi sao, Cờ ngôi sao may mắn +10% vàng rơi"
+        },
+        "icon_id": {
+          "local": 1403,
+          "observed": 16995
+        }
+      }
+    },
+    {
+      "id": 2026,
+      "name": "Cải trang Tuyền Qua Minh Nhân",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Kẹo giáng sinh",
+          "observed": "Cải trang Tuyền Qua Minh Nhân"
+        },
+        "description": {
+          "local": "Vật phẩm sự kiện",
+          "observed": "Đi cùng Pet Cửu Vĩ Hồ +7% HP"
+        },
+        "icon_id": {
+          "local": 15033,
+          "observed": 17023
+        }
+      }
+    },
+    {
+      "id": 2027,
+      "name": "Cải trang Vũ Trí Ba Tá Trợ",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Lá Dong",
+          "observed": "Cải trang Vũ Trí Ba Tá Trợ"
+        },
+        "description": {
+          "local": "Vật phẩm sự kiện",
+          "observed": "Đi cùng Cờ Vạn Hoa Đồng tăng 1% Sát thương cuối"
+        },
+        "icon_id": {
+          "local": 15034,
+          "observed": 17051
+        }
+      }
+    },
+    {
+      "id": 2033,
+      "name": "Cải trang chú hề Picolo",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Bánh Tét (đã chín)",
+          "observed": "Cải trang chú hề Picolo"
+        },
+        "description": {
+          "local": "Vật phẩm sự kiện",
+          "observed": "Hề Hước : Tăng 5% né cho người xung quanh"
+        },
+        "icon_id": {
+          "local": 15040,
+          "observed": 17121
+        }
+      }
+    },
+    {
+      "id": 2036,
+      "name": "Pet Xên bọ hung hoàn thiện",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Bánh Chưng (đã chín)",
+          "observed": "Pet Xên bọ hung hoàn thiện"
+        },
+        "icon_id": {
+          "local": 15043,
+          "observed": 13304
+        }
+      }
+    },
+    {
+      "id": 2037,
+      "name": "Pet Xên bọ hung con",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Gạo nếp",
+          "observed": "Pet Xên bọ hung con"
+        },
+        "icon_id": {
+          "local": 15044,
+          "observed": 2715
+        }
+      }
+    },
+    {
+      "id": 2038,
+      "name": "Pet Xên bọ hung MAX",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Đỗ xanh",
+          "observed": "Pet Xên bọ hung MAX"
+        },
+        "icon_id": {
+          "local": 15045,
+          "observed": 17134
+        }
+      }
+    },
+    {
+      "id": 2039,
+      "name": "Cải trang Akatsuki",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Hộp Quà Tết",
+          "observed": "Cải trang Akatsuki"
+        },
+        "icon_id": {
+          "local": 15046,
+          "observed": 17161
+        }
+      }
+    },
+    {
+      "id": 2043,
+      "name": "Cải trang Pan Trung Thu",
+      "differences": {
+        "type": {
+          "local": 75,
+          "observed": 5
+        },
+        "name": {
+          "local": "Cải trang Trung uý Xanh Lơ",
+          "observed": "Cải trang Pan Trung Thu"
+        },
+        "icon_id": {
+          "local": 1495,
+          "observed": 17191
+        },
+        "part_id": {
+          "local": 0,
+          "observed": -1
+        }
+      }
+    },
+    {
+      "id": 2048,
+      "name": "Cải trang N",
+      "differences": {
+        "name": {
+          "local": "Cải trang Oren",
+          "observed": "Cải trang N"
+        },
+        "description": {
+          "local": "Cải trang thành Oren",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 18210,
+          "observed": 17200
+        }
+      }
+    },
+    {
+      "id": 2049,
+      "name": "Cải trang N",
+      "differences": {
+        "name": {
+          "local": "Cải trang Kamioren",
+          "observed": "Cải trang N"
+        },
+        "description": {
+          "local": "Cải trang thành Kamioren ",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 18242,
+          "observed": 17263
+        }
+      }
+    },
+    {
+      "id": 2050,
+      "name": "Cải trang N",
+      "differences": {
+        "name": {
+          "local": "Cải trang Black Panther",
+          "observed": "Cải trang N"
+        },
+        "description": {
+          "local": "Cải trang thành Black Panther ",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 18029,
+          "observed": 17265
+        }
+      }
+    },
+    {
+      "id": 2051,
+      "name": "Cải trang N",
+      "differences": {
+        "name": {
+          "local": "Cải trang Granolal",
+          "observed": "Cải trang N"
+        },
+        "description": {
+          "local": "Cải trang thành Granolal",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 17856,
+          "observed": 17297
+        }
+      }
+    },
+    {
+      "id": 2052,
+      "name": "Cải trang N",
+      "differences": {
+        "name": {
+          "local": "Cải trang Cell Max",
+          "observed": "Cải trang N"
+        },
+        "description": {
+          "local": "Cải trang thành Xên Max",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 16000,
+          "observed": 17329
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2053,
+      "name": "Cải trang Thượng Huyền Tam",
+      "differences": {
+        "type": {
+          "local": 72,
+          "observed": 5
+        },
+        "name": {
+          "local": "Tử Thần",
+          "observed": "Cải trang Thượng Huyền Tam"
+        },
+        "description": {
+          "local": "Ma Thú Trong Truyền Thuyết",
+          "observed": "Khi Hp dưới 50% tăng Sức Đánh 100% trong vòng 5s CD 180 s"
+        },
+        "icon_id": {
+          "local": 18291,
+          "observed": 17388
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2059,
+      "name": "Pet Minion",
+      "differences": {
+        "type": {
+          "local": 72,
+          "observed": 18
+        },
+        "name": {
+          "local": "Tử Điểu",
+          "observed": "Pet Minion"
+        },
+        "description": {
+          "local": "Ma Thú Chim Tối Thượng",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 18283,
+          "observed": 17403
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2062,
+      "name": "Cải trang Champa",
+      "differences": {
+        "type": {
+          "local": 72,
+          "observed": 5
+        },
+        "name": {
+          "local": "Hồn Ma Hallowen",
+          "observed": "Cải trang Champa"
+        },
+        "description": {
+          "local": "Vật Phẩm Quý Hiếm",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20210,
+          "observed": 17410
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2063,
+      "name": "Cải trang Belmod",
+      "differences": {
+        "type": {
+          "local": 72,
+          "observed": 5
+        },
+        "name": {
+          "local": "Mèo Phù Thủy",
+          "observed": "Cải trang Belmod"
+        },
+        "description": {
+          "local": "Vật Phẩm Quý Hiếm",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20212,
+          "observed": 17470
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2072,
+      "name": "Pet Ngựa Troy",
+      "differences": {
+        "type": {
+          "local": 72,
+          "observed": 18
+        },
+        "name": {
+          "local": "Angel Rose",
+          "observed": "Pet Ngựa Troy"
+        },
+        "description": {
+          "local": "Vật Phẩm Quý Hiếm",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 14003,
+          "observed": 17488
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2075,
+      "name": "Cải Trang Nappa Aura",
+      "differences": {
+        "type": {
+          "local": 72,
+          "observed": 5
+        },
+        "name": {
+          "local": "Angel (White)",
+          "observed": "Cải Trang Nappa Aura"
+        },
+        "description": {
+          "local": "Vật Phẩm Quý Hiếm",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 14007,
+          "observed": 17518
+        },
+        "power_required": {
+          "local": 1500000,
+          "observed": 0
+        }
+      }
+    },
+    {
+      "id": 2077,
+      "name": "Pet Cừu không mập",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Nâng kỹ năng 5 đệ tử",
+          "observed": "Pet Cừu không mập"
+        },
+        "description": {
+          "local": "Nâng chiêu 5 của đệ tử lên 1 cấp",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 7100,
+          "observed": 17521
+        }
+      }
+    },
+    {
+      "id": 2082,
+      "name": "Cải trang Berus",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Điểm quyền năng",
+          "observed": "Cải trang Berus"
+        },
+        "description": {
+          "local": "Vật phẩm sự kiện",
+          "observed": "Đi chung với đủ 5 món SKH Beerus tăng 10% chí mạng"
+        },
+        "icon_id": {
+          "local": 14614,
+          "observed": 17565
+        }
+      }
+    },
+    {
+      "id": 2085,
+      "name": "Cải Trang Bunma bụi",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Đổi Skill 3 Đệ Tử",
+          "observed": "Cải Trang Bunma bụi"
+        },
+        "description": {
+          "local": "Dùng để đổi skill đệ tử khi bạn quá đen",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 7100,
+          "observed": 17604
+        }
+      }
+    },
+    {
+      "id": 2086,
+      "name": "Cải Trang Póc đường phố",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Đổi Skill 4 Đệ Tử",
+          "observed": "Cải Trang Póc đường phố"
+        },
+        "description": {
+          "local": "Dùng để đổi skill đệ tử khi bạn quá đen",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 7101,
+          "observed": 17666
+        }
+      }
+    },
+    {
+      "id": 2091,
+      "name": "Cải Trang Lý Tiểu Nương đường phố",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Trứng pet",
+          "observed": "Cải Trang Lý Tiểu Nương đường phố"
+        },
+        "description": {
+          "local": "Mở ra để nhận pet, có tỉ lệ mở ra pet 10% vĩnh viễn",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 14010,
+          "observed": 17633
+        }
+      }
+    },
+    {
+      "id": 2093,
+      "name": "Cải Trang Goku Ninja",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 5
+        },
+        "name": {
+          "local": "Hộp cải trang thường",
+          "observed": "Cải Trang Goku Ninja"
+        },
+        "description": {
+          "local": "Chứa hơn 200 cải trang các loại, tỉ lệ 10% ra cải trang vĩnh viễn với tất cả chỉ số 35%",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20178,
+          "observed": 17698
+        }
+      }
+    },
+    {
+      "id": 2094,
+      "name": "Pet ma dơi",
+      "differences": {
+        "type": {
+          "local": 27,
+          "observed": 18
+        },
+        "name": {
+          "local": "Hộp Zamasu Tối Thượng",
+          "observed": "Pet ma dơi"
+        },
+        "description": {
+          "local": "Mở ra để nhận cải trang Zamasu Tối Thượng 2% tỉ lệ vĩnh viễn chỉ số đến 40%",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 14015,
+          "observed": 17707
+        }
+      }
+    },
+    {
+      "id": 2099,
+      "name": "Cải Trang công chúa quỷ",
+      "differences": {
+        "name": {
+          "local": "Vegeta Sjj4",
+          "observed": "Cải Trang công chúa quỷ"
+        },
+        "description": {
+          "local": "Khi mặc trên người sư phụ Goku Sjj4 và đệ tử Vegeta Sjj4 hợp thể sẽ có hình dạng mới",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20403,
+          "observed": 17735
+        }
+      }
+    },
+    {
+      "id": 2104,
+      "name": "Cải trang tiểu thư Malfoy",
+      "differences": {
+        "type": {
+          "local": 11,
+          "observed": 5
+        },
+        "name": {
+          "local": "Nguyện thần",
+          "observed": "Cải trang tiểu thư Malfoy"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20489,
+          "observed": 17788
+        },
+        "part_id": {
+          "local": 97,
+          "observed": -1
+        }
+      }
+    },
+    {
+      "id": 2108,
+      "name": "Cải trang Gohan SSJ",
+      "differences": {
+        "type": {
+          "local": 23,
+          "observed": 5
+        },
+        "name": {
+          "local": "Ván bay thần tài",
+          "observed": "Cải trang Gohan SSJ"
+        },
+        "description": {
+          "local": "YTB KhanhDTK",
+          "observed": "Vật phẩm sự kiện"
+        },
+        "icon_id": {
+          "local": 20498,
+          "observed": 17807
+        },
+        "part_id": {
+          "local": 24,
+          "observed": -1
+        }
+      }
+    }
+  ]
+}

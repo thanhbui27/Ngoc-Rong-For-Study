@@ -76,6 +76,9 @@ public class NpcManager {
         List<Npc> list = new ArrayList<>();
         if (player.zone != null) {
             for (Npc npc : player.zone.map.npcs) {
+                if (npc.tempId == ConstNpc.ADMIN_ITEM_CATALOG && !player.isAdmin()) {
+                    continue;
+                }
                 if (npc.tempId == ConstNpc.NOI_BANH && Manager.EVENT_SEVER != 4) {
                     continue;
                 }

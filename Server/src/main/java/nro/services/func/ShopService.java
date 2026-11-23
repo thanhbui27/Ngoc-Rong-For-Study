@@ -8,6 +8,7 @@ import nro.jdbc.daos.PlayerDAO;
 import nro.models.item.CaiTrang;
 import nro.models.item.Item;
 import nro.models.item.ItemOption;
+import nro.models.item.ItemTemplate;
 import nro.models.npc.Npc;
 import nro.models.player.Player;
 import nro.models.shop.ItemShop;
@@ -267,6 +268,27 @@ public class ShopService {
     public void openShopSpecial(Player player, Npc npc, int shopId, int order, int gender) {
         Shop shop = getShop(player, npc.tempId, order, gender);
         openShopType3(player, shop, shopId);
+    }
+
+    public void openAdminCatalog(Player player, String title, List<ItemTemplate> items) {
+        if (!player.isAdmin() || player.zone == null
+                || player.zone.map.mapId != nro.consts.ConstMap.DAO_KAME) {
+            return;
+        }
+        Shop shop = new Shop();
+        TabShop tab = new TabShop();
+        tab.name = title;
+        tab.shop = shop;
+        for (ItemTemplate template : items) {
+            ItemShop entry = new ItemShop();
+            entry.temp = template;
+            entry.tabShop = tab;
+            entry.gold = 0;
+            entry.gem = 0;
+            tab.itemShops.add(entry);
+        }
+        shop.tabShops.add(tab);
+        openShopType0(player, shop, ConstNpc.ADMIN_ITEM_CATALOG_SHOP);
     }
 
     private void openShopType0(Player player, Shop shop, int shopId) {
@@ -815,6 +837,10 @@ public class ShopService {
     // --------------------------------------------------------------------------
     // điều hướng mua
     public void buyItem(Player player, byte type, int tempId) {
+        if (player.iDMark.getShopId() == ConstNpc.ADMIN_ITEM_CATALOG_SHOP) {
+            buyAdminCatalogItem(player, tempId);
+            return;
+        }
         switch (player.iDMark.getShopId()) {
             case ConstNpc.SIDE_BOX_LUCKY_ROUND:
                 getItemSideBoxLuckyRound(player, type, tempId);
@@ -825,6 +851,33 @@ public class ShopService {
             default:
                 buyItemShopNormal(player, getItemShop(player, player.iDMark.getShopId(), tempId));
                 break;
+        }
+    }
+
+    private void buyAdminCatalogItem(Player player, int tempId) {
+        ItemTemplate template = AdminCatalogService.gI().getSelectedItem(player, tempId);
+        if (template == null) {
+            Service.gI().sendThongBao(player, "Không thể mua vật phẩm này từ kho admin.");
+            return;
+        }
+        if (InventoryService.gI().getCountEmptyBag(player) <= 0) {
+            Service.gI().sendThongBao(player, "Hành trang đã đầy");
+            return;
+        }
+        Item item = new Item();
+        item.template = template;
+        item.quantity = 1;
+        item.content = item.getContent();
+        item.info = item.getInfo();
+        // Bypass the normal pickup rules: some template IDs grant currency or
+        // trigger expansion effects instead of putting the test item in the bag.
+        for (int i = 0; i < player.inventory.itemsBag.size(); i++) {
+            if (!player.inventory.itemsBag.get(i).isNotNullItem()) {
+                player.inventory.itemsBag.set(i, item);
+                InventoryService.gI().sendItemBags(player);
+                Service.gI().sendThongBao(player, "Đã nhận " + template.name);
+                return;
+            }
         }
     }
 

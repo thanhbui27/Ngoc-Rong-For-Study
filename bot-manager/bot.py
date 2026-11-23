@@ -618,7 +618,11 @@ class BotRunner:
                 if self._travel_step and self._travel_step[2] == "spaceship" and self._travel_phase == "menu":
                     npc_id = reader.i16()
                     notice = reader.utf() if reader.pos < len(payload) else "NPC không mở menu tàu"
-                    self._block_travel_step(time.monotonic(), f"NPC {npc_id} từ chối vận chuyển: {notice[:100]}")
+                    if "cứu đứa bé" in notice.casefold():
+                        reason = "Tàu liên hành tinh đang khóa trong Nhiệm vụ giải cứu"
+                    else:
+                        reason = f"NPC {npc_id} không mở menu tàu: {notice[:100]}"
+                    self._block_travel_step(time.monotonic(), reason)
             elif command == -9:
                 mob_id, hp = reader.u8(), reader.i32()
                 with self._lock:
@@ -1297,6 +1301,12 @@ class BotRunner:
         if index < 0 or index >= len(steps):
             return False
         step = steps[index]
+        if task_id == 7 and self.map_id in (24, 25, 26):
+            if now >= self._quest_request_due:
+                self._send(-15)  # The server allows returning home while transport NPCs are quest-locked.
+                self._quest_request_due = now + 5
+            self.set_action("Nhiệm vụ giải cứu khóa tàu; đang về hành tinh gốc để đi bộ tới mục tiêu")
+            return True
         if task_id == 0 and index == 0:
             training_map = 39 + self.gender
             if self.map_id != training_map:

@@ -30,8 +30,8 @@ import java.util.Map;
  *
  */
 public class DataGame {
-    public static byte vsData = 6;
-    public static byte vsMap = 5;
+    public static byte vsData = 7;
+    public static byte vsMap = 6;
     public static byte vsSkill = 5;
     public static byte vsItem = 7;
 

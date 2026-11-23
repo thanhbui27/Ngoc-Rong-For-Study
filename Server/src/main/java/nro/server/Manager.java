@@ -748,7 +748,7 @@ public class Manager {
             Log.success("Load mob template thành công (" + MOB_TEMPLATES.size() + ")");
 
             // load npc template
-            ps = con.prepareStatement("select * from npc_template");
+            ps = con.prepareStatement("select * from npc_template order by id");
             rs = ps.executeQuery();
             while (rs.next()) {
                 NpcTemplate npcTemp = new NpcTemplate();

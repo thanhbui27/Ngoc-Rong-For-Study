@@ -95,6 +95,28 @@ public class NpcFactory {
         Npc npc = null;
         try {
             npc = switch (tempId) {
+                case ConstNpc.ADMIN_ITEM_CATALOG ->
+                    new Npc(mapId, status, cx, cy, tempId, avartar) {
+                        @Override
+                        public void openBaseMenu(Player player) {
+                            if (canOpenNpc(player)) {
+                                AdminCatalogService.gI().showMenu(this, player);
+                            }
+                        }
+
+                        @Override
+                        public void confirmMenu(Player player, int select) {
+                            if (!canOpenNpc(player)) {
+                                return;
+                            }
+                            if (player.iDMark.isBaseMenu()) {
+                                AdminCatalogService.gI().chooseCategory(player, select);
+                            } else if (player.iDMark.getIndexMenu()
+                                    == ConstNpc.ADMIN_ITEM_CATALOG_PAGE_MENU) {
+                                AdminCatalogService.gI().selectPageAction(this, player, select);
+                            }
+                        }
+                    };
                 case ConstNpc.OBITO ->
                     new Npc(mapId, status, cx, cy, tempId, avartar) {
                         @Override

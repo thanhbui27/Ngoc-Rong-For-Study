@@ -1,6 +1,7 @@
 package nro.models.map;
 
 import nro.consts.ConstMap;
+import nro.consts.ConstNpc;
 import nro.models.mob.MobTemplate;
 import nro.models.map.war.BlackBallWar;
 //import nro.models.map.phoban.BanDoKhoBau;
@@ -136,6 +137,13 @@ public class Map implements Runnable {
         this.npcs = new ArrayList<>();
         for (int i = 0; i < npcId.length; i++) {
             this.npcs.add(NpcFactory.createNPC(this.mapId, 1, npcX[i], npcY[i], npcId[i], npcAvatar[i]));
+        }
+        if (this.mapId == ConstMap.DAO_KAME
+                && Manager.NPC_TEMPLATES.stream().anyMatch(template ->
+                        template.id == ConstNpc.ADMIN_ITEM_CATALOG
+                        && "Kho admin".equals(template.name))) {
+            this.npcs.add(NpcFactory.createNPC(this.mapId, 1, 1260, 408,
+                    ConstNpc.ADMIN_ITEM_CATALOG, 0));
         }
     }
 
