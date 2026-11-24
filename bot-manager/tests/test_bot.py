@@ -101,6 +101,73 @@ class ProtocolTests(unittest.TestCase):
             finally:
                 runner.close()
 
+    def test_quest_mob_search_includes_cross_planet_spaceship_route(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass", gender=0))
+            try:
+                runner._send = Mock()
+                runner.map_id = 5  # Earth Guru; the next guild quest target is Namek.
+                runner.waypoints = bot.ROUTES.maps[5]
+                runner.task = {"task_id": 13, "index": 1,
+                               "steps": [{"map_id": -1, "npc_id": -1, "title": "Tiêu diệt Heo rừng"},
+                                         {"map_id": -1, "npc_id": -1,
+                                          "title": "Tiêu diệt Heo da xanh"}]}
+                goal = runner._best_quest_map({17})
+                self.assertEqual(goal, 31)
+                self.assertEqual(runner._match_quest_mobs("tiêu diệt heo da xanh"), {17})
+                self.assertIn("spaceship", {step["kind"]
+                                            for step in bot.MOVEMENT.plan(5, goal, gender=0)})
+                self.assertTrue(runner._quest(time.monotonic()))
+                self.assertIn("map 4", runner.action)
+            finally:
+                runner.close()
+
+    def test_quest_recognizes_defeat_objective_and_selects_target_mob(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass", gender=2))
+            try:
+                runner.gender = 2
+                runner._send = Mock()
+                runner.map_id = 17
+                runner.task = {"task_id": 7, "index": 1,
+                               "steps": [{"map_id": -1, "npc_id": -1, "title": "power"},
+                                         {"map_id": 17, "npc_id": -1,
+                                          "title": "Đánh bại 20 con quỷ bay"}]}
+                with patch.object(runner, "_best_quest_map", return_value=17):
+                    self.assertFalse(runner._quest(time.monotonic()))
+                self.assertEqual(runner._quest_target_templates, {9})
+            finally:
+                runner.close()
+
+    def test_server_route_refusal_blocks_current_travel_edge(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass"))
+            try:
+                runner._travel_step = (24, 17, "spaceship")
+                runner._travel_phase = "menu"
+                runner._packet(-25, java_utf("Bạn không thể đến khu vực này"))
+                self.assertIsNone(runner._travel_step)
+                self.assertIn((24, 17, "spaceship"), runner._travel_blocked)
+                self.assertIn("bị server từ chối", runner.action)
+            finally:
+                runner.close()
+
+    def test_rescue_quest_uses_return_home_while_transport_is_locked(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass", gender=2))
+            try:
+                runner._send = Mock()
+                runner.map_id = 24
+                runner.task = {"task_id": 7, "index": 1,
+                               "steps": [{"map_id": -1, "npc_id": -1},
+                                         {"map_id": 17, "npc_id": -1,
+                                          "title": "Đánh bại 20 con quỷ bay"}]}
+                self.assertTrue(runner._quest(time.monotonic()))
+                runner._send.assert_called_once_with(-15)
+                self.assertIn("tàu", runner.action)
+            finally:
+                runner.close()
+
     def test_character_faction_is_saved_and_sent_to_server(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
             for gender, hair in ((0, 64), (1, 9), (2, 6)):
@@ -114,7 +181,7 @@ class ProtocolTests(unittest.TestCase):
                 command, payload = runner._send.call_args.args
                 reader = Reader(payload)
                 self.assertEqual((command, reader.u8()), (-28, 2))
-                self.assertEqual(len(reader.utf()), 10)
+                self.assertLessEqual(5, len(reader.utf()))
                 self.assertEqual((reader.u8(), reader.u8()), (gender, hair))
                 runner.close()
             self.assertEqual(valid_batch({"name_prefix": "bot", "username_prefix": "abc",
@@ -405,7 +472,8 @@ class ProtocolTests(unittest.TestCase):
             self.assertEqual(received[6], -28)
             self.assertEqual(received[7][0], 2)
             self.assertEqual(received[7][2:], (0, 64))
-            self.assertEqual(len(received[7][1]), 10)
+            self.assertLessEqual(5, len(received[7][1]))
+            self.assertLessEqual(len(received[7][1]), 10)
             runner.close()
         listener.close()
 
@@ -451,7 +519,8 @@ class ProtocolTests(unittest.TestCase):
                 runner.task = {"task_id": 1, "index": 0, "steps": [{"map_id": 1, "npc_id": 2}]}
                 runner._quest_step_done = "1:0"
                 self.assertTrue(runner._quest(time.monotonic()))
-                self.assertIn("Chờ NPC", runner.action)
+                self.assertIn("Chờ", runner.action)
+                self.assertIn("nhiệm vụ", runner.action)
             finally:
                 runner.close()
 

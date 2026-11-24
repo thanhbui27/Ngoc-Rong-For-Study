@@ -33,7 +33,21 @@ public class DataGame {
     public static byte vsData = 7;
     public static byte vsMap = 6;
     public static byte vsSkill = 5;
-    public static byte vsItem = 7;
+    public static byte vsItem = 8;
+
+    /** Versions are advanced by the local part editor after committed DB edits. */
+    public static void loadEditorVersions(java.sql.Connection connection) {
+        try (java.sql.PreparedStatement statement = connection.prepareStatement(
+                "SELECT data_version,item_version FROM admin_editor_state WHERE id=1");
+                java.sql.ResultSet rows = statement.executeQuery()) {
+            if (rows.next()) {
+                vsData = rows.getByte(1);
+                vsItem = rows.getByte(2);
+            }
+        } catch (java.sql.SQLException ignored) {
+            // Existing databases without an editor state retain the source versions.
+        }
+    }
 
     public static String LINK_IP_PORT = "ThanhBN:localhost:14445:0,0,0";
     private static final String MOUNT_NUM = "733:1,734:2,735:3,743:4,744:5,746:6,795:7,849:8,897:9,920:10,1092:11,1135:12,1148:13,1176:14";

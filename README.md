@@ -36,3 +36,23 @@ special pickup effects are applied. The server checks admin permission,
 location, and the currently selected page again when processing each purchase.
 Apply `db/migrations/V8__add_admin_catalog_npc.sql` to an existing database
 before restarting the game server. Fresh seeds already include NPC template 80.
+
+Migration V9 appends observed server-14 costume/pet templates that are absent
+from this BE or whose inventory icon differs. On the original clean seed it
+adds 482 costume/avatar entries and 112 pet entries, while retaining all old
+item IDs. It copies the 370 conflicting source icons to new IDs across x1–x4,
+without replacing the BE images. Imported entries are labeled `S14` and have
+`part=-1` because the captured item data lacks verified full model mappings.
+They can be bought as inspection items; imported pets do not summon a pet in
+this BE. These entries are from the verified server-14 client session; their
+identity on server 15 remains unverified. Run
+`python tools/prepare_admin_catalog.py` to audit the inputs or add `--apply`
+to reproduce the icon and migration files.
+
+## Part Studio
+
+Double-click `PartStudio.cmd`, enter the game host and port, then sign in with
+an admin account in the browser. The local UI sends all item, part and image
+actions through command -126 in the game's `Controller`; the game server reads
+and writes its own SQL. Deploy the updated BE first. See
+`tools/part-editor/README.md` for the workflow and restart requirement.

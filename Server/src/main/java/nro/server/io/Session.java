@@ -19,6 +19,7 @@ import nro.services.Service;
 import nro.services.TaskService;
 
 import java.net.Socket;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +58,9 @@ public class Session {
 
     public String ipAddress;
     public boolean isAdmin;
+    public boolean partEditorAuthenticated;
+    public int partEditorRequestId = -1;
+    public ByteArrayOutputStream partEditorRequest;
     public int userId;
     public String uu;
     public String pp;

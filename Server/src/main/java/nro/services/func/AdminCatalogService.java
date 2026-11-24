@@ -148,7 +148,7 @@ public final class AdminCatalogService {
         if (item.type == 5 || name.startsWith("cải trang") || name.startsWith("avatar")) {
             return Category.COSTUME;
         }
-        if (item.type == 21 || name.startsWith("pet ")) {
+        if (item.type == 21 || item.type == 18 || name.startsWith("pet ")) {
             return Category.PET;
         }
         if ((item.type >= 0 && item.type <= 4) || item.type == 23 || item.type == 24

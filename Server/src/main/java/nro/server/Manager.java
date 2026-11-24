@@ -304,6 +304,7 @@ public class Manager {
         try (Connection con = DBService.gI().getConnectionForGame();) {
             // load part
             PartManager.getInstance().load();
+            DataGame.loadEditorVersions(con);
 
             // load map template
             ps = con.prepareStatement("select count(id) from map_template", ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -595,7 +596,8 @@ public class Manager {
             Log.success("Load side task thành công (" + SIDE_TASKS_TEMPLATE.size() + ")");
 
             // load item template
-            ps = con.prepareStatement("select * from item_template");
+            // Item IDs are implicit list indexes in the client item-data protocol.
+            ps = con.prepareStatement("select * from item_template order by id");
             rs = ps.executeQuery();
             while (rs.next()) {
                 ItemTemplate itemTemp = new ItemTemplate();

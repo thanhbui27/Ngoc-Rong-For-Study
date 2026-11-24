@@ -17,6 +17,7 @@ import nro.services.*;
 import nro.services.func.*;
 import nro.utils.Log;
 import nro.utils.Util;
+import nro.tools.PartEditorAction;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -50,6 +51,9 @@ public class Controller {
                 System.out.println("CMD receive: " + cmd);
             }
             switch (cmd) {
+                case -126:
+                    PartEditorAction.handle(_session, _msg);
+                    break;
                 case Cmd.KIGUI:
                     KiGuiShop.getInstance().handler(player, _msg);
                     break;

@@ -52,3 +52,14 @@ python tools/sync_observed_data.py --server15 '..\NRO-server15-assets'
 The last two commands are dry runs; add `--apply` to copy absent PNGs. Before
 enabling an observed costume or pet in gameplay, verify a unique ID in this BE
 fork and obtain its full model mapping in the matching part namespace.
+
+Migration V9 adds catalog aliases for observed costumes/pets absent from the BE
+or carrying different source icon bytes. With the clean seed it appends 482
+costume/avatar templates and 112 pet templates at new, contiguous item IDs.
+It also maps 370 conflicting icon IDs to new IDs 32212–32581 and copies those
+source PNGs at all four zooms. Existing item rows and icon files are preserved.
+These aliases are visible and purchasable in the admin NPC shop; their tooltip
+marks them as server-14 references. Because the capture lacks verified full
+models, aliases have `part=-1` and do not establish costume or pet appearance.
+Pet aliases retain source type 18 and are inspection items in this BE.
+Run `python tools/prepare_admin_catalog.py` to audit the generated inputs.

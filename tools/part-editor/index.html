@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Part Studio · Ngọc Rồng</title>
+  <style>
+    :root{font-family:Segoe UI,Arial,sans-serif;color:#f1e8d4;background:#10131b}
+    *{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}
+    button{background:#34415a;color:#fff;border:1px solid #63718c;border-radius:7px;padding:8px 11px;cursor:pointer}
+    button:hover{background:#465b7d}button.primary{background:#bd742c;border-color:#eda353;color:#fff}
+    button.danger{background:#63323d;border-color:#a15d6d}button:disabled{opacity:.45;cursor:not-allowed}
+    input,select,textarea{background:#191f2c;color:#fff;border:1px solid #48536a;border-radius:6px;padding:7px}
+    input[type=number]{width:86px}textarea{width:100%;min-height:60px;resize:vertical}
+    header{padding:13px 18px;background:#1a2130;border-bottom:1px solid #354053;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+    header strong{font-size:19px;color:#ffc87b}#status{color:#adbcd2;font-size:13px}#message{padding:8px 18px;min-height:34px;color:#a9d6b4}
+    main{display:grid;grid-template-columns:300px minmax(0,1fr) 420px;min-height:calc(100vh - 105px)}
+    aside,.editor,.preview{padding:15px;border-right:1px solid #354053;min-width:0}
+    aside{background:#151a25}aside .toolbar{display:flex;gap:7px;margin-bottom:10px}
+    aside input{width:100%;margin-bottom:9px}.list{height:calc(100vh - 232px);overflow:auto;border:1px solid #354053;border-radius:8px}
+    .row{display:flex;align-items:center;gap:9px;padding:7px;border-bottom:1px solid #2b3344;cursor:pointer;font-size:13px}
+    .row:hover,.row.selected{background:#2c384d}.row img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated;background:#0c1017}
+    .row small{display:block;color:#98a6bd}.row .missing{color:#efab81}
+    h2{font-size:16px;color:#ffc87b;margin:4px 0 12px}h3{font-size:14px;color:#e9c38d;margin:16px 0 8px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.grid label{display:grid;gap:4px;font-size:12px;color:#b3c1d4}
+    .grid label.wide{grid-column:span 3}.grid input,.grid select{width:100%}
+    .buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+    .part-card{border:1px solid #45516a;border-radius:9px;padding:11px;margin:12px 0;background:#171e2b}
+    .part-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.part-head h3{margin:0 auto 0 0}
+    .part-head input{width:80px}.frames{max-height:250px;overflow:auto;margin-top:9px}
+    .frame-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid #303b4d;font-size:12px}
+    .frame-row.active{background:#31445c}.frame-row img{width:35px;height:35px;object-fit:contain;image-rendering:pixelated}
+    .frame-row input[type=number]{width:68px;padding:5px}.frame-row button{padding:4px 6px}
+    .preview{background:#10151f}#canvas{width:100%;height:360px;background:linear-gradient(#1c2636 0 72%,#263340 72% 73%,#131a24 73%);border:1px solid #506078;image-rendering:pixelated;touch-action:none}
+    .preview-controls{display:flex;gap:8px;align-items:center;margin:10px 0}.preview-controls input{flex:1}
+    .hint{color:#9baabe;font-size:12px;line-height:1.5}#details{white-space:pre-line;color:#c8d0dd;font-size:12px;margin-top:12px}
+    @media(max-width:1150px){main{grid-template-columns:250px 1fr}.preview{grid-column:1/-1;border-top:1px solid #354053}#canvas{max-width:500px}}
+    @media(max-width:680px){main{display:block}.list{height:250px}.grid{grid-template-columns:repeat(2,1fr)}.grid label.wide{grid-column:span 2}}
+  </style>
+</head>
+<body>
+  <header><strong>PART STUDIO</strong><span id="status">Đang kết nối…</span><span id="remoteLogin" hidden><input id="adminUser" placeholder="Tài khoản admin" autocomplete="username"><input id="adminPass" type="password" placeholder="Mật khẩu" autocomplete="current-password"><button id="connectGame">Kết nối server</button></span><button id="importParts">Cấp ID mới cho part trùng</button><span class="hint">Giao diện trên 127.0.0.1 · Dữ liệu SQL từ game server</span></header>
+  <div id="message"></div>
+  <main>
+    <aside>
+      <div class="toolbar"><select id="kind"><option value="costume">Cải trang</option><option value="pet">Pet</option></select><button id="newItem">Thêm mới</button></div>
+      <input id="search" placeholder="Tìm tên cải trang / pet">
+      <div id="count" class="hint"></div><div id="list" class="list"></div>
+    </aside>
+    <section class="editor">
+      <h2>Vật phẩm <span id="itemId">—</span></h2>
+      <div class="grid">
+        <label class="wide">Tên<input id="name" maxlength="255"></label>
+        <label>Loại<select id="type"><option value="5">Cải trang · 5</option><option value="21">Pet dùng được · 21</option><option value="18">Pet tham chiếu · 18</option></select></label>
+        <label>Giới tính<select id="gender"><option value="3">Tất cả</option><option value="0">Trái Đất</option><option value="1">Namếc</option><option value="2">Xayda</option></select></label>
+        <label>Icon ID<input id="iconId" type="number" min="0" max="32767"></label>
+        <label>Part item<input id="itemPart" type="number" min="-1" max="32767"></label>
+        <label>Sức mạnh yêu cầu<input id="power" type="number" min="0"></label>
+        <label>Bag ID<input id="bag" type="number" min="-1" max="32767"></label>
+        <label class="wide">Mô tả<textarea id="description" maxlength="255"></textarea></label>
+      </div>
+      <div class="buttons"><button class="primary" id="save">Lưu vào SQL</button><button id="deleteMapping">Xoá mapping</button><button class="danger" id="deleteItem">Xoá item cuối</button></div>
+      <p class="hint">Sửa part hiện có sẽ tạo bản sao với ID mới rồi gán cho item này. Part cũ và vật phẩm khác không đổi. Pet loại 21 cần đủ đầu/thân/chân.</p>
+      <div id="referenceHint" class="hint"></div>
+      <div id="parts"></div>
+    </section>
+    <section class="preview">
+      <h2>Xem trước theo Unity</h2>
+      <canvas id="canvas" width="420" height="360"></canvas>
+      <div class="preview-controls"><span>Frame <b id="frameNumber">0</b></span><input id="frame" type="range" min="0" max="32" value="0"><button id="direction">→</button></div>
+      <p class="hint">Kéo trực tiếp ảnh trên khung xem trước để chỉnh dx/dy. Nút “Tự căn” lấy tâm và chân vùng ảnh có alpha, rồi đặt theo frame mẫu của Unity. Kiểm tra lại từng frame trước khi lưu.</p>
+      <div id="details"></div>
+    </section>
+  </main>
+<script>
+const token=new URLSearchParams(location.search).get('token')||'';
+const $=id=>document.getElementById(id);
+const slots=['head','body','leg'], counts={head:3,body:17,leg:14}, labels={head:'Đầu',body:'Thân',leg:'Chân'};
+let model=null,revision='',charInfo=[],frame=0,dir=1,selectedSlot='head',selectedFrame=0,drag=null;
+const imageCache=new Map();
+function message(text,bad=false){$('message').textContent=text;$('message').style.color=bad?'#f2a1a1':'#a9d6b4'}
+async function api(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:{'X-Editor-Token':token,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});const data=await response.json();if(!response.ok)throw Error(data.error||'Lỗi kết nối');return data}
+function imageUrl(id,from='be'){return `/asset?id=${id}&zoom=1&from=${from}&token=${encodeURIComponent(token)}`}
+function image(id,from='be'){if(id<=0)return null;let key=from+':'+id;if(!imageCache.has(key)){const im=new Image();im.onload=draw;im.onerror=draw;im.src=imageUrl(id,from);imageCache.set(key,im)}return imageCache.get(key)}
+function emptyPart(slot){return {id:-1,type:slots.indexOf(slot),frames:[],source:'runtime'}}
+function startNew(){revision='';model={item:{id:-1,type:$('kind').value==='pet'?21:5,gender:3,name:'',description:'',iconId:0,part:-1,power:0},mapping:{head:emptyPart('head'),body:emptyPart('body'),leg:emptyPart('leg'),bag:-1}};render()}
+function field(id,value){$(id).value=value??''}
+function readFields(){const i=model.item;i.name=$('name').value.trim();i.description=$('description').value;i.type=+$('type').value;i.gender=+$('gender').value;i.iconId=+$('iconId').value;i.part=+$('itemPart').value;i.power=+$('power').value;model.mapping.bag=+$('bag').value}
+function render(){if(!model)return;const i=model.item;field('name',i.name);field('description',i.description);field('type',i.type);field('gender',i.gender);field('iconId',i.iconId);field('itemPart',i.part);field('power',i.power);field('bag',model.mapping.bag);$('itemId').textContent=i.id<0?'mới':'#'+i.id;renderReference();renderParts();draw()}
+function renderReference(){const area=$('referenceHint');area.replaceChildren();if(!model.reference)return;const ref=model.reference;const label=document.createElement('span');label.textContent=`Nguồn S14 #${ref.itemId} · part ${ref.partId>=0?ref.partId:'chưa biết'}. `;area.append(label);if(ref.partId>=0){const button=document.createElement('button');button.textContent='Nạp part nguồn';button.onclick=async()=>{try{const p=await api('/api/prepare-reference',{id:ref.partId});if(p.type<0||p.type>2)throw Error('Part nguồn không thuộc đầu/thân/chân');const slot=slots[p.type];model.mapping[slot]=p;selectedSlot=slot;selectedFrame=0;render();message(`Đã nạp part nguồn vào ${labels[slot]}; kiểm tra preview rồi bấm Lưu vào SQL`)}catch(e){message(e.message,true)}};area.append(button)}}
+async function refreshList(){try{const kind=$('kind').value,q=$('search').value;const data=await api(`/api/list?kind=${kind}&q=${encodeURIComponent(q)}`);$('count').textContent=`${data.count} mục trong DB`;$('list').replaceChildren();for(const i of data.items){const div=document.createElement('div');div.className='row'+(model?.item.id===i.id?' selected':'');const img=document.createElement('img');img.loading='lazy';img.src=imageUrl(i.iconId);const text=document.createElement('span');text.textContent=`#${i.id} ${i.name}`;const sub=document.createElement('small');sub.textContent=`icon ${i.iconId} · ${i.hasMapping?'có mapping':'chưa có part'}`;if(!i.hasMapping)sub.className='missing';text.append(sub);div.append(img,text);div.onclick=()=>loadItem(i.id);$('list').append(div)}}catch(e){message(e.message,true)}}
+async function loadItem(id){try{const data=await api('/api/item?id='+id);revision=data.revision;delete data.revision;model=data;selectedSlot='head';selectedFrame=0;render();refreshList();message('Đã tải item #'+id+' từ SQL')}catch(e){message(e.message,true)}}
+function ensureFrames(slot){const p=model.mapping[slot];if(p.frames.length===0)p.frames=Array.from({length:counts[slot]},()=>[0,0,0]);return p}
+function renderParts(){const area=$('parts');area.replaceChildren();for(const slot of slots){const p=model.mapping[slot],card=document.createElement('div');card.className='part-card';const head=document.createElement('div');head.className='part-head';head.innerHTML=`<h3>${labels[slot]} · ${counts[slot]} frame</h3><span>ID ${p.id}</span>`;
+const id=document.createElement('input');id.type='number';id.min='0';id.placeholder='Part ID';const from=document.createElement('select');from.innerHTML='<option value="runtime">BE</option><option value="reference">S14</option>';const load=document.createElement('button');load.textContent='Nạp part';load.onclick=async()=>{try{const d=from.value==='reference'?await api('/api/prepare-reference',{id:+id.value}):await api(`/api/part?id=${+id.value}&from=runtime`);if(d.type!==slots.indexOf(slot))throw Error('Part này sai loại '+labels[slot]);model.mapping[slot]=d;selectedSlot=slot;selectedFrame=0;render();message(`Đã nạp part ${d.id}. ${d.missingImages?.length?'Còn '+d.missingImages.length+' ảnh nguồn thiếu; cần nhập PNG thủ công.':'Ảnh trùng đã được cấp ID mới khi cần.'}`)}catch(e){message(e.message,true)}};
+const add=document.createElement('button');add.textContent=p.frames.length?'Làm trống':'Tạo frame';add.onclick=()=>{if(p.frames.length)p.frames=[];else ensureFrames(slot);p.id=-1;render()};
+const align=document.createElement('button');align.textContent='Tự căn';align.onclick=()=>autoAlign(slot);
+head.append(id,from,load,add,align);card.append(head);
+const rows=document.createElement('div');rows.className='frames';p.frames.forEach((f,j)=>{const row=document.createElement('div');row.className='frame-row'+(selectedSlot===slot&&selectedFrame===j?' active':'');const label=document.createElement('span');label.textContent=String(j).padStart(2,'0');label.style.width='22px';const img=document.createElement('img');if(f[0]>0)img.src=imageUrl(f[0],p.source==='reference'?'source':'be');
+for(let n=0;n<3;n++){const input=document.createElement('input');input.type='number';input.value=f[n];input.title=['Image ID','dx','dy'][n];input.onchange=()=>{f[n]=+input.value;selectedSlot=slot;selectedFrame=j;draw()};row.append(input);if(n===0)row.append(img)}
+const up=document.createElement('input');up.type='file';up.accept='image/png';up.style.width='110px';up.onchange=()=>uploadFrame(slot,j,up.files[0]);const choose=document.createElement('button');choose.textContent='Chọn';choose.onclick=()=>{selectedSlot=slot;selectedFrame=j;const match=charInfo.findIndex(info=>info[slots.indexOf(slot)][0]===j);if(match>=0){frame=match;$('frame').value=frame;$('frameNumber').textContent=frame}renderParts();draw()};row.prepend(label);row.append(up,choose);rows.append(row)});card.append(rows);area.append(card)}}
+async function uploadFrame(slot,j,file){if(!file)return;try{const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});const result=await api('/api/upload',{png:dataUrl});const p=ensureFrames(slot);p.frames[j][0]=result.imageId;p.source='runtime';if(model.item.iconId<=0)model.item.iconId=result.imageId;selectedSlot=slot;selectedFrame=j;render();await autoAlign(slot);message(`Đã nhập ảnh ${result.imageId} và tự căn sơ bộ. Kiểm tra lại trên preview trước khi lưu.`)}catch(e){message(e.message,true)}}
+function draw(){const canvas=$('canvas'),g=canvas.getContext('2d');g.clearRect(0,0,canvas.width,canvas.height);g.fillStyle='#1c2636';g.fillRect(0,0,420,260);g.fillStyle='#263340';g.fillRect(0,260,420,100);g.strokeStyle='#91a7bc';g.beginPath();g.moveTo(0,270);g.lineTo(420,270);g.stroke();const cx=210,cy=270;g.strokeStyle='#8593aa';g.beginPath();g.moveTo(cx-8,cy);g.lineTo(cx+8,cy);g.moveTo(cx,cy-8);g.lineTo(cx,cy+8);g.stroke();if(!model||!charInfo.length)return;const info=charInfo[frame];for(const slot of ['head','leg','body']){const si=slots.indexOf(slot),p=model.mapping[slot],spec=info[si];if(!p.frames.length)continue;const fi=Math.min(spec[0],p.frames.length-1),f=p.frames[fi],im=image(f[0],p.source==='reference'?'source':'be');if(!im||!im.complete||!im.naturalWidth)continue;let x=cx+(spec[1]+f[1])*(dir===1?1:-1),y=cy-spec[2]+f[2];if(dir!==1)x-=im.naturalWidth;g.save();if(dir!==1){g.translate(x+im.naturalWidth,0);g.scale(-1,1);g.drawImage(im,0,y)}else g.drawImage(im,x,y);g.restore();if(slot===selectedSlot){g.strokeStyle='#ffd186';g.strokeRect(x,y,im.naturalWidth,im.naturalHeight)}}$('details').textContent=`Frame ${frame} · ${dir===1?'phải':'trái'}\nHead ${info[0]} · Leg ${info[1]} · Body ${info[2]}\nToạ độ = (cx + (CharInfo.dx + part.dx) × hướng, cy − CharInfo.dy + part.dy)`}
+function alphaBounds(im){const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);const a=g.getImageData(0,0,c.width,c.height).data;let minX=c.width,minY=c.height,maxX=-1,maxY=-1;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(a[(y*c.width+x)*4+3]>16){minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)}return maxX<0?{cx:c.width/2,bottom:c.height}:{cx:(minX+maxX)/2,bottom:maxY}}
+async function readyImage(id,from){const im=image(id,from);if(!im)return null;if(!im.complete)await new Promise(resolve=>{im.addEventListener('load',resolve,{once:true});im.addEventListener('error',resolve,{once:true})});return im.naturalWidth?im:null}
+async function autoAlign(slot){try{const p=ensureFrames(slot),base=await api('/api/part?id='+slots.indexOf(slot));let done=0;for(let j=0;j<p.frames.length;j++){const f=p.frames[j],b=base.frames[j];if(f[0]<=0||b[0]<=0)continue;const im=await readyImage(f[0],p.source==='reference'?'source':'be'),ref=await readyImage(b[0],'be');if(!im||!ref)continue;const x=alphaBounds(im),y=alphaBounds(ref);f[1]=Math.max(-128,Math.min(127,Math.round(b[1]+y.cx-x.cx)));f[2]=Math.max(-128,Math.min(127,Math.round(b[2]+y.bottom-x.bottom)));done++}render();message(`Đã căn sơ bộ ${done} frame ${labels[slot]}; hãy xem lại từng frame`)}catch(e){message(e.message,true)}}
+async function save(){if(!model)return;readFields();try{const result=await api('/api/save',{item:model.item,mapping:model.mapping,revision});await loadItem(result.id);await refreshStatus();message(result.message)}catch(e){message(e.message,true)}}
+async function deleteAction(scope){if(!model||model.item.id<0)return;if(!confirm(scope==='item'?'Xoá item cuối khỏi SQL?':'Xoá mapping ngoại hình của item này?'))return;try{const result=await api('/api/delete',{id:model.item.id,scope,revision});message(result.message);if(scope==='item')startNew();else await loadItem(model.item.id);refreshList();refreshStatus()}catch(e){message(e.message,true)}}
+async function refreshStatus(){try{const d=await api('/api/status');$('status').textContent=`${d.database} · ${d.costumes} cải trang · ${d.pets} pet · ${d.parts} part`}catch(e){$('status').textContent='Chưa kết nối được DB';message(e.message,true)}}
+$('kind').onchange=()=>{startNew();refreshList()};let timer;$('search').oninput=()=>{clearTimeout(timer);timer=setTimeout(refreshList,250)};
+$('newItem').onclick=startNew;$('save').onclick=save;$('deleteMapping').onclick=()=>deleteAction('mapping');$('deleteItem').onclick=()=>deleteAction('item');
+$('importParts').onclick=async()=>{if(!confirm('Cấp ID mới cho các part S14 trùng ID nhưng khác dữ liệu BE? Part cũ được giữ nguyên.'))return;try{const r=await api('/api/import-parts',{});message(`${r.added} part mới, ${r.reused} part giữ/tái sử dụng. ${r.message}`);refreshStatus()}catch(e){message(e.message,true)}};
+$('connectGame').onclick=async()=>{try{await api('/api/auth',{username:$('adminUser').value.trim(),password:$('adminPass').value});$('adminPass').value='';message('Đã xác thực tài khoản admin trên game server');await refreshStatus();await refreshList()}catch(e){message(e.message,true)}};
+$('frame').oninput=()=>{frame=+$('frame').value;$('frameNumber').textContent=frame;draw()};$('direction').onclick=()=>{dir=dir===1?-1:1;$('direction').textContent=dir===1?'→':'←';draw()};
+$('canvas').onpointerdown=e=>{if(!model)return;drag={x:e.clientX,y:e.clientY};$('canvas').setPointerCapture(e.pointerId)};
+$('canvas').onpointerup=e=>{if(!drag||!model)return;const p=model.mapping[selectedSlot],f=p.frames[selectedFrame];if(f){const scale=$('canvas').width/$('canvas').getBoundingClientRect().width;f[1]=Math.max(-128,Math.min(127,f[1]+Math.round((e.clientX-drag.x)*scale*(dir===1?1:-1))));f[2]=Math.max(-128,Math.min(127,f[2]+Math.round((e.clientY-drag.y)*scale)));renderParts();draw()}drag=null};
+(async()=>{try{const d=await api('/char-info.json');charInfo=d.frames;startNew();const meta=await api('/api/meta');if(meta.remote){$('remoteLogin').hidden=false;$('status').textContent='Chưa đăng nhập · '+meta.host;return}await refreshStatus();await refreshList()}catch(e){message(e.message,true)}})();
+</script>
+</body>
+</html>

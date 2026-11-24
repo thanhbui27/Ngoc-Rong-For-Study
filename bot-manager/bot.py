@@ -820,6 +820,15 @@ class BotRunner:
                 try:
                     notice = reader.utf()
                     self.log("Server: " + notice[:200])
+                    lowered_notice = notice.casefold()
+                    if (self._travel_step and self._travel_phase in ("menu", "wait")
+                            and any(message in lowered_notice for message in (
+                                "không thể đến khu vực này", "từ chối vận chuyển",
+                                "không thể di chuyển tới", "không thể di chuyển đến",
+                            ))):
+                        self._block_travel_step(
+                            time.monotonic(), f"Đường tới map {self._travel_step[1]} bị server từ chối"
+                        )
                     if self._pending_item_action:
                         self._item_feedback = notice[:200]
                     self._auth_notice(notice)
@@ -1301,7 +1310,10 @@ class BotRunner:
         if index < 0 or index >= len(steps):
             return False
         step = steps[index]
-        if task_id == 7 and self.map_id in (24, 25, 26):
+        task_planet = min(max(self.gender, 0), 2)
+        if (task_id == 7
+                and (self.map_id in (24, 25, 26)
+                     or self.map_id not in PLANET_MAPS[task_planet])):
             if now >= self._quest_request_due:
                 self._send(-15)  # The server allows returning home while transport NPCs are quest-locked.
                 self._quest_request_due = now + 5
@@ -1488,14 +1500,22 @@ class BotRunner:
                 self._quest_request_due = now + 5
                 self.set_action(f"Nói chuyện với {self._npc_label(npc_id)}")
                 return True
-            if title.startswith(("tiêu diệt", "diệt ", "đánh ", "hạ ")):
-                matches = {template for template, name in ROUTES.mob_names.items() if name.casefold() in title}
+            if title.startswith(("tiêu diệt", "diệt ", "đánh ", "đánh bại ", "hạ ", "giết ")):
+                matches = self._match_quest_mobs(title)
                 if matches:
                     self._quest_target_templates = matches
-                    goal = ROUTES.best_farm_map(self.map_id, self.power, self.damage,
-                                               target_templates=matches)
-                    if goal is not None and goal != self.map_id:
+                    goal = self._best_quest_map(matches)
+                    if goal is None:
+                        self.set_action(f"Chưa tìm được tuyến tới map có quái nhiệm vụ: {title[:80]}")
+                        return True
+                    if goal != self.map_id:
                         return self._travel_to(goal, now)
+                else:
+                    self.set_action(f"Chưa nhận diện được loại quái trong nhiệm vụ: {title[:80]}")
+                    return True
+            elif title.startswith(("tìm ", "thu thập ")):
+                self.set_action(f"Nhiệm vụ tìm kiếm chưa có luật tự động: {title[:80]}")
+                return True
             return False
         key = f"{task['task_id']}:{index}"
         if self._quest_step_done == key and now < self._quest_request_due:
@@ -1514,6 +1534,31 @@ class BotRunner:
         self._quest_request_due = now + 5
         self.set_action(f"Nói chuyện với {self._npc_label(npc_id)}")
         return True
+
+    def _best_quest_map(self, target_templates: set[int]) -> int | None:
+        """Choose a reachable map with a requested mob, including ship links."""
+        candidates: list[tuple[tuple[int, int, int, int], int]] = []
+        for map_id, spawns in ROUTES.map_mobs.items():
+            matching = [(level, reward) for template, level, reward in spawns
+                        if template in target_templates]
+            if not matching:
+                continue
+            path = MOVEMENT.plan(self.map_id, map_id, gender=self.gender)
+            if path is None:
+                continue
+            score = (max(level for level, _ in matching),
+                     max(reward for _, reward in matching), -len(path), -map_id)
+            candidates.append((score, map_id))
+        return max(candidates, default=(None, None), key=lambda candidate: candidate[0])[1]
+
+    @staticmethod
+    def _match_quest_mobs(title: str) -> set[int]:
+        normalized_title = title.casefold()
+        matches = [(template, name.casefold()) for template, name in ROUTES.mob_names.items()
+                   if name and name.casefold() in normalized_title]
+        return {template for template, name in matches
+                if not any(name != other and name in other and other in normalized_title
+                           for _, other in matches)}
 
     def _planet_index(self) -> int:
         """Infer the active planet from the character's actual map, not race."""
