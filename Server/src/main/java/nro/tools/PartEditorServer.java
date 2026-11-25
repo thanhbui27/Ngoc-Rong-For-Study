@@ -202,11 +202,16 @@ public final class PartEditorServer {
                 return;
             }
             if (!TOKEN.equals(exchange.getRequestHeaders().getFirst("X-Editor-Token"))
-                    && !(path.equals("/asset") && TOKEN.equals(query(exchange,"token")))) {
+                    && !(path.equals("/asset") && TOKEN.equals(query(exchange,"token")))
+                    && !(path.equals("/part-order-guide.png") && TOKEN.equals(query(exchange,"token")))) {
                 fail(403, "Thiếu mã phiên của trình sửa part");
             }
             if (path.equals("/char-info.json")) {
                 sendBytes(exchange, 200, "application/json; charset=utf-8", Files.readAllBytes(UI.resolve("char-info.json")));
+                return;
+            }
+            if(path.equals("/part-order-guide.png")){
+                sendBytes(exchange,200,"image/png",Files.readAllBytes(UI.resolve("part-order-guide.png")));
                 return;
             }
             if (path.equals("/asset")) {
