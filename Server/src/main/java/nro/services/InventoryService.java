@@ -393,13 +393,13 @@ public class InventoryService {
         try {
             byte type = item.getType();
             if (item.isNotNullItem()) {
-                if (type == 72 && !player.isPet) {
+                if ((type == 18 || type == 72) && !player.isPet) {
                     List<Item> itemsBody = player.inventory.itemsBody;
                     if (itemsBody.size() > 10) {
                         sItem = itemsBody.get(10);
                         itemsBody.set(10, item);
                     }
-                } else if (type >= 0 && type <= 5 || type == 32 || type == 11
+                } else if (type >= 0 && type <= 5 || type == 32 || type == 11 || type == 17
                         || type == 23 || type == 24 || type == 35 || type == 21 || type == 39) {
                     if (item.template.gender == player.gender || item.template.gender == 3) {
                         if (item.getId() == ConstItem.QUAN_DI_BIEN) {
@@ -444,6 +444,7 @@ public class InventoryService {
                                     index = 7;
                                     break;
                                 case 11:
+                                case 17:
                                     index = 8;
                                     break;
                                 case 24:
@@ -484,11 +485,24 @@ public class InventoryService {
         }
         Item item = player.inventory.itemsBag.get(index);
         if (item.isNotNullItem()) {
+            PetFollow pet = null;
+            if (item.template.type == 18 || item.template.type == 72) {
+                pet = PetFollowManager.gI().findByID(item.getId());
+                if (pet == null) {
+                    Service.getInstance().sendThongBaoOK(player,
+                            "Pet " + item.getId() + " chưa được cấu hình trong pet_follow.");
+                    return;
+                }
+            }
             Item itemSwap = putItemBody(player, item);
             if (itemSwap == item) {
                 return;
             }
             player.inventory.itemsBag.set(index, itemSwap);
+            if (pet != null) {
+                player.setPetFollow(pet);
+                PlayerService.gI().sendPetFollow(player);
+            }
             if (item.template.type == 39) {
                 Service.getInstance().removeTitle1(player);
                 Service.getInstance().sendTitle1(player, item.template.part);
@@ -519,6 +533,10 @@ public class InventoryService {
                 Service.getInstance().removeFoot1(player);
             }
             player.inventory.itemsBody.set(index, emptySlot);
+            if (index == 10) {
+                player.setPetFollow(null);
+                PlayerService.gI().sendPetFollow(player);
+            }
             sendItemBags(player);
             sendItemBody(player);
             player.zone.load_Me_To_Another(player);
@@ -652,6 +670,10 @@ public class InventoryService {
             if (item.template.type == 39) {
                 Service.getInstance().removeTitle1(player);
                 Service.getInstance().removeFoot1(player);
+            }
+            if (index == 10) {
+                player.setPetFollow(null);
+                PlayerService.gI().sendPetFollow(player);
             }
             arrangeItems(player.inventory.itemsBag);
             sendItemBody(player);

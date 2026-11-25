@@ -11,7 +11,6 @@ import nro.event.Event;
 import nro.lib.RandomCollection;
 import nro.manager.MiniPetManager;
 import nro.manager.NamekBallManager;
-import nro.manager.PetFollowManager;
 import nro.models.item.Item;
 import nro.models.item.ItemOption;
 import nro.models.item.MinipetTemplate;
@@ -20,7 +19,6 @@ import nro.models.map.dungeon.zones.ZSnakeRoad;
 import nro.models.map.war.NamekBallWar;
 import nro.models.player.Inventory;
 import nro.models.player.MiniPet;
-import nro.models.player.PetFollow;
 import nro.models.player.Player;
 import nro.models.skill.Skill;
 import nro.server.Manager;
@@ -97,18 +95,6 @@ public class UseItem {
                     InventoryService.gI().itemBodyToBox(player, index);
                     break;
                 case ITEM_BAG_TO_BODY:
-                    if (index >= 0 && index < player.inventory.itemsBag.size()) {
-                        Item item = player.inventory.itemsBag.get(index);
-                        if (item.isNotNullItem() && item.template.type == 72) {
-                            PetFollow pet = PetFollowManager.gI().findByID(item.getId());
-                            if (pet == null) {
-                                Service.getInstance().sendThongBaoOK(player,
-                                        "Pet " + item.getId() + " chưa được cấu hình trong pet_follow.");
-                                return;
-                            }
-                            player.setPetFollow(pet);
-                        }
-                    }
                     InventoryService.gI().itemBagToBody(player, index);
                     break;
                 case ITEM_BODY_TO_BAG:
@@ -173,6 +159,7 @@ public class UseItem {
                                         player.sendMessage(msg);
                                     } else if (player.isVersionAbove(220) && item.template.type == 23
                                             || item.template.type == 24 || item.template.type == 11
+                                            || item.template.type == 17
                                             || item.template.type == 35) {
                                         InventoryService.gI().itemBagToBody(player, index);
                                     } else if (item.template.id == 401) {
@@ -183,16 +170,8 @@ public class UseItem {
                                         msg.writer().writeUTF(
                                                 "Sau khi đổi đệ sẽ mất toàn bộ trang bị trên người đệ tử nếu chưa tháo");
                                         player.sendMessage(msg);
-                                    } else if (item.template.type == 72) {
-                                        PetFollow pet = PetFollowManager.gI().findByID(item.getId());
-                                        if (pet == null) {
-                                            Service.getInstance().sendThongBaoOK(player,
-                                                    "Pet " + item.getId() + " chưa được cấu hình trong pet_follow.");
-                                            break;
-                                        }
-                                        player.setPetFollow(pet);
+                                    } else if (item.template.type == 18 || item.template.type == 72) {
                                         InventoryService.gI().itemBagToBody(player, index);
-                                        PlayerService.gI().sendPetFollow(player);
                                     } else {
                                         useItem(player, item, index);
                                     }
