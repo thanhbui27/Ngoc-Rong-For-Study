@@ -393,8 +393,14 @@ public class InventoryService {
         try {
             byte type = item.getType();
             if (item.isNotNullItem()) {
-                if (type >= 0 && type <= 5 || type == 32 || type == 11
-                        || type == 23 || type == 24 || type == 35 || type == 72 || type == 21 || type == 39) {
+                if (type == 72 && !player.isPet) {
+                    List<Item> itemsBody = player.inventory.itemsBody;
+                    if (itemsBody.size() > 10) {
+                        sItem = itemsBody.get(10);
+                        itemsBody.set(10, item);
+                    }
+                } else if (type >= 0 && type <= 5 || type == 32 || type == 11
+                        || type == 23 || type == 24 || type == 35 || type == 21 || type == 39) {
                     if (item.template.gender == player.gender || item.template.gender == 3) {
                         if (item.getId() == ConstItem.QUAN_DI_BIEN) {
                             List<Item> itemsBody = player.inventory.itemsBody;
@@ -443,9 +449,6 @@ public class InventoryService {
                                 case 24:
                                 case 23:
                                     index = 9;
-                                    break;
-                                case 72:
-                                    index = 10;
                                     break;
                                 case 21:
                                     index = 11;
