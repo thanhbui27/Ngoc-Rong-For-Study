@@ -190,7 +190,7 @@ if(slot==='leg'){
   }
   rows.append(source);
 }});card.append(rows);area.append(card)}}
-async function uploadFrame(slot,j,file){if(!file)return;try{const sourceZoom=+$('uploadZoom').value;const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});const result=await api('/api/upload',{png:dataUrl,sourceZoom});const p=ensureFrames(slot);p.frames[j][0]=result.imageId;if(j<2)ensureDefaultHeadFrame(slot,p.frames);p.source='runtime';p.sourceZoom=sourceZoom;if(model.item.iconId<=0)model.item.iconId=result.imageId;selectedSlot=slot;selectedFrame=j;render();await autoAlign(slot);message(`Đã nhập PNG nguồn x${sourceZoom} thành ảnh logic ${result.logicalWidth}×${result.logicalHeight}, ID ${result.imageId}. Kiểm tra lại preview trước khi lưu.`)}catch(e){message(e.message,true)}}
+async function uploadFrame(slot,j,file){if(!file)return;try{const sourceZoom=+$('uploadZoom').value;const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});const result=await api('/api/upload',{png:dataUrl,sourceZoom,sourceName:file.name});const p=ensureFrames(slot);p.frames[j][0]=result.imageId;if(j<2)ensureDefaultHeadFrame(slot,p.frames);p.source='runtime';p.sourceZoom=sourceZoom;if(model.item.iconId<=0)model.item.iconId=result.imageId;selectedSlot=slot;selectedFrame=j;render();await autoAlign(slot);message(`${result.message}. Ảnh logic ${result.logicalWidth}×${result.logicalHeight}; kiểm tra preview trước khi lưu.`)}catch(e){message(e.message,true)}}
 async function uploadManyFrames(slot,fileList){
   const targetModel=model;
   const sourceZoom=+$('uploadZoom').value;
@@ -199,13 +199,13 @@ async function uploadManyFrames(slot,fileList){
   if(ordered.some(file=>!(/\.png$/i.test(file.name)||file.type==='image/png'))){message('Chỉ chọn file PNG',true);return}
   const files=ordered.slice(0,counts[slot]),skipped=ordered.slice(counts[slot]);
   const start=bulkFrameStart(slot,files.length);
-  const end=beginBusy(`Đang nhập ${files.length} ảnh ${labels[slot]}…`),ids=[];
+  const end=beginBusy(`Đang nhập ${files.length} ảnh ${labels[slot]}…`),ids=[];let reused=0;
   try{
     for(let j=0;j<files.length;j++){
       if(model!==targetModel)throw Error('Đã chuyển sang item khác trong lúc nhập ảnh');
       message(`Đang nhập ${labels[slot]} ${j+1}/${files.length}: ${files[j].name} → frame ${String(start+j).padStart(2,'0')}…`);
       const png=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(files[j])});
-      const result=await api('/api/upload',{png,sourceZoom});ids.push(result.imageId);
+      const result=await api('/api/upload',{png,sourceZoom,sourceName:files[j].name});ids.push(result.imageId);if(result.reused)reused++;
     }
     if(model!==targetModel)throw Error('Đã chuyển sang item khác trong lúc nhập ảnh');
     const previous=targetModel.mapping[slot];
@@ -223,7 +223,7 @@ async function uploadManyFrames(slot,fileList){
     const firstPose=charInfo.findIndex(info=>info[infoSlot[slot]][0]===start);
     if(firstPose>=0)setFrame(firstPose);
     const empty=frames.filter(row=>row[0]<=0).length;
-    message(`Đã nạp ${files.length} PNG nguồn x${sourceZoom} vào ${labels[slot]} từ frame ${String(start).padStart(2,'0')}`+(skipped.length?` · bỏ qua ${skipped.length} file dư (${skipped.slice(0,3).map(file=>file.name).join(', ')}${skipped.length>3?', …':''})`:'')+(empty?` · còn ${empty} frame chưa có ảnh`:'')+(!preserveOffsets?' · tọa độ cũ đã đặt lại; bấm Tự căn':'')+'. Kiểm tra preview trước khi Lưu vào SQL.');
+    message(`Đã nạp ${files.length} PNG nguồn x${sourceZoom} vào ${labels[slot]} từ frame ${String(start).padStart(2,'0')} · dùng lại ${reused} ID đã có trên game server, cấp mới ${ids.length-reused} ID`+(skipped.length?` · bỏ qua ${skipped.length} file dư (${skipped.slice(0,3).map(file=>file.name).join(', ')}${skipped.length>3?', …':''})`:'')+(empty?` · còn ${empty} frame chưa có ảnh`:'')+(!preserveOffsets?' · tọa độ cũ đã đặt lại; bấm Tự căn':'')+'. Kiểm tra preview trước khi Lưu vào SQL.');
   }catch(e){message(`Lỗi khi nhập ${labels[slot]}: ${e.message}. Đã tải ${ids.length} ảnh lên server nhưng chưa gắn vào frame.`,true)}finally{end()}
 }
 function filled(part){return !!part?.frames?.some(row=>row[0]>0)}

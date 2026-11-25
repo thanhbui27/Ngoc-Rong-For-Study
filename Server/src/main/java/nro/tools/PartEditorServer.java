@@ -746,20 +746,56 @@ public final class PartEditorServer {
             fail(400,"Ảnh nguồn cần kích thước logic 1–512 px sau khi chia zoom");
         int logicalWidth=base.getWidth()/sourceZoom, logicalHeight=base.getHeight()/sourceZoom;
         byte[][] variants=zoomVariants(bytes,base,sourceZoom,logicalWidth,logicalHeight);
+        int sourceImageId=imageIdFromName(string(request,"sourceName",""));
         synchronized(WRITE_LOCK){
             int id;
-            try(Connection c=connect()){id=allocateImageId(usedImageIds(c));}
+            boolean reused=false;
+            if(sourceImageId>=0 && matchesExistingImage(sourceImageId,variants)){
+                id=sourceImageId;
+                reused=true;
+            }else{
+                try(Connection c=connect()){id=allocateImageId(usedImageIds(c));}
+            }
+            int finalId=id;
+            if(!reused){
             List<Path> written=new ArrayList<>();
             try{
                 for(int z=1;z<=4;z++){
-                    Path target=ICONS.resolve(z+"/icon/"+id+".png");Files.createDirectories(target.getParent());
+                    Path target=ICONS.resolve(z+"/icon/"+finalId+".png");Files.createDirectories(target.getParent());
                     Files.write(target,variants[z],StandardOpenOption.CREATE_NEW);written.add(target);
                 }
             }catch(Exception ex){for(Path target:written)Files.deleteIfExists(target);throw ex;}
-            JsonObject out=new JsonObject();out.addProperty("imageId",id);out.addProperty("sourceZoom",sourceZoom);
+            }
+            JsonObject out=new JsonObject();out.addProperty("imageId",finalId);out.addProperty("sourceZoom",sourceZoom);
             out.addProperty("logicalWidth",logicalWidth);out.addProperty("logicalHeight",logicalHeight);
-            out.addProperty("message","Đã chuẩn hóa PNG nguồn x"+sourceZoom+" thành ảnh x1–x4; gán image ID vào frame rồi lưu item");return out;
+            out.addProperty("reused",reused);
+            out.addProperty("message",reused?"Ảnh đã có trên game server; dùng lại Image ID "+finalId:
+                    "Ảnh chưa có cùng ID trên game server; đã cấp Image ID mới "+finalId);
+            return out;
         }
+    }
+
+    private static int imageIdFromName(String name){
+        if(name==null)return -1;
+        String file=name.replace('\\','/');file=file.substring(file.lastIndexOf('/')+1);
+        if(file.toLowerCase(java.util.Locale.ROOT).endsWith(".png"))file=file.substring(0,file.length()-4);
+        try{int id=Integer.parseInt(file);return id>=0&&id<=32767?id:-1;}
+        catch(NumberFormatException ex){return -1;}
+    }
+
+    private static boolean matchesExistingImage(int id,byte[][] variants) throws IOException {
+        boolean found=false;
+        for(int z=1;z<=4;z++){
+            Path path=ICONS.resolve(z+"/icon/"+id+".png");
+            if(!Files.isRegularFile(path))continue;
+            found=true;
+            BufferedImage existing=ImageIO.read(path.toFile());
+            BufferedImage incoming=ImageIO.read(new ByteArrayInputStream(variants[z]));
+            if(existing==null||incoming==null||existing.getWidth()!=incoming.getWidth()||existing.getHeight()!=incoming.getHeight())return false;
+            for(int y=0;y<existing.getHeight();y++)for(int x=0;x<existing.getWidth();x++)
+                if(existing.getRGB(x,y)!=incoming.getRGB(x,y))return false;
+        }
+        return found;
     }
 
     static byte[][] zoomVariants(byte[] source,BufferedImage image,int sourceZoom,int logicalWidth,int logicalHeight) throws IOException {
