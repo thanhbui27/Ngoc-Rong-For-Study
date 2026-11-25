@@ -523,7 +523,21 @@ public final class PartEditorServer {
                     if (bag < -1 || bag>32767) fail(400,"Bag ID không hợp lệ");
                     if (current==null && type==5 && head<0 && body<0 && leg<0) fail(400,"Cải trang mới cần ít nhất một part");
                     if (type==21 && (head<0 || body<0 || leg<0)) fail(400,"Pet dùng được cần đủ head/body/leg");
-                    if (head>=0) itemPart=head;
+                    // Full costumes and pets commonly keep item_template.part=-1;
+                    // their outfit IDs live in cai_trang/mini_pet instead.
+                    if (type==5 && head>=0 && body<0 && leg<0) {
+                        if (current==null && itemPart<0) itemPart=head;
+                        else if (current!=null) {
+                            JsonObject oldMapping=current.getAsJsonObject("mapping");
+                            int oldHead=oldMapping.getAsJsonObject("head").get("id").getAsInt();
+                            int oldBody=oldMapping.getAsJsonObject("body").get("id").getAsInt();
+                            int oldLeg=oldMapping.getAsJsonObject("leg").get("id").getAsInt();
+                            int oldItemPart=current.getAsJsonObject("item").get("part").getAsInt();
+                            if (oldHead>=0 && oldBody<0 && oldLeg<0
+                                    && oldItemPart==oldHead && itemPart==oldItemPart)
+                                itemPart=head;
+                        }
+                    }
                     if (current==null) {
                         try (PreparedStatement ps=c.prepareStatement("INSERT INTO item_template (id,TYPE,gender,NAME,description,icon_id,part,is_up_to_up,power_require) VALUES (?,?,?,?,?,?,?,0,?)")) {
                             ps.setInt(1,id); ps.setInt(2,type); ps.setInt(3,gender); ps.setString(4,name); ps.setString(5,desc);
@@ -576,16 +590,16 @@ public final class PartEditorServer {
             if (prior==null || prior.get("type").getAsInt()!=expectedType) fail(400,"Part " + id + " không đúng loại");
             return id;
         }
+        if (id>=0) {
+            JsonObject prior=loadPart(c,id,false);
+            if (prior!=null && prior.get("type").getAsInt()==expectedType
+                    && prior.get("frames").equals(frames)) return id;
+        }
         if (frames.size()!=FRAME_COUNTS[expectedType]) fail(400,"Part loại " + expectedType + " cần " + FRAME_COUNTS[expectedType] + " frame");
         for (JsonElement element:frames) {
             if (!element.isJsonArray() || element.getAsJsonArray().size()!=3) fail(400,"Frame phải có [image,dx,dy]");
             JsonArray row=element.getAsJsonArray(); int image=row.get(0).getAsInt(),dx=row.get(1).getAsInt(),dy=row.get(2).getAsInt();
             if (image<0 || image>32767 || dx<-128 || dx>127 || dy<-128 || dy>127) fail(400,"Frame vượt giới hạn client");
-        }
-        if (id>=0) {
-            JsonObject prior=loadPart(c,id,false);
-            if (prior!=null && prior.get("type").getAsInt()==expectedType
-                    && prior.get("frames").equals(frames)) return id;
         }
         int next=scalar(c,"SELECT COALESCE(MAX(id),-1)+1 FROM part");
         if (next>32767 || next!=scalar(c,"SELECT COUNT(*) FROM part")) fail(409,"ID part bị khuyết hoặc vượt giới hạn client");
