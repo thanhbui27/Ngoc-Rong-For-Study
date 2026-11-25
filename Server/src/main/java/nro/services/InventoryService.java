@@ -393,7 +393,7 @@ public class InventoryService {
         try {
             byte type = item.getType();
             if (item.isNotNullItem()) {
-                if (type == 72 && !player.isPet) {
+                if ((type == 72 || item.getId() == 2663) && !player.isPet) {
                     List<Item> itemsBody = player.inventory.itemsBody;
                     if (itemsBody.size() > 10) {
                         sItem = itemsBody.get(10);

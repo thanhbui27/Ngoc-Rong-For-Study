@@ -99,7 +99,7 @@ public class UseItem {
                 case ITEM_BAG_TO_BODY:
                     if (index >= 0 && index < player.inventory.itemsBag.size()) {
                         Item item = player.inventory.itemsBag.get(index);
-                        if (item.isNotNullItem() && item.template.type == 72) {
+                        if (item.isNotNullItem() && (item.template.type == 72 || item.getId() == 2663)) {
                             PetFollow pet = PetFollowManager.gI().findByID(item.getId());
                             if (pet == null) {
                                 Service.getInstance().sendThongBaoOK(player,
@@ -183,7 +183,7 @@ public class UseItem {
                                         msg.writer().writeUTF(
                                                 "Sau khi đổi đệ sẽ mất toàn bộ trang bị trên người đệ tử nếu chưa tháo");
                                         player.sendMessage(msg);
-                                    } else if (item.template.type == 72) {
+                                    } else if (item.template.type == 72 || item.getId() == 2663) {
                                         PetFollow pet = PetFollowManager.gI().findByID(item.getId());
                                         if (pet == null) {
                                             Service.getInstance().sendThongBaoOK(player,
