@@ -97,6 +97,18 @@ public class UseItem {
                     InventoryService.gI().itemBodyToBox(player, index);
                     break;
                 case ITEM_BAG_TO_BODY:
+                    if (index >= 0 && index < player.inventory.itemsBag.size()) {
+                        Item item = player.inventory.itemsBag.get(index);
+                        if (item.isNotNullItem() && item.template.type == 72) {
+                            PetFollow pet = PetFollowManager.gI().findByID(item.getId());
+                            if (pet == null) {
+                                Service.getInstance().sendThongBaoOK(player,
+                                        "Pet " + item.getId() + " chưa được cấu hình trong pet_follow.");
+                                return;
+                            }
+                            player.setPetFollow(pet);
+                        }
+                    }
                     InventoryService.gI().itemBagToBody(player, index);
                     break;
                 case ITEM_BODY_TO_BAG:
@@ -173,6 +185,11 @@ public class UseItem {
                                         player.sendMessage(msg);
                                     } else if (item.template.type == 72) {
                                         PetFollow pet = PetFollowManager.gI().findByID(item.getId());
+                                        if (pet == null) {
+                                            Service.getInstance().sendThongBaoOK(player,
+                                                    "Pet " + item.getId() + " chưa được cấu hình trong pet_follow.");
+                                            break;
+                                        }
                                         player.setPetFollow(pet);
                                         InventoryService.gI().itemBagToBody(player, index);
                                         PlayerService.gI().sendPetFollow(player);
