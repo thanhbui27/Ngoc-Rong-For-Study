@@ -121,7 +121,6 @@ function message(text,bad=false){$('message').textContent=text;$('message').styl
 let busyCount=0;
 function beginBusy(label){busyCount++;message(label);$('message').classList.add('busy');return ()=>{busyCount--;if(!busyCount)$('message').classList.remove('busy')}}
 async function api(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:{'X-Editor-Token':token,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});const data=await response.json();if(!response.ok)throw Error(data.error||'Lỗi kết nối');return data}
-$('partOrderGuide').src=`/part-order-guide.png?token=${encodeURIComponent(token)}`;
 function imageUrl(id,from='be',zoom=1){return `/asset?id=${id}&zoom=${zoom}&from=${from}&token=${encodeURIComponent(token)}`}
 function image(id,from='be',zoom=4){if(id<=0)return null;const key=from+':'+id+':'+zoom;if(!imageCache.has(key)){const im=new Image();im.onload=scheduleDraw;im.onerror=()=>{im.failed=true;scheduleDraw()};im.src=imageUrl(id,from,zoom);imageCache.set(key,im)}return imageCache.get(key)}
 function emptyPart(slot){return {id:-1,type:slots.indexOf(slot),frames:[],source:'runtime'}}
@@ -499,7 +498,7 @@ function onPosePointerUp(e){
   if(moved)message(`Đã dịch Image ID ${imageId} trên ${affected} frame dùng ID này; bấm Lưu vào SQL khi vừa ý`);
 }
 function onPosePointerCancel(){if(!drag)return;drag.canvas.classList.remove('dragging');drag=null;renderParts();draw()}
-(async()=>{try{const d=await api('/char-info.json');charInfo=d.frames;renderSheet();startNew();const meta=await api('/api/meta');if(meta.remote){$('remoteLogin').hidden=false;$('adminUser').value=localStorage.getItem('partStudioAdminUser')||'';if(await refreshStatus(true)){await refreshList();$('connectGame').textContent='Đổi tài khoản';message('Đã khôi phục phiên admin đang mở trên Part Studio')}else $('status').textContent='Chưa đăng nhập · '+meta.host;return}await refreshStatus();await refreshList()}catch(e){message(e.message,true)}})();
+(async()=>{try{const d=await api('/char-info.json');charInfo=d.frames;$('partOrderGuide').src=d.partOrderGuideImage;renderSheet();startNew();const meta=await api('/api/meta');if(meta.remote){$('remoteLogin').hidden=false;$('adminUser').value=localStorage.getItem('partStudioAdminUser')||'';if(await refreshStatus(true)){await refreshList();$('connectGame').textContent='Đổi tài khoản';message('Đã khôi phục phiên admin đang mở trên Part Studio')}else $('status').textContent='Chưa đăng nhập · '+meta.host;return}await refreshStatus();await refreshList()}catch(e){message(e.message,true)}})();
 </script>
 </body>
 </html>
