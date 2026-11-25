@@ -25,6 +25,8 @@ import lombok.Getter;
  */
 public class PartManager {
 
+    private static final int[] FRAME_COUNTS = {3, 17, 14, 2};
+
     private static final PartManager instance = new PartManager();
 
     public static PartManager getInstance() {
@@ -51,6 +53,16 @@ public class PartManager {
                 byte type = rs.getByte("TYPE");
                 String partJson = rs.getString("DATA");
                 int[][] partData = gson.fromJson(partJson, int[][].class);
+                if (id != parts.size()) {
+                    throw new IllegalStateException("Part ID must be contiguous: expected "
+                            + parts.size() + " but found " + id);
+                }
+                int originalFrameCount = partData == null ? 0 : partData.length;
+                partData = normalizePartData(id, type, partData);
+                if (originalFrameCount != partData.length) {
+                    Log.warning("Part " + id + " type " + type + " has " + originalFrameCount
+                            + " frames; normalized to " + partData.length + " for the client packet");
+                }
                 Part part = new Part();
                 part.setId(id);
                 part.setType(type);
@@ -64,6 +76,23 @@ public class PartManager {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+    }
+
+    static int[][] normalizePartData(int id, byte type, int[][] source) {
+        if (type < 0 || type >= FRAME_COUNTS.length) {
+            throw new IllegalStateException("Part " + id + " has unsupported type " + type);
+        }
+        int[][] normalized = new int[FRAME_COUNTS[type]][3];
+        if (source == null) {
+            return normalized;
+        }
+        int frames = Math.min(source.length, normalized.length);
+        for (int i = 0; i < frames; i++) {
+            if (source[i] != null) {
+                System.arraycopy(source[i], 0, normalized[i], 0, Math.min(source[i].length, 3));
+            }
+        }
+        return normalized;
     }
 
     public void add(Part part) {
