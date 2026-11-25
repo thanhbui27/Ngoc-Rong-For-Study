@@ -52,8 +52,8 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    Với part chưa có, nhấn **Tạo frame** hoặc **Chọn nhiều PNG** trong nhóm
    đầu/thân/chân. Nhiều file được xếp theo số trong tên. Part đầu nhận 2 PNG
    ở frame 00–01 và tự dùng ảnh #20 ở frame 02; chọn 3 PNG để thay ảnh mặc định.
-   Part thân nhận 16 PNG ở frame 01–16, tự dùng ảnh #80 ở frame 00 và ảnh #16
-   ở frame 16 nếu chưa có PNG riêng; chọn đủ 17 PNG để thay cả frame 00.
+   Part thân nhận 16 PNG ở frame 00–15; frame 16 tự dùng ảnh mặc định #16.
+   Ảnh #80 không tự được gắn vào body mới. Chọn đủ 17 PNG để thay cả frame 16.
    Part chân nhận tối đa 13 PNG ở frame 00–12 và
    tự dùng ảnh #34 ở frame 13; chọn đủ 14 PNG để thay ảnh mặc định. Các frame
    còn lại để trống. Nếu chọn dư file, editor báo tên file đã bỏ qua. Kiểm tra
@@ -92,6 +92,8 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    mẫu Unity.
    Unity dùng 3 frame đầu, 17 frame thân, 14 frame chân; dx/dy là byte có dấu
    trong khoảng −128…127.
+   Nút **Gỡ part** trong từng nhóm bỏ part đó khỏi item; bấm **Lưu vào SQL**
+   để lưu `-1` ở cột tương ứng. Thao tác không xóa bản ghi part dùng chung.
 4. **Lưu vào SQL** tạo hoặc cập nhật item và mapping. Nếu part đang dùng có
    toạ độ hoặc hình thay đổi, API cấp part ID mới. **Xóa mapping** bỏ ngoại
    hình nhưng giữ item; **Xóa item cuối** chỉ cho phép nếu ID là cuối bảng và
