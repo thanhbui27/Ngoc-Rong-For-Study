@@ -45,31 +45,44 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    máy chạy editor; ảnh gốc cần ở thư mục ngang repo
    `NRO-server15-assets/image/zoomN/icon/`. Khi nạp part tham chiếu, editor
    gửi ảnh nguồn tới action để server so sánh và cấp ID mới nếu cần.
-3. Với part chưa có, nhấn **Tạo frame** hoặc **Chọn nhiều PNG** trong nhóm
-   đầu/thân/chân. Nhiều file được xếp theo số trong tên và gắn lần lượt từ
-   frame 00; các frame chưa được chọn sẽ để trống. Nếu chọn dư file, editor dùng đủ
-   số frame của loại part rồi báo tên file đã bỏ qua. Với part đầu, frame 02 tự dùng ảnh
-   mặc định #20 nếu chưa có ảnh riêng; chọn 2 PNG cho frame 00–01 là đủ.
-   Nếu chọn 3 PNG, file thứ ba thay ảnh mặc định. Kiểm tra preview và bấm **Tự căn**
-   nếu cần. Vẫn có thể tải một PNG vào từng hàng. Ảnh x2–x4 được nhân gần
-   nhất từ PNG x1. Bảng xem trước lấy trực tiếp PNG **x4** và hiển thị
+3. Trước khi nhập PNG, chọn **PNG đem nhập là ảnh x mấy?**. Ảnh lấy từ
+   `Server/resources/normal/image/4/icon` phải chọn **x4**; ảnh lấy từ
+   `1/icon` phải chọn **x1**. Server giữ nguyên PNG ở mức zoom nguồn và tạo
+   các mức còn lại theo kích thước logic của Unity. Mức chọn được nhớ trên máy.
+   Với part chưa có, nhấn **Tạo frame** hoặc **Chọn nhiều PNG** trong nhóm
+   đầu/thân/chân. Nhiều file được xếp theo số trong tên. Part đầu nhận 2 PNG
+   ở frame 00–01 và tự dùng ảnh #20 ở frame 02; chọn 3 PNG để thay ảnh mặc định.
+   Part thân nhận 16 PNG ở frame 01–16, tự dùng ảnh #80 ở frame 00 và ảnh #16
+   ở frame 16 nếu chưa có PNG riêng; chọn đủ 17 PNG để thay cả frame 00.
+   Part chân nhận tối đa 13 PNG ở frame 00–12 và
+   tự dùng ảnh #34 ở frame 13; chọn đủ 14 PNG để thay ảnh mặc định. Các frame
+   còn lại để trống. Nếu chọn dư file, editor báo tên file đã bỏ qua. Kiểm tra
+   preview và bấm **Tự căn**
+   nếu cần. Vẫn có thể tải một PNG vào từng hàng. Bảng xem trước lấy trực tiếp
+   PNG **x4** và hiển thị
    **từng frame** của Đứng 1/2, Run, Jump, Fall và các dáng còn lại;
    mỗi ô ghép đủ nhân vật.
-   Với part chân chỉ có 6 PNG, editor hiện 6 hàng có ảnh; 8 vị trí còn lại
-   vẫn trống. Bấm **Xem 8 frame còn lại** để xem dáng Unity nào dùng mỗi vị trí
-   và gán ID từ một frame chân đã có. Preview dùng part mẫu tại vị trí chưa gán;
+   Với part chân chỉ có 6 PNG, editor hiện 6 hàng ảnh đã chọn; frame 13 tự dùng
+   #34 và 7 vị trí giữa vẫn trống. Bấm **Xem 8 frame còn lại** để xem dáng Unity nào dùng mỗi vị trí
+   và gán ID từ một frame chân đã có. Preview mặc định để trống vị trí chưa gán;
    editor không tự lặp ảnh chân vì bảng body↔chân của Unity không suy ra được
    ảnh phù hợp cho các vị trí còn thiếu.
    Thanh tải ảnh cho biết tiến độ; ảnh x4 thiếu sẽ tạm dùng x1 và báo rõ,
    còn ảnh thiếu hoàn toàn được đánh dấu trong từng frame. Khung tự điều chỉnh
    để hiện trọn nhân vật ở các dáng rộng; cỡ ảnh thực tế có thể nhỏ hơn mức
    trên thanh trượt nếu cần tránh cắt hình. Thanh cỡ ảnh cho thu nhỏ tới 0,5×;
-   ảnh nguồn vẫn là PNG x4 và mức hiển thị được nhớ trên máy. Khung nhân vật
+   ảnh nguồn vẫn là PNG x4 và mức hiển thị được nhớ trên máy. Kích thước logic
+   được chia nguyên theo cách `Image.getWidth/getHeight` của Unity; phần pixel
+   dư ở mép PNG x4 không được vẽ. Khung nhân vật
    lớn dùng để kéo chỉnh dáng đang chọn; ba ô ảnh dưới khung cho biết Image ID
    của đầu/thân/chân và cho chọn nhanh hình cần chỉnh. Các nút trước/phát/sau
-   và thanh frame cho phép xem liên tiếp 33 dáng. Lưới bên cạnh cho xem nhanh
-   từng frame.
-   Phần chưa gắn dùng part mẫu để xem, không ghi vào item. Mở **Danh sách**
+   và thanh frame cho phép xem liên tiếp 33 dáng; nút phát chạy trong nhóm hành
+   động đang chọn, hoặc toàn bộ 33 dáng khi chọn Tất cả. Lưới bên cạnh cho xem
+   nhanh từng frame. Ảnh đã nhập từ thư mục x4 nhưng bị coi là x1 cần nạp lại
+   với mức **x4**. Các Image ID cũ được giữ nguyên để tránh ảnh hưởng dữ liệu cũ;
+   sau đó căn lại tọa độ trước khi lưu item.
+   Có thể bật **Hiện part mẫu cho frame trống** để căn hình; part mẫu không
+   được ghi vào item. Mở **Danh sách**
    khi cần chọn item. Có thể lọc
    nhóm, đổi hướng hoặc phóng to. Giữ chuột trên pixel có hình của
    đầu/thân/chân rồi kéo để di chuyển hình; vùng trong suốt không chọn nhầm

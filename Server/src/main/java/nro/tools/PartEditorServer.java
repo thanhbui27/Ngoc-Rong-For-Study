@@ -732,29 +732,49 @@ public final class PartEditorServer {
 
     private static JsonObject upload(JsonObject request) throws SQLException, IOException {
         String encoded=string(request,"png","");
+        int sourceZoom=number(request,"sourceZoom",1);
+        if(sourceZoom<1 || sourceZoom>4)fail(400,"Mức zoom ảnh nguồn phải từ x1 đến x4");
         if(encoded.startsWith("data:image/png;base64,"))encoded=encoded.substring(22);
         byte[] bytes;
         try { bytes=Base64.getDecoder().decode(encoded); } catch(IllegalArgumentException ex){throw new ApiException(400,"Base64 ảnh không hợp lệ");}
         if(bytes.length>2_000_000)fail(413,"Ảnh vượt 2 MB");
+        if(bytes.length<24 || (bytes[0]&0xff)!=0x89 || bytes[1]!='P' || bytes[2]!='N' || bytes[3]!='G')
+            fail(400,"File nguồn phải là PNG");
         BufferedImage base=ImageIO.read(new ByteArrayInputStream(bytes));
-        if(base==null || base.getWidth()<1 || base.getHeight()<1 || base.getWidth()>512 || base.getHeight()>512)
-            fail(400,"Cần PNG kích thước 1–512 px");
+        if(base==null || base.getWidth()<sourceZoom || base.getHeight()<sourceZoom ||
+                base.getWidth()/sourceZoom>512 || base.getHeight()/sourceZoom>512)
+            fail(400,"Ảnh nguồn cần kích thước logic 1–512 px sau khi chia zoom");
+        int logicalWidth=base.getWidth()/sourceZoom, logicalHeight=base.getHeight()/sourceZoom;
+        byte[][] variants=zoomVariants(bytes,base,sourceZoom,logicalWidth,logicalHeight);
         synchronized(WRITE_LOCK){
             int id;
             try(Connection c=connect()){id=allocateImageId(usedImageIds(c));}
             List<Path> written=new ArrayList<>();
             try{
                 for(int z=1;z<=4;z++){
-                    BufferedImage scaled=new BufferedImage(base.getWidth()*z,base.getHeight()*z,BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D g=scaled.createGraphics();g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-                    g.drawImage(base,0,0,scaled.getWidth(),scaled.getHeight(),null);g.dispose();
-                    ByteArrayOutputStream buffer=new ByteArrayOutputStream();ImageIO.write(scaled,"png",buffer);
                     Path target=ICONS.resolve(z+"/icon/"+id+".png");Files.createDirectories(target.getParent());
-                    Files.write(target,buffer.toByteArray(),StandardOpenOption.CREATE_NEW);written.add(target);
+                    Files.write(target,variants[z],StandardOpenOption.CREATE_NEW);written.add(target);
                 }
             }catch(Exception ex){for(Path target:written)Files.deleteIfExists(target);throw ex;}
-            JsonObject out=new JsonObject();out.addProperty("imageId",id);out.addProperty("message","Đã lưu ảnh x1–x4; gán image ID vào frame rồi lưu item");return out;
+            JsonObject out=new JsonObject();out.addProperty("imageId",id);out.addProperty("sourceZoom",sourceZoom);
+            out.addProperty("logicalWidth",logicalWidth);out.addProperty("logicalHeight",logicalHeight);
+            out.addProperty("message","Đã chuẩn hóa PNG nguồn x"+sourceZoom+" thành ảnh x1–x4; gán image ID vào frame rồi lưu item");return out;
         }
+    }
+
+    static byte[][] zoomVariants(byte[] source,BufferedImage image,int sourceZoom,int logicalWidth,int logicalHeight) throws IOException {
+        byte[][] variants=new byte[5][];
+        for(int z=1;z<=4;z++){
+            if(z==sourceZoom){variants[z]=source;continue;}
+            BufferedImage scaled=new BufferedImage(logicalWidth*z,logicalHeight*z,BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g=scaled.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            g.drawImage(image,0,0,scaled.getWidth(),scaled.getHeight(),0,0,logicalWidth*sourceZoom,logicalHeight*sourceZoom,null);
+            g.dispose();
+            ByteArrayOutputStream buffer=new ByteArrayOutputStream();ImageIO.write(scaled,"png",buffer);
+            variants[z]=buffer.toByteArray();
+        }
+        return variants;
     }
 
     private static Set<Integer> usedImageIds(Connection c) throws SQLException, IOException {
