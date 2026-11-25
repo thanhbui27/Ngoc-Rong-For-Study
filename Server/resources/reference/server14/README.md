@@ -61,5 +61,13 @@ source PNGs at all four zooms. Existing item rows and icon files are preserved.
 These aliases are visible and purchasable in the admin NPC shop; their tooltip
 marks them as server-14 references. Because the capture lacks verified full
 models, aliases have `part=-1` and do not establish costume or pet appearance.
-Pet aliases retain source type 18 and are inspection items in this BE.
+Pet aliases retain source type 18.
 Run `python tools/prepare_admin_catalog.py` to audit the generated inputs.
+
+Migration V14 configures the imported type-18 pets in `pet_follow` using each
+pet's own icon as a single static frame at its measured zoom-1 dimensions.
+The runtime also supplies this fallback for newly added type-18/type-72 pets
+whose icon PNG exists but whose `pet_follow` row is missing or points to an
+invalid sprite. Existing valid animated sprites take precedence. The 15 older
+type-72 pets with no follow sprite or item icon in the bundled assets still
+need their original images to display correctly.

@@ -1,0 +1,140 @@
+-- Static follow images for imported server-14 pets. The dimensions come from
+-- their observed zoom-1 icon PNGs; keep manually configured animated sprites.
+CREATE TEMPORARY TABLE pet_follow_reference_size (
+  source_item_id INT PRIMARY KEY,
+  width SMALLINT NOT NULL,
+  height SMALLINT NOT NULL
+);
+
+INSERT INTO pet_follow_reference_size (source_item_id, width, height) VALUES
+(892, 17, 20),
+(893, 17, 20),
+(908, 21, 23),
+(909, 19, 24),
+(910, 19, 21),
+(916, 23, 25),
+(917, 23, 25),
+(918, 23, 25),
+(919, 21, 23),
+(936, 24, 24),
+(942, 23, 22),
+(943, 23, 22),
+(944, 23, 22),
+(967, 24, 35),
+(1008, 28, 21),
+(1039, 19, 21),
+(1040, 19, 21),
+(1046, 22, 19),
+(1107, 42, 26),
+(1114, 21, 21),
+(1188, 25, 23),
+(1202, 25, 23),
+(1203, 25, 23),
+(1207, 21, 24),
+(1224, 21, 21),
+(1225, 21, 21),
+(1226, 21, 21),
+(1243, 16, 16),
+(1244, 16, 16),
+(1256, 21, 21),
+(1318, 21, 21),
+(1347, 21, 21),
+(1414, 21, 20),
+(1435, 19, 21),
+(1452, 21, 21),
+(1458, 22, 21),
+(1482, 21, 19),
+(1497, 21, 21),
+(1550, 24, 24),
+(1551, 24, 24),
+(1564, 22, 22),
+(1568, 21, 16),
+(1573, 22, 22),
+(1596, 22, 22),
+(1597, 22, 22),
+(1611, 21, 21),
+(1620, 23, 18),
+(1621, 23, 18),
+(1622, 23, 18),
+(1629, 22, 22),
+(1630, 22, 22),
+(1631, 24, 23),
+(1633, 22, 22),
+(1654, 19, 19),
+(1668, 22, 22),
+(1682, 19, 20),
+(1683, 22, 22),
+(1686, 24, 24),
+(1712, 21, 19),
+(1714, 19, 22),
+(1727, 24, 24),
+(1729, 16, 23),
+(1748, 22, 22),
+(1750, 22, 22),
+(1774, 21, 21),
+(1786, 24, 23),
+(1791, 21, 15),
+(1792, 21, 14),
+(1793, 15, 14),
+(1794, 21, 15),
+(1801, 20, 16),
+(1802, 21, 14),
+(1813, 24, 23),
+(1814, 22, 24),
+(1815, 24, 24),
+(1816, 23, 22),
+(1817, 24, 22),
+(1818, 24, 25),
+(1819, 22, 19),
+(1830, 24, 24),
+(1845, 22, 22),
+(1846, 22, 22),
+(1870, 21, 20),
+(1871, 20, 20),
+(1872, 21, 19),
+(1873, 21, 19),
+(1874, 21, 20),
+(1881, 24, 21),
+(1914, 21, 21),
+(1929, 21, 21),
+(1935, 23, 23),
+(1945, 21, 21),
+(1953, 19, 18),
+(1956, 21, 21),
+(1962, 23, 23),
+(1964, 21, 21),
+(1973, 22, 18),
+(1974, 22, 18),
+(1975, 22, 18),
+(1980, 26, 22),
+(2014, 21, 21),
+(2015, 21, 21),
+(2016, 21, 21),
+(2019, 25, 21),
+(2025, 21, 21),
+(2036, 19, 21),
+(2037, 18, 18),
+(2038, 18, 18),
+(2059, 21, 21),
+(2072, 21, 21),
+(2077, 26, 16),
+(2094, 21, 21);
+
+INSERT INTO pet_follow (id_temp, icon, width, height, frame)
+SELECT source.item_id, item.icon_id, size.width, size.height, 1
+FROM admin_catalog_item_source source
+JOIN item_template item ON item.id = source.item_id
+JOIN pet_follow_reference_size size ON size.source_item_id = source.source_item_id
+WHERE source.source_server = 'dragon14.teamobi.com:18001'
+  AND item.TYPE IN (18, 72)
+  AND NOT EXISTS (
+    SELECT 1 FROM pet_follow existing WHERE existing.id_temp = source.item_id
+  );
+
+DROP TEMPORARY TABLE pet_follow_reference_size;
+
+-- The seed's Dragon row points at a 17x10 icon, not an 8-frame 75x75 sheet.
+UPDATE pet_follow
+SET width = 17, height = 10, frame = 1
+WHERE id_temp = 2097 AND icon = 14069
+  AND width = 75 AND height = 75 AND frame = 8;
