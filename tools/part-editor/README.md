@@ -92,8 +92,8 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    mẫu Unity.
    Unity dùng 3 frame đầu, 17 frame thân, 14 frame chân; dx/dy là byte có dấu
    trong khoảng −128…127.
-   Nút **Gỡ part** trong từng nhóm bỏ part đó khỏi item; bấm **Lưu vào SQL**
-   để lưu `-1` ở cột tương ứng. Thao tác không xóa bản ghi part dùng chung.
+   Nút **Xóa dòng** trong từng frame đặt đúng frame đó thành `[-1,-1,-1]`;
+   bấm **Lưu vào SQL** để lưu. Các frame còn lại giữ nguyên.
 4. **Lưu vào SQL** tạo hoặc cập nhật item và mapping. Nếu part đang dùng có
    toạ độ hoặc hình thay đổi, API cấp part ID mới. **Xóa mapping** bỏ ngoại
    hình nhưng giữ item; **Xóa item cuối** chỉ cho phép nếu ID là cuối bảng và

@@ -522,7 +522,7 @@ public final class PartEditorServer {
                     int bag=number(mapping,"bag",-1);
                     if (bag < -1 || bag>32767) fail(400,"Bag ID không hợp lệ");
                     if (current==null && type==5 && head<0 && body<0 && leg<0) fail(400,"Cải trang mới cần ít nhất một part");
-                    if (current==null && type==21 && (head<0 || body<0 || leg<0)) fail(400,"Pet mới cần đủ head/body/leg");
+                    if (type==21 && (head<0 || body<0 || leg<0)) fail(400,"Pet dùng được cần đủ head/body/leg");
                     // Full costumes and pets commonly keep item_template.part=-1;
                     // their outfit IDs live in cai_trang/mini_pet instead.
                     if (type==5 && head>=0 && body<0 && leg<0) {
@@ -599,7 +599,7 @@ public final class PartEditorServer {
         for (JsonElement element:frames) {
             if (!element.isJsonArray() || element.getAsJsonArray().size()!=3) fail(400,"Frame phải có [image,dx,dy]");
             JsonArray row=element.getAsJsonArray(); int image=row.get(0).getAsInt(),dx=row.get(1).getAsInt(),dy=row.get(2).getAsInt();
-            if (image<0 || image>32767 || dx<-128 || dx>127 || dy<-128 || dy>127) fail(400,"Frame vượt giới hạn client");
+            if (image < -1 || image>32767 || dx<-128 || dx>127 || dy<-128 || dy>127) fail(400,"Frame vượt giới hạn client");
         }
         int next=scalar(c,"SELECT COALESCE(MAX(id),-1)+1 FROM part");
         if (next>32767 || next!=scalar(c,"SELECT COUNT(*) FROM part")) fail(409,"ID part bị khuyết hoặc vượt giới hạn client");
