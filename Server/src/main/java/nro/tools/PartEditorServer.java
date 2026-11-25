@@ -31,7 +31,10 @@ import java.util.Base64;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
 
@@ -40,6 +43,14 @@ public final class PartEditorServer {
 
     private static final int[] FRAME_COUNTS = {3, 17, 14, 2};
     private static final Object WRITE_LOCK = new Object();
+    private static final Map<String,Map<Integer,PendingImage>> PENDING_IMAGES = new ConcurrentHashMap<>();
+    private record PendingImage(byte[] source,int sourceZoom,int logicalWidth,int logicalHeight) {
+        byte[] atZoom(int zoom) throws IOException {
+            BufferedImage image=ImageIO.read(new ByteArrayInputStream(source));
+            return zoomVariants(source,image,sourceZoom,logicalWidth,logicalHeight)[zoom];
+        }
+        long size(){return source.length;}
+    }
     private static final String SOURCE = "dragon14.teamobi.com:18001";
     private static final Path ROOT = locateRoot();
     private static final Path UI = ROOT.resolve("tools/part-editor");
@@ -51,6 +62,7 @@ public final class PartEditorServer {
     private static GamePartEditorClient remoteClient;
     private static String remoteHost;
     private static int remotePort;
+    private static String remoteStageSession;
 
     private PartEditorServer() {
     }
@@ -152,6 +164,7 @@ public final class PartEditorServer {
             case "import-parts" -> importParts(request);
             case "prepare-reference" -> prepareReference(request);
             case "upload" -> upload(request);
+            case "asset-check" -> assetCheck(request);
             case "asset" -> gameAsset(request);
             default -> throw new ApiException(404, "Không có action này");
         };
@@ -160,11 +173,25 @@ public final class PartEditorServer {
     private static JsonObject gameAsset(JsonObject request) throws IOException {
         int id = number(request, "id", -1), zoom = number(request, "zoom", 1);
         if (id < 0 || id > 32767 || zoom < 1 || zoom > 4) fail(400, "Ảnh không hợp lệ");
+        PendingImage pending=pendingImages(string(request,"studioSession","local")).get(id);
+        if(pending!=null){JsonObject out=new JsonObject();out.addProperty("png",Base64.getEncoder().encodeToString(pending.atZoom(zoom)));return out;}
         Path file = ICONS.resolve(zoom + "/icon/" + id + ".png");
         if (!Files.isRegularFile(file)) fail(404, "Chưa có ảnh " + id);
         JsonObject out = new JsonObject();
         out.addProperty("png", Base64.getEncoder().encodeToString(Files.readAllBytes(file)));
         return out;
+    }
+
+    private static JsonObject assetCheck(JsonObject request){
+        int id=number(request,"id",-1),zoom=number(request,"zoom",4);
+        if(id<0||id>32767||zoom<1||zoom>4)fail(400,"Ảnh không hợp lệ");
+        JsonObject out=new JsonObject();out.addProperty("id",id);
+        out.addProperty("exists",Files.isRegularFile(ICONS.resolve(zoom+"/icon/"+id+".png")));
+        return out;
+    }
+
+    private static Map<Integer,PendingImage> pendingImages(String session){
+        return PENDING_IMAGES.computeIfAbsent(session==null||session.isBlank()?"local":session,key->new ConcurrentHashMap<>());
     }
 
     private static void handle(HttpExchange exchange) throws IOException {
@@ -195,6 +222,8 @@ public final class PartEditorServer {
                     if (remote.has("error")) fail(404, remote.get("error").getAsString());
                     sendBytes(exchange, 200, "image/png", Base64.getDecoder().decode(remote.get("png").getAsString()));
                 } else {
+                    PendingImage pending=source?null:pendingImages("local").get(id);
+                    if(pending!=null){sendBytes(exchange,200,"image/png",pending.atZoom(zoom));return;}
                     if (!Files.isRegularFile(file)) fail(404, "Chưa có ảnh " + id);
                     sendBytes(exchange, 200, "image/png", Files.readAllBytes(file));
                 }
@@ -226,6 +255,7 @@ public final class PartEditorServer {
                 case "/api/import-parts" -> result = post ? importParts() : methodError();
                 case "/api/prepare-reference" -> result = post ? prepareReference(readBody(exchange)) : methodError();
                 case "/api/upload" -> result = post ? upload(readBody(exchange)) : methodError();
+                case "/api/asset-check" -> result = assetCheck(queryObject(exchange));
                 default -> throw new ApiException(404, "Không có action này");
             }
             sendJson(exchange, 200, result);
@@ -262,8 +292,13 @@ public final class PartEditorServer {
         if ("auth".equals(action)) {
             if (remoteClient != null) remoteClient.close();
             remoteClient = new GamePartEditorClient(remoteHost, remotePort);
+            remoteStageSession=UUID.randomUUID().toString();
         } else if (remoteClient == null) {
             throw new ApiException(401, "Đăng nhập tài khoản admin trước");
+        }
+        if(!"auth".equals(action)){
+            request=request.deepCopy();
+            request.addProperty("studioSession",remoteStageSession);
         }
         if ("prepare-reference".equals(action)) request = withSourceImages(request);
         if ("import-parts".equals(action) && !REFERENCE_PARTS.isEmpty()) {
@@ -489,8 +524,11 @@ public final class PartEditorServer {
         }
     }
 
-    private static JsonObject save(JsonObject request) throws SQLException {
+    private static JsonObject save(JsonObject request) throws SQLException,IOException {
         synchronized (WRITE_LOCK) {
+            String stageSession=string(request,"studioSession","local");
+            Map<Integer,PendingImage> staged=pendingImages(stageSession);
+            List<Path> writtenImages=new ArrayList<>();
             try (Connection c = connect()) {
                 ensureSupportTables(c);
                 c.setAutoCommit(false);
@@ -507,7 +545,7 @@ public final class PartEditorServer {
                             || gender<0 || gender>3 || power<0 || itemPart < -1 || itemPart>32767) fail(400,"Thông tin item không hợp lệ");
                     if(id>=0)lockItem(c,id);
                     JsonObject current = id < 0 ? null : loadItem(c,id);
-                    if (current==null && !Files.isRegularFile(ICONS.resolve("1/icon/"+icon+".png")))
+                    if (current==null && !Files.isRegularFile(ICONS.resolve("1/icon/"+icon+".png"))&&!staged.containsKey(icon))
                         fail(400,"Item mới cần icon PNG đã có trong resources");
                     if (id>=0 && current==null) fail(404,"Item đã bị xóa");
                     if (current!=null && !sha(current).equals(string(request,"revision",""))) fail(409,"Dữ liệu đã thay đổi, tải lại trước khi lưu");
@@ -565,9 +603,45 @@ public final class PartEditorServer {
                         }
                     }
                     bump(c,true,true);
+                    writePendingImages(referencedPendingImages(request,staged),staged,writtenImages);
                     c.commit();
+                    staged.clear();
                     JsonObject out=new JsonObject();out.addProperty("id",id);out.addProperty("message","Đã lưu trực tiếp vào SQL. Khởi động lại BE để nạp cache.");return out;
-                } catch (Exception ex) { c.rollback(); throw ex; }
+                } catch (Exception ex) {
+                    c.rollback();
+                    for(Path path:writtenImages)Files.deleteIfExists(path);
+                    throw ex;
+                }
+            }
+        }
+    }
+
+    private static Set<Integer> referencedPendingImages(JsonObject request,Map<Integer,PendingImage> staged){
+        Set<Integer> referenced=new HashSet<>();
+        JsonObject item=request.has("item")?request.getAsJsonObject("item"):null;
+        if(item!=null)referenced.add(number(item,"iconId",-1));
+        JsonObject mapping=request.has("mapping")?request.getAsJsonObject("mapping"):null;
+        if(mapping!=null)for(String slot:new String[]{"head","body","leg"}){
+            JsonObject part=mapping.has(slot)&&mapping.get(slot).isJsonObject()?mapping.getAsJsonObject(slot):null;
+            if(part==null||!part.has("frames")||!part.get("frames").isJsonArray())continue;
+            for(JsonElement row:part.getAsJsonArray("frames"))if(row.isJsonArray()&&row.getAsJsonArray().size()>0)
+                referenced.add(row.getAsJsonArray().get(0).getAsInt());
+        }
+        referenced.retainAll(staged.keySet());
+        return referenced;
+    }
+
+    private static void writePendingImages(Set<Integer> ids,Map<Integer,PendingImage> staged,List<Path> written)throws IOException{
+        for(int id:ids){
+            PendingImage pending=staged.get(id);
+            if(pending==null)continue;
+            byte[][] variants=new byte[5][];
+            for(int z=1;z<=4;z++)variants[z]=pending.atZoom(z);
+            for(int z=1;z<=4;z++){
+                Path target=ICONS.resolve(z+"/icon/"+id+".png");
+                Files.createDirectories(target.getParent());
+                Files.write(target,variants[z],StandardOpenOption.CREATE_NEW);
+                written.add(target);
             }
         }
     }
@@ -745,32 +819,28 @@ public final class PartEditorServer {
                 base.getWidth()/sourceZoom>512 || base.getHeight()/sourceZoom>512)
             fail(400,"Ảnh nguồn cần kích thước logic 1–512 px sau khi chia zoom");
         int logicalWidth=base.getWidth()/sourceZoom, logicalHeight=base.getHeight()/sourceZoom;
-        byte[][] variants=zoomVariants(bytes,base,sourceZoom,logicalWidth,logicalHeight);
         int sourceImageId=imageIdFromName(string(request,"sourceName",""));
+        String stageSession=string(request,"studioSession","local");
         synchronized(WRITE_LOCK){
             int id;
             boolean reused=false;
-            if(sourceImageId>=0 && matchesExistingImage(sourceImageId,variants)){
+            if(sourceImageId>=0 && Files.isRegularFile(ICONS.resolve(sourceZoom+"/icon/"+sourceImageId+".png"))){
                 id=sourceImageId;
                 reused=true;
             }else{
                 try(Connection c=connect()){id=allocateImageId(usedImageIds(c));}
+                Map<Integer,PendingImage> staged=pendingImages(stageSession);
+                long stagedBytes=staged.values().stream().mapToLong(PendingImage::size).sum();
+                if(staged.size()>=32||stagedBytes+bytes.length>32_000_000L)
+                    fail(413,"Ảnh đang chờ lưu vượt giới hạn; hãy lưu item trước khi nhập thêm ảnh");
+                staged.put(id,new PendingImage(bytes,sourceZoom,logicalWidth,logicalHeight));
             }
-            int finalId=id;
-            if(!reused){
-            List<Path> written=new ArrayList<>();
-            try{
-                for(int z=1;z<=4;z++){
-                    Path target=ICONS.resolve(z+"/icon/"+finalId+".png");Files.createDirectories(target.getParent());
-                    Files.write(target,variants[z],StandardOpenOption.CREATE_NEW);written.add(target);
-                }
-            }catch(Exception ex){for(Path target:written)Files.deleteIfExists(target);throw ex;}
-            }
-            JsonObject out=new JsonObject();out.addProperty("imageId",finalId);out.addProperty("sourceZoom",sourceZoom);
+            JsonObject out=new JsonObject();out.addProperty("imageId",id);out.addProperty("sourceZoom",sourceZoom);
             out.addProperty("logicalWidth",logicalWidth);out.addProperty("logicalHeight",logicalHeight);
             out.addProperty("reused",reused);
-            out.addProperty("message",reused?"Ảnh đã có trên game server; dùng lại Image ID "+finalId:
-                    "Ảnh chưa có cùng ID trên game server; đã cấp Image ID mới "+finalId);
+            out.addProperty("staged",!reused);
+            out.addProperty("message",reused?"Ảnh đã có trên game server; dùng lại Image ID "+id:
+                    "Ảnh đang chờ lưu; chưa ghi vào resources. Tạm cấp Image ID "+id);
             return out;
         }
     }
@@ -781,21 +851,6 @@ public final class PartEditorServer {
         if(file.toLowerCase(java.util.Locale.ROOT).endsWith(".png"))file=file.substring(0,file.length()-4);
         try{int id=Integer.parseInt(file);return id>=0&&id<=32767?id:-1;}
         catch(NumberFormatException ex){return -1;}
-    }
-
-    private static boolean matchesExistingImage(int id,byte[][] variants) throws IOException {
-        boolean found=false;
-        for(int z=1;z<=4;z++){
-            Path path=ICONS.resolve(z+"/icon/"+id+".png");
-            if(!Files.isRegularFile(path))continue;
-            found=true;
-            BufferedImage existing=ImageIO.read(path.toFile());
-            BufferedImage incoming=ImageIO.read(new ByteArrayInputStream(variants[z]));
-            if(existing==null||incoming==null||existing.getWidth()!=incoming.getWidth()||existing.getHeight()!=incoming.getHeight())return false;
-            for(int y=0;y<existing.getHeight();y++)for(int x=0;x<existing.getWidth();x++)
-                if(existing.getRGB(x,y)!=incoming.getRGB(x,y))return false;
-        }
-        return found;
     }
 
     static byte[][] zoomVariants(byte[] source,BufferedImage image,int sourceZoom,int logicalWidth,int logicalHeight) throws IOException {
@@ -827,6 +882,7 @@ public final class PartEditorServer {
                 if(name.endsWith(".png"))try{used.add(Integer.parseInt(name.substring(0,name.length()-4)));}catch(NumberFormatException ignored){}
             });
         }
+        for(Map<Integer,PendingImage> staged:PENDING_IMAGES.values())used.addAll(staged.keySet());
         return used;
     }
 
