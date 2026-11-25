@@ -92,6 +92,9 @@ public final class PartEditorAction {
         }
         AUTH_ATTEMPTS.remove(session.ipAddress);
         session.partEditorAuthenticated = true;
+        // The normal game login clears this countdown too. Part Studio authenticates
+        // separately, so otherwise Client.update() disconnects it after ~40 seconds.
+        session.timeWait = 0;
     }
 
     private static void reply(Session session, int requestId, JsonObject result) {

@@ -26,6 +26,11 @@ trước khi triển khai và chạy editor. Nó in URL
 loopback và mọi action cần token ngẫu nhiên của phiên chạy. Không nhập tài
 khoản admin vào file cấu hình hay URL.
 
+Nếu ảnh bắt đầu báo `EOFException` sau khoảng 40 giây, BE đang chạy còn giữ
+bộ đếm chờ đăng nhập của phiên Part Studio. Bản BE hiện tại đặt bộ đếm về 0
+sau khi xác thực admin. Cần triển khai JAR BE mới và khởi động lại game server;
+chỉ tải lại trang editor không thay được mã đang chạy trên game server.
+
 1. Chọn **Cải trang** hoặc **Pet** để tải toàn bộ item tương ứng từ DB; chọn
    một item để xem mapping và từng part.
 2. Chọn part BE theo ID, hoặc part S14 theo ID. Khi nạp part S14, server so
@@ -36,10 +41,19 @@ khoản admin vào file cấu hình hay URL.
    `NRO-server15-assets/image/zoomN/icon/`. Khi nạp part tham chiếu, editor
    gửi ảnh nguồn tới action để server so sánh và cấp ID mới nếu cần.
 3. Với part chưa có, nhấn **Tạo frame**, tải PNG vào từng hàng. Ảnh x2–x4
-   được nhân gần nhất từ PNG x1. **Tự căn** đề xuất dx/dy từ vùng ảnh có alpha
-   so với frame mẫu 0/1/2 của Unity; chọn từng frame và kéo trên preview để
-   chỉnh lại. Unity dùng 3 frame đầu, 17 frame thân, 14 frame chân; dx/dy là
-   byte có dấu trong khoảng −128…127.
+   được nhân gần nhất từ PNG x1. Bảng xem trước lấy trực tiếp PNG **x4** và hiển thị **từng frame** của
+   Stand, Idle, Run, Jump, Fall và các dáng còn lại; mỗi ô ghép đủ nhân vật.
+   Thanh tải ảnh cho biết tiến độ; ảnh x4 thiếu sẽ tạm dùng x1 và báo rõ,
+   còn ảnh thiếu hoàn toàn được đánh dấu trong từng frame. Khung tự điều chỉnh
+   để hiện trọn nhân vật ở các dáng rộng; cỡ ảnh thực tế có thể nhỏ hơn mức
+   trên thanh trượt nếu cần tránh cắt hình.
+   Phần chưa gắn dùng part mẫu để xem, không ghi vào item. Mở **Danh sách**
+   khi cần chọn item; lưới frame chiếm phần còn lại của màn hình. Có thể lọc
+   nhóm, đổi hướng hoặc phóng to. Bấm lên đầu/thân/chân để chọn part, kéo
+   trong một ô hoặc dùng nút mũi tên để dịch dx/dy của **mọi frame** thuộc part
+   đó. Bảng frame vẫn cho sửa riêng từng dáng. **Tự căn** dùng ảnh mẫu Unity.
+   Unity dùng 3 frame đầu, 17 frame thân, 14 frame chân; dx/dy là byte có dấu
+   trong khoảng −128…127.
 4. **Lưu vào SQL** tạo hoặc cập nhật item và mapping. Nếu part đang dùng có
    toạ độ hoặc hình thay đổi, API cấp part ID mới. **Xóa mapping** bỏ ngoại
    hình nhưng giữ item; **Xóa item cuối** chỉ cho phép nếu ID là cuối bảng và

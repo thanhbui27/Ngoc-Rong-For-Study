@@ -280,7 +280,10 @@ public final class PartEditorServer {
         }
         catch (IOException ex) {
             remoteClient.close(); remoteClient = null;
-            throw new IOException("Cổng game chưa có action Part Studio, mất kết nối, hoặc phản hồi chậm: " + ex.getMessage(), ex);
+            String detail = ex instanceof java.io.EOFException
+                    ? "Game server đã đóng phiên Part Studio. Kiểm tra BE đã cập nhật action admin (xoá bộ đếm chờ đăng nhập) và khởi động lại."
+                    : "Mất kết nối Part Studio với game server: " + (ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage());
+            throw new ApiException(503, detail + " Hãy kết nối lại tài khoản admin.");
         }
     }
 

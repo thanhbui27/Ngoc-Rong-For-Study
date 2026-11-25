@@ -6,17 +6,19 @@
   <title>Part Studio · Ngọc Rồng</title>
   <style>
     :root{font-family:Segoe UI,Arial,sans-serif;color:#f1e8d4;background:#10131b}
-    *{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}
+    *{box-sizing:border-box}body{margin:0;height:100vh;display:flex;flex-direction:column}button,input,select,textarea{font:inherit}
     button{background:#34415a;color:#fff;border:1px solid #63718c;border-radius:7px;padding:8px 11px;cursor:pointer}
     button:hover{background:#465b7d}button.primary{background:#bd742c;border-color:#eda353;color:#fff}
     button.danger{background:#63323d;border-color:#a15d6d}button:disabled{opacity:.45;cursor:not-allowed}
     input,select,textarea{background:#191f2c;color:#fff;border:1px solid #48536a;border-radius:6px;padding:7px}
     input[type=number]{width:86px}textarea{width:100%;min-height:60px;resize:vertical}
-    header{padding:13px 18px;background:#1a2130;border-bottom:1px solid #354053;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-    header strong{font-size:19px;color:#ffc87b}#status{color:#adbcd2;font-size:13px}#message{padding:8px 18px;min-height:34px;color:#a9d6b4}
-    main{display:grid;grid-template-columns:300px minmax(0,1fr) 420px;min-height:calc(100vh - 105px)}
-    aside,.editor,.preview{padding:15px;border-right:1px solid #354053;min-width:0}
-    aside{background:#151a25}aside .toolbar{display:flex;gap:7px;margin-bottom:10px}
+    header{padding:13px 18px;background:#1a2130;border-bottom:1px solid #354053;display:flex;gap:16px;align-items:center;flex-wrap:wrap;flex:none}
+    header strong{font-size:19px;color:#ffc87b}#status{color:#adbcd2;font-size:13px}#message{padding:8px 18px;min-height:34px;color:#a9d6b4;flex:none}#message.busy::before{content:'';display:inline-block;width:12px;height:12px;margin-right:8px;border:2px solid #56738a;border-top-color:#ffc87b;border-radius:50%;vertical-align:-2px;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    main{display:grid;grid-template-columns:minmax(370px,440px) minmax(0,1fr);flex:1;min-height:0;overflow:hidden}
+    aside,.editor,.preview{padding:15px;border-right:1px solid #354053;min-width:0;min-height:0;overflow-y:auto;scrollbar-color:#45546b #121924}
+    aside{position:fixed;inset:0 auto 0 0;width:min(350px,92vw);z-index:11;background:#151a25;box-shadow:18px 0 40px #0008;transform:translateX(-110%);transition:transform .2s ease}body.catalog-open aside{transform:translateX(0)}.catalog-backdrop{position:fixed;inset:0;z-index:10;background:#050910ad}[hidden]{display:none!important}
+    .catalog-title,.editor-title{display:flex;align-items:center;gap:10px;justify-content:space-between}.catalog-title h2,.editor-title h2{margin:0 0 12px}.editor-title button{margin-bottom:12px;white-space:nowrap}
+    aside .toolbar{display:flex;gap:7px;margin-bottom:10px}aside .toolbar select{min-width:0;flex:1}aside .toolbar button{white-space:nowrap;flex:none}
     aside input{width:100%;margin-bottom:9px}.list{height:calc(100vh - 232px);overflow:auto;border:1px solid #354053;border-radius:8px}
     .row{display:flex;align-items:center;gap:9px;padding:7px;border-bottom:1px solid #2b3344;cursor:pointer;font-size:13px}
     .row:hover,.row.selected{background:#2c384d}.row img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated;background:#0c1017}
@@ -31,24 +33,30 @@
     .frame-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid #303b4d;font-size:12px}
     .frame-row.active{background:#31445c}.frame-row img{width:35px;height:35px;object-fit:contain;image-rendering:pixelated}
     .frame-row input[type=number]{width:68px;padding:5px}.frame-row button{padding:4px 6px}
-    .preview{background:#10151f}#canvas{width:100%;height:360px;background:linear-gradient(#1c2636 0 72%,#263340 72% 73%,#131a24 73%);border:1px solid #506078;image-rendering:pixelated;touch-action:none}
-    .preview-controls{display:flex;gap:8px;align-items:center;margin:10px 0}.preview-controls input{flex:1}
-    .hint{color:#9baabe;font-size:12px;line-height:1.5}#details{white-space:pre-line;color:#c8d0dd;font-size:12px;margin-top:12px}
-    @media(max-width:1150px){main{grid-template-columns:250px 1fr}.preview{grid-column:1/-1;border-top:1px solid #354053}#canvas{max-width:500px}}
-    @media(max-width:680px){main{display:block}.list{height:250px}.grid{grid-template-columns:repeat(2,1fr)}.grid label.wide{grid-column:span 2}}
+    .preview{grid-column:2;background:#10151f}.preview-top{position:sticky;top:-15px;z-index:3;background:#10151f;padding:15px 0 12px;border-bottom:1px solid #354053;margin-bottom:14px}.preview-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.preview-title h2{margin:0}.preview-count{font-size:12px;color:#ffd38b;background:#3a2d23;border:1px solid #755636;border-radius:999px;padding:5px 9px}
+    .preview-controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:9px 0}.preview-controls label{display:flex;gap:6px;align-items:center;font-size:12px;color:#b3c1d4}.preview-controls input[type=range]{width:110px}.preview-controls select{max-width:180px}.preview-controls b{min-width:25px}
+    #poseSheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}.pose-card{background:#192333;border:1px solid #41536c;border-radius:9px;padding:7px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}.pose-card:hover{border-color:#90a5c4;transform:translateY(-2px)}.pose-card.selected{border-color:#ffca7f;box-shadow:0 0 0 2px #8a6536}.pose-card-head{display:flex;justify-content:space-between;gap:5px;align-items:center;margin-bottom:6px}.pose-card strong{color:#dbe7f5;font-size:12px}.pose-card-meta{display:flex;gap:5px;align-items:center}.pose-badge{font-size:10px;color:#ffd28d;border-radius:5px;background:#3b3027;padding:3px 5px}.asset-state{font-size:10px;color:#acc2d8}.pose-card.error .asset-state{color:#f2a1a1}.pose-card canvas{display:block;width:100%;height:auto;background:#1c2636;image-rendering:pixelated;touch-action:none;cursor:grab}.pose-card canvas:active{cursor:grabbing}
+    .asset-progress{display:flex;align-items:center;gap:8px;min-height:20px;color:#a9c7df;font-size:12px}.asset-progress progress{width:95px;height:8px;accent-color:#e9ad62}.asset-progress.error{color:#f2a1a1}
+    .nudge{display:flex;gap:3px;align-items:center}.nudge button{padding:5px 8px;min-width:29px}.nudge span{font-size:12px;color:#b3c1d4;margin-right:3px}
+    .hint{color:#9baabe;font-size:12px;line-height:1.5}#details{white-space:pre-line;color:#c8d0dd;font-size:12px;background:#192332;border:1px solid #354b64;border-radius:7px;padding:8px 10px;margin:8px 0}.preview-tip{margin:8px 0 0}
+    @media(max-width:1100px){main{grid-template-columns:minmax(340px,400px) minmax(0,1fr)}#poseSheet{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}}
+    @media(max-width:850px){body{height:auto;min-height:100vh}main{display:flex;flex-direction:column;overflow:visible;flex:none}.preview{order:1;width:100%;overflow:visible}.editor{order:2;width:100%;overflow:visible}.preview-top{top:0}}
+    @media(max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}.grid label.wide{grid-column:span 2}.preview-top{position:static}#poseSheet{grid-template-columns:1fr;gap:7px}.pose-card{padding:5px}.preview-controls{gap:5px}}
   </style>
 </head>
 <body>
   <header><strong>PART STUDIO</strong><span id="status">Đang kết nối…</span><span id="remoteLogin" hidden><input id="adminUser" placeholder="Tài khoản admin" autocomplete="username"><input id="adminPass" type="password" placeholder="Mật khẩu" autocomplete="current-password"><button id="connectGame">Kết nối server</button></span><button id="importParts">Cấp ID mới cho part trùng</button><span class="hint">Giao diện trên 127.0.0.1 · Dữ liệu SQL từ game server</span></header>
   <div id="message"></div>
+  <div id="catalogBackdrop" class="catalog-backdrop" hidden></div>
   <main>
     <aside>
+      <div class="catalog-title"><h2>Kho vật phẩm</h2><button id="closeCatalog" type="button" aria-label="Đóng kho vật phẩm">✕</button></div>
       <div class="toolbar"><select id="kind"><option value="costume">Cải trang</option><option value="pet">Pet</option></select><button id="newItem">Thêm mới</button></div>
       <input id="search" placeholder="Tìm tên cải trang / pet">
       <div id="count" class="hint"></div><div id="list" class="list"></div>
     </aside>
     <section class="editor">
-      <h2>Vật phẩm <span id="itemId">—</span></h2>
+      <div class="editor-title"><h2>Vật phẩm <span id="itemId">—</span></h2><button id="openCatalog" type="button">☰ Danh sách</button></div>
       <div class="grid">
         <label class="wide">Tên<input id="name" maxlength="255"></label>
         <label>Loại<select id="type"><option value="5">Cải trang · 5</option><option value="21">Pet dùng được · 21</option><option value="18">Pet tham chiếu · 18</option></select></label>
@@ -65,23 +73,42 @@
       <div id="parts"></div>
     </section>
     <section class="preview">
-      <h2>Xem trước theo Unity</h2>
-      <canvas id="canvas" width="420" height="360"></canvas>
-      <div class="preview-controls"><span>Frame <b id="frameNumber">0</b></span><input id="frame" type="range" min="0" max="32" value="0"><button id="direction">→</button></div>
-      <p class="hint">Kéo trực tiếp ảnh trên khung xem trước để chỉnh dx/dy. Nút “Tự căn” lấy tâm và chân vùng ảnh có alpha, rồi đặt theo frame mẫu của Unity. Kiểm tra lại từng frame trước khi lưu.</p>
-      <div id="details"></div>
+      <div class="preview-top">
+        <div class="preview-title"><h2>Từng frame của mọi hành động</h2><span id="frameCount" class="preview-count">33 frame</span></div>
+        <div class="preview-controls"><label>Hành động <select id="actionFilter"><option value="all">Tất cả 33 frame</option><option value="stand">Stand</option><option value="idle">Idle</option><option value="run">Run</option><option value="jump">Jump</option><option value="fall">Fall</option><option value="pose13">Frame 13–16</option><option value="pose17">Frame 17–22</option><option value="pose23">Frame 23–32</option></select></label><button id="direction" title="Đổi hướng">→</button><label>Cỡ ảnh <input id="zoom" type="range" min="3" max="5" value="4"><b id="zoomValue">4×</b></label><label>Chỉnh <select id="moveScope"><option value="auto">Bấm vào part</option><option value="all">Tất cả part</option><option value="head">Đầu</option><option value="body">Thân</option><option value="leg">Chân</option></select></label><div class="nudge"><span>Dịch 1px</span><button type="button" data-nudge="left" title="Sang trái">←</button><button type="button" data-nudge="up" title="Lên">↑</button><button type="button" data-nudge="down" title="Xuống">↓</button><button type="button" data-nudge="right" title="Sang phải">→</button></div></div>
+        <div id="assetProgress" class="asset-progress" role="status" aria-live="polite"></div>
+        <div id="details"></div>
+        <p class="hint preview-tip">Bấm vào đầu/thân/chân để chọn, rồi kéo hoặc dùng phím mũi tên. Thay đổi áp dụng cho mọi frame của part đó. Phần mẫu chỉ dùng để xem.</p>
+      </div>
+      <div id="poseSheet"></div>
     </section>
   </main>
 <script>
 const token=new URLSearchParams(location.search).get('token')||'';
 const $=id=>document.getElementById(id);
 const slots=['head','body','leg'], counts={head:3,body:17,leg:14}, labels={head:'Đầu',body:'Thân',leg:'Chân'};
-let model=null,revision='',charInfo=[],frame=0,dir=1,selectedSlot='head',selectedFrame=0,drag=null;
+const infoSlot={head:0,leg:1,body:2};
+const actionGroups=[
+  {key:'stand',label:'Stand',frames:[0]},
+  {key:'idle',label:'Idle',frames:[1]},
+  {key:'run',label:'Run',frames:[2,3,4,5,6]},
+  {key:'jump',label:'Jump',frames:[7,8,9,10,11]},
+  {key:'fall',label:'Fall',frames:[12]},
+  {key:'pose13',label:'Frame 13–16',frames:[13,14,15,16]},
+  {key:'pose17',label:'Frame 17–22',frames:[17,18,19,20,21,22]},
+  {key:'pose23',label:'Frame 23–32',frames:[23,24,25,26,27,28,29,30,31,32]}
+];
+const baseParts={"head":{"id":0,"type":0,"frames":[[17,0,0],[18,0,0],[20,0,0]],"source":"reference"},"body":{"id":1,"type":1,"frames":[[80,0,0],[1,0,0],[2,0,0],[3,0,0],[4,0,0],[5,0,0],[6,0,0],[7,0,0],[8,1,0],[9,0,0],[10,0,0],[11,0,0],[12,0,0],[13,0,0],[14,0,0],[15,0,0],[16,0,0]],"source":"reference"},"leg":{"id":2,"type":2,"frames":[[21,0,0],[22,0,0],[23,0,0],[24,0,0],[25,0,0],[26,0,0],[27,0,0],[28,0,0],[29,0,0],[30,0,0],[31,0,0],[32,0,0],[33,0,0],[34,0,0]],"source":"reference"}};
+let model=null,revision='',charInfo=[],frame=0,dir=1,selectedSlot='head',selectedFrame=0,drag=null,actionFilter='all';
 const imageCache=new Map();
+let drawScheduled=false;
+function scheduleDraw(){if(drawScheduled)return;drawScheduled=true;requestAnimationFrame(()=>{drawScheduled=false;draw()})}
 function message(text,bad=false){$('message').textContent=text;$('message').style.color=bad?'#f2a1a1':'#a9d6b4'}
+let busyCount=0;
+function beginBusy(label){busyCount++;message(label);$('message').classList.add('busy');return ()=>{busyCount--;if(!busyCount)$('message').classList.remove('busy')}}
 async function api(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:{'X-Editor-Token':token,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});const data=await response.json();if(!response.ok)throw Error(data.error||'Lỗi kết nối');return data}
-function imageUrl(id,from='be'){return `/asset?id=${id}&zoom=1&from=${from}&token=${encodeURIComponent(token)}`}
-function image(id,from='be'){if(id<=0)return null;let key=from+':'+id;if(!imageCache.has(key)){const im=new Image();im.onload=draw;im.onerror=draw;im.src=imageUrl(id,from);imageCache.set(key,im)}return imageCache.get(key)}
+function imageUrl(id,from='be',zoom=1){return `/asset?id=${id}&zoom=${zoom}&from=${from}&token=${encodeURIComponent(token)}`}
+function image(id,from='be',zoom=4){if(id<=0)return null;const key=from+':'+id+':'+zoom;if(!imageCache.has(key)){const im=new Image();im.onload=scheduleDraw;im.onerror=()=>{im.failed=true;scheduleDraw()};im.src=imageUrl(id,from,zoom);imageCache.set(key,im)}return imageCache.get(key)}
 function emptyPart(slot){return {id:-1,type:slots.indexOf(slot),frames:[],source:'runtime'}}
 function startNew(){revision='';model={item:{id:-1,type:$('kind').value==='pet'?21:5,gender:3,name:'',description:'',iconId:0,part:-1,power:0},mapping:{head:emptyPart('head'),body:emptyPart('body'),leg:emptyPart('leg'),bag:-1}};render()}
 function field(id,value){$(id).value=value??''}
@@ -89,32 +116,218 @@ function readFields(){const i=model.item;i.name=$('name').value.trim();i.descrip
 function render(){if(!model)return;const i=model.item;field('name',i.name);field('description',i.description);field('type',i.type);field('gender',i.gender);field('iconId',i.iconId);field('itemPart',i.part);field('power',i.power);field('bag',model.mapping.bag);$('itemId').textContent=i.id<0?'mới':'#'+i.id;renderReference();renderParts();draw()}
 function renderReference(){const area=$('referenceHint');area.replaceChildren();if(!model.reference)return;const ref=model.reference;const label=document.createElement('span');label.textContent=`Nguồn S14 #${ref.itemId} · part ${ref.partId>=0?ref.partId:'chưa biết'}. `;area.append(label);if(ref.partId>=0){const button=document.createElement('button');button.textContent='Nạp part nguồn';button.onclick=async()=>{try{const p=await api('/api/prepare-reference',{id:ref.partId});if(p.type<0||p.type>2)throw Error('Part nguồn không thuộc đầu/thân/chân');const slot=slots[p.type];model.mapping[slot]=p;selectedSlot=slot;selectedFrame=0;render();message(`Đã nạp part nguồn vào ${labels[slot]}; kiểm tra preview rồi bấm Lưu vào SQL`)}catch(e){message(e.message,true)}};area.append(button)}}
 async function refreshList(){try{const kind=$('kind').value,q=$('search').value;const data=await api(`/api/list?kind=${kind}&q=${encodeURIComponent(q)}`);$('count').textContent=`${data.count} mục trong DB`;$('list').replaceChildren();for(const i of data.items){const div=document.createElement('div');div.className='row'+(model?.item.id===i.id?' selected':'');const img=document.createElement('img');img.loading='lazy';img.src=imageUrl(i.iconId);const text=document.createElement('span');text.textContent=`#${i.id} ${i.name}`;const sub=document.createElement('small');sub.textContent=`icon ${i.iconId} · ${i.hasMapping?'có mapping':'chưa có part'}`;if(!i.hasMapping)sub.className='missing';text.append(sub);div.append(img,text);div.onclick=()=>loadItem(i.id);$('list').append(div)}}catch(e){message(e.message,true)}}
-async function loadItem(id){try{const data=await api('/api/item?id='+id);revision=data.revision;delete data.revision;model=data;selectedSlot='head';selectedFrame=0;render();refreshList();message('Đã tải item #'+id+' từ SQL')}catch(e){message(e.message,true)}}
+async function loadItem(id){const end=beginBusy('Đang tải item #'+id+' từ SQL…');try{const data=await api('/api/item?id='+id);revision=data.revision;delete data.revision;model=data;selectedSlot='head';selectedFrame=0;render();closeCatalog();refreshList();message('Đã tải item #'+id+' từ SQL')}catch(e){message(e.message,true)}finally{end()}}
+function openCatalog(){document.body.classList.add('catalog-open');$('catalogBackdrop').hidden=false;$('search').focus()}
+function closeCatalog(){document.body.classList.remove('catalog-open');$('catalogBackdrop').hidden=true}
+$('openCatalog').onclick=openCatalog;$('closeCatalog').onclick=closeCatalog;$('catalogBackdrop').onclick=closeCatalog;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCatalog()});
 function ensureFrames(slot){const p=model.mapping[slot];if(p.frames.length===0)p.frames=Array.from({length:counts[slot]},()=>[0,0,0]);return p}
 function renderParts(){const area=$('parts');area.replaceChildren();for(const slot of slots){const p=model.mapping[slot],card=document.createElement('div');card.className='part-card';const head=document.createElement('div');head.className='part-head';head.innerHTML=`<h3>${labels[slot]} · ${counts[slot]} frame</h3><span>ID ${p.id}</span>`;
 const id=document.createElement('input');id.type='number';id.min='0';id.placeholder='Part ID';const from=document.createElement('select');from.innerHTML='<option value="runtime">BE</option><option value="reference">S14</option>';const load=document.createElement('button');load.textContent='Nạp part';load.onclick=async()=>{try{const d=from.value==='reference'?await api('/api/prepare-reference',{id:+id.value}):await api(`/api/part?id=${+id.value}&from=runtime`);if(d.type!==slots.indexOf(slot))throw Error('Part này sai loại '+labels[slot]);model.mapping[slot]=d;selectedSlot=slot;selectedFrame=0;render();message(`Đã nạp part ${d.id}. ${d.missingImages?.length?'Còn '+d.missingImages.length+' ảnh nguồn thiếu; cần nhập PNG thủ công.':'Ảnh trùng đã được cấp ID mới khi cần.'}`)}catch(e){message(e.message,true)}};
 const add=document.createElement('button');add.textContent=p.frames.length?'Làm trống':'Tạo frame';add.onclick=()=>{if(p.frames.length)p.frames=[];else ensureFrames(slot);p.id=-1;render()};
 const align=document.createElement('button');align.textContent='Tự căn';align.onclick=()=>autoAlign(slot);
 head.append(id,from,load,add,align);card.append(head);
-const rows=document.createElement('div');rows.className='frames';p.frames.forEach((f,j)=>{const row=document.createElement('div');row.className='frame-row'+(selectedSlot===slot&&selectedFrame===j?' active':'');const label=document.createElement('span');label.textContent=String(j).padStart(2,'0');label.style.width='22px';const img=document.createElement('img');if(f[0]>0)img.src=imageUrl(f[0],p.source==='reference'?'source':'be');
+const rows=document.createElement('div');rows.className='frames';p.frames.forEach((f,j)=>{const row=document.createElement('div');row.className='frame-row'+(selectedSlot===slot&&selectedFrame===j?' active':'');const label=document.createElement('span');label.textContent=String(j).padStart(2,'0');label.style.width='22px';const img=document.createElement('img');if(f[0]>0)img.src=imageUrl(f[0],p.source==='reference'?'source':'be',4);
 for(let n=0;n<3;n++){const input=document.createElement('input');input.type='number';input.value=f[n];input.title=['Image ID','dx','dy'][n];input.onchange=()=>{f[n]=+input.value;selectedSlot=slot;selectedFrame=j;draw()};row.append(input);if(n===0)row.append(img)}
-const up=document.createElement('input');up.type='file';up.accept='image/png';up.style.width='110px';up.onchange=()=>uploadFrame(slot,j,up.files[0]);const choose=document.createElement('button');choose.textContent='Chọn';choose.onclick=()=>{selectedSlot=slot;selectedFrame=j;const match=charInfo.findIndex(info=>info[slots.indexOf(slot)][0]===j);if(match>=0){frame=match;$('frame').value=frame;$('frameNumber').textContent=frame}renderParts();draw()};row.prepend(label);row.append(up,choose);rows.append(row)});card.append(rows);area.append(card)}}
+const up=document.createElement('input');up.type='file';up.accept='image/png';up.style.width='110px';up.onchange=()=>uploadFrame(slot,j,up.files[0]);const choose=document.createElement('button');choose.textContent='Chọn';choose.onclick=()=>{selectedSlot=slot;selectedFrame=j;$('moveScope').value=slot;const match=charInfo.findIndex(info=>info[infoSlot[slot]][0]===j);if(match>=0){setFrame(match);$('poseSheet').querySelector('.pose-card[data-frame="'+match+'"]')?.scrollIntoView({block:'nearest',behavior:'smooth'})}renderParts();draw()};row.prepend(label);row.append(up,choose);rows.append(row)});card.append(rows);area.append(card)}}
 async function uploadFrame(slot,j,file){if(!file)return;try{const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});const result=await api('/api/upload',{png:dataUrl});const p=ensureFrames(slot);p.frames[j][0]=result.imageId;p.source='runtime';if(model.item.iconId<=0)model.item.iconId=result.imageId;selectedSlot=slot;selectedFrame=j;render();await autoAlign(slot);message(`Đã nhập ảnh ${result.imageId} và tự căn sơ bộ. Kiểm tra lại trên preview trước khi lưu.`)}catch(e){message(e.message,true)}}
-function draw(){const canvas=$('canvas'),g=canvas.getContext('2d');g.clearRect(0,0,canvas.width,canvas.height);g.fillStyle='#1c2636';g.fillRect(0,0,420,260);g.fillStyle='#263340';g.fillRect(0,260,420,100);g.strokeStyle='#91a7bc';g.beginPath();g.moveTo(0,270);g.lineTo(420,270);g.stroke();const cx=210,cy=270;g.strokeStyle='#8593aa';g.beginPath();g.moveTo(cx-8,cy);g.lineTo(cx+8,cy);g.moveTo(cx,cy-8);g.lineTo(cx,cy+8);g.stroke();if(!model||!charInfo.length)return;const info=charInfo[frame];for(const slot of ['head','leg','body']){const si=slots.indexOf(slot),p=model.mapping[slot],spec=info[si];if(!p.frames.length)continue;const fi=Math.min(spec[0],p.frames.length-1),f=p.frames[fi],im=image(f[0],p.source==='reference'?'source':'be');if(!im||!im.complete||!im.naturalWidth)continue;let x=cx+(spec[1]+f[1])*(dir===1?1:-1),y=cy-spec[2]+f[2];if(dir!==1)x-=im.naturalWidth;g.save();if(dir!==1){g.translate(x+im.naturalWidth,0);g.scale(-1,1);g.drawImage(im,0,y)}else g.drawImage(im,x,y);g.restore();if(slot===selectedSlot){g.strokeStyle='#ffd186';g.strokeRect(x,y,im.naturalWidth,im.naturalHeight)}}$('details').textContent=`Frame ${frame} · ${dir===1?'phải':'trái'}\nHead ${info[0]} · Leg ${info[1]} · Body ${info[2]}\nToạ độ = (cx + (CharInfo.dx + part.dx) × hướng, cy − CharInfo.dy + part.dy)`}
+function filled(part){return !!part?.frames?.some(row=>row[0]>0)}
+function renderSheet(){
+  const area=$('poseSheet');area.replaceChildren();let visible=0;
+  for(const group of actionGroups){
+    if(actionFilter!=='all'&&actionFilter!==group.key)continue;
+    for(const index of group.frames){
+      const card=document.createElement('div');card.className='pose-card';card.dataset.frame=index;
+      const head=document.createElement('div');head.className='pose-card-head';
+      const label=document.createElement('strong');label.textContent='Frame '+String(index).padStart(2,'0');
+      const badge=document.createElement('span');badge.className='pose-badge';badge.textContent=group.label;
+      const state=document.createElement('span');state.className='asset-state';
+      const meta=document.createElement('span');meta.className='pose-card-meta';meta.append(state,badge);
+      head.append(label,meta);
+      const canvas=document.createElement('canvas');canvas.width=360;canvas.height=340;canvas.dataset.frame=index;canvas.tabIndex=0;
+      canvas.setAttribute('aria-label',group.label+' frame '+index);
+      canvas.onpointerdown=onPosePointerDown;canvas.onpointermove=movePointer;
+      canvas.onpointerup=onPosePointerUp;canvas.onpointercancel=onPosePointerCancel;
+      card.onclick=()=>setFrame(index);
+      card.append(head,canvas);area.append(card);visible++;
+    }
+  }
+  $('frameCount').textContent=visible+' / 33 frame';
+  draw();
+}
+function drawPose(canvas,index){
+  const g=canvas.getContext('2d'),requestedScale=+$('zoom').value,w=canvas.width,h=canvas.height;
+  canvas.hitRegions=[];canvas.assets=[];canvas.renderScale=requestedScale;
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,w,h);
+  g.fillStyle='#1c2636';g.fillRect(0,0,w,h-28);
+  g.fillStyle='#263747';g.fillRect(0,h-28,w,28);
+  g.strokeStyle='#526d82';g.beginPath();g.moveTo(0,h-28+.5);g.lineTo(w,h-28+.5);g.stroke();
+  if(!model||!charInfo.length)return;
+  const info=charInfo[index],sprites=[];
+  for(const slot of ['head','leg','body']){
+    const own=model.mapping[slot],sample=!filled(own),part=sample?baseParts[slot]:own;
+    if(!filled(part))continue;
+    const spec=info[infoSlot[slot]],fi=Math.min(spec[0],part.frames.length-1),piece=part.frames[fi];
+    if(!piece||piece[0]<=0)continue;
+    const from=part.source==='reference'?'source':'be',high=image(piece[0],from,4);
+    const low=high.failed?image(piece[0],from,1):null;
+    const im=high.naturalWidth?high:low?.naturalWidth?low:null,z=im===high?4:1;
+    const state=im?(z===4?'ready':'fallback'):(low?.failed?'missing':'loading');
+    canvas.assets.push({key:from+':'+piece[0],state});
+    if(!im)continue;
+    const width=im.naturalWidth/z,height=im.naturalHeight/z;
+    const x=(spec[1]+piece[1])*dir-(dir<0?width:0),y=-spec[2]+piece[2];
+    sprites.push({slot,sample,im,x,y,width,height});
+  }
+  const state=canvas.parentElement.querySelector('.asset-state');
+  const pending=canvas.assets.filter(asset=>asset.state==='loading').length;
+  const missing=canvas.assets.filter(asset=>asset.state==='missing').length;
+  const fallback=canvas.assets.filter(asset=>asset.state==='fallback').length;
+  state.textContent=missing?'Thiếu '+missing+' ảnh':pending?'Đang tải '+pending+' ảnh':fallback?'x1 dự phòng':'Ảnh x4';
+  canvas.parentElement.classList.toggle('error',missing>0);
+  if(!sprites.length)return;
+  const minX=Math.min(...sprites.map(s=>s.x)),maxX=Math.max(...sprites.map(s=>s.x+s.width));
+  const minY=Math.min(...sprites.map(s=>s.y)),maxY=Math.max(...sprites.map(s=>s.y+s.height));
+  const scale=Math.min(requestedScale,(w-24)/(maxX-minX),(h-24)/(maxY-minY));
+  canvas.renderScale=scale;
+  let cx=w/2,cy=h-28;
+  cx=Math.max(12-minX*scale,Math.min(w-12-maxX*scale,cx));
+  cy=Math.max(12-minY*scale,Math.min(h-12-maxY*scale,cy));
+  g.imageSmoothingEnabled=false;
+  for(const {slot,sample,im,x,y,width,height} of sprites){
+    const drawX=cx+x*scale,drawY=cy+y*scale,drawW=width*scale,drawH=height*scale;
+    g.save();
+    if(dir<0){g.translate(drawX+drawW,0);g.scale(-1,1);g.drawImage(im,0,drawY,drawW,drawH)}
+    else g.drawImage(im,drawX,drawY,drawW,drawH);
+    g.restore();
+    canvas.hitRegions.push({slot,sample,x:drawX,y:drawY,w:drawW,h:drawH});
+    const active=$('moveScope').value==='auto'?selectedSlot:$('moveScope').value;
+    if(active===slot&&!sample){g.strokeStyle='#ffd186';g.lineWidth=1;g.strokeRect(drawX,drawY,drawW,drawH)}
+  }
+}
+function draw(){
+  for(const canvas of $('poseSheet').querySelectorAll('canvas[data-frame]'))drawPose(canvas,+canvas.dataset.frame);
+  const assets=new Map();
+  for(const canvas of $('poseSheet').querySelectorAll('canvas[data-frame]'))for(const asset of canvas.assets||[])assets.set(asset.key,asset.state);
+  const pending=[...assets.values()].filter(state=>state==='loading').length;
+  const missing=[...assets.values()].filter(state=>state==='missing').length;
+  const fallbackAssets=[...assets.values()].filter(state=>state==='fallback').length;
+  const progress=$('assetProgress');progress.classList.toggle('error',missing>0);
+  progress.replaceChildren();
+  if(assets.size){const loaded=assets.size-pending-missing;const bar=document.createElement('progress');bar.max=assets.size;bar.value=loaded;progress.append(bar);const label=document.createElement('span');label.textContent=pending?`Đang tải ảnh: ${loaded}/${assets.size}`:`Đã tải ${loaded}/${assets.size} ảnh`;if(fallbackAssets)label.textContent+=` · ${fallbackAssets} ảnh dùng x1`;if(missing)label.textContent+=` · thiếu ${missing} ảnh`;progress.append(label)}
+  for(const card of $('poseSheet').querySelectorAll('.pose-card'))card.classList.toggle('selected',+card.dataset.frame===frame);
+  if(!model||!charInfo.length)return;
+  const info=charInfo[frame],fallback=slots.filter(slot=>!filled(model.mapping[slot])).map(slot=>labels[slot]);
+  const scope=$('moveScope').value==='auto'?selectedSlot:$('moveScope').value;
+  const piece=scope==='all'?null:model.mapping[scope]?.frames?.[info[infoSlot[scope]][0]];
+  const group=actionGroups.find(entry=>entry.frames.includes(frame));
+  $('details').textContent='Đang chọn '+(group?.label||'Frame')+' · frame '+frame+' · '+(dir===1?'phải':'trái')
+    +'\nĐầu '+info[0][0]+' · Chân '+info[1][0]+' · Thân '+info[2][0]
+    +(scope==='all'?'\nĐang chỉnh tất cả part của item':'\nĐang chỉnh '+labels[scope]+(piece?' · dx '+piece[1]+' · dy '+piece[2]:' · chưa có ảnh part'))
+    +(fallback.length?'\nPart mẫu: '+fallback.join(', '):'');
+}
 function alphaBounds(im){const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);const a=g.getImageData(0,0,c.width,c.height).data;let minX=c.width,minY=c.height,maxX=-1,maxY=-1;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(a[(y*c.width+x)*4+3]>16){minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)}return maxX<0?{cx:c.width/2,bottom:c.height}:{cx:(minX+maxX)/2,bottom:maxY}}
-async function readyImage(id,from){const im=image(id,from);if(!im)return null;if(!im.complete)await new Promise(resolve=>{im.addEventListener('load',resolve,{once:true});im.addEventListener('error',resolve,{once:true})});return im.naturalWidth?im:null}
-async function autoAlign(slot){try{const p=ensureFrames(slot),base=await api('/api/part?id='+slots.indexOf(slot));let done=0;for(let j=0;j<p.frames.length;j++){const f=p.frames[j],b=base.frames[j];if(f[0]<=0||b[0]<=0)continue;const im=await readyImage(f[0],p.source==='reference'?'source':'be'),ref=await readyImage(b[0],'be');if(!im||!ref)continue;const x=alphaBounds(im),y=alphaBounds(ref);f[1]=Math.max(-128,Math.min(127,Math.round(b[1]+y.cx-x.cx)));f[2]=Math.max(-128,Math.min(127,Math.round(b[2]+y.bottom-x.bottom)));done++}render();message(`Đã căn sơ bộ ${done} frame ${labels[slot]}; hãy xem lại từng frame`)}catch(e){message(e.message,true)}}
-async function save(){if(!model)return;readFields();try{const result=await api('/api/save',{item:model.item,mapping:model.mapping,revision});await loadItem(result.id);await refreshStatus();message(result.message)}catch(e){message(e.message,true)}}
+async function readyImage(id,from){const im=image(id,from,1);if(!im)return null;if(!im.complete)await new Promise(resolve=>{im.addEventListener('load',resolve,{once:true});im.addEventListener('error',resolve,{once:true})});return im.naturalWidth?im:null}
+async function autoAlign(slot){
+  try{
+    const part=ensureFrames(slot),base=baseParts[slot];
+    if(!base)throw Error('Chưa tải được part mẫu');
+    let done=0;
+    for(let j=0;j<part.frames.length;j++){
+      const piece=part.frames[j],reference=base.frames[j];
+      if(piece[0]<=0||reference[0]<=0)continue;
+      const imagePart=await readyImage(piece[0],part.source==='reference'?'source':'be');
+      const imageBase=await readyImage(reference[0],'source');
+      if(!imagePart||!imageBase)continue;
+      const a=alphaBounds(imagePart),b=alphaBounds(imageBase);
+      piece[1]=Math.max(-128,Math.min(127,Math.round(reference[1]+b.cx-a.cx)));
+      piece[2]=Math.max(-128,Math.min(127,Math.round(reference[2]+b.bottom-a.bottom)));
+      done++;
+    }
+    render();message('Đã căn sơ bộ '+done+' frame '+labels[slot]+'; hãy xem lại toàn bộ hành động');
+  }catch(e){message(e.message,true)}
+}
+async function save(){if(!model)return;readFields();const end=beginBusy('Đang lưu item vào SQL…');try{const result=await api('/api/save',{item:model.item,mapping:model.mapping,revision});await loadItem(result.id);await refreshStatus();message(result.message)}catch(e){message(e.message,true)}finally{end()}}
 async function deleteAction(scope){if(!model||model.item.id<0)return;if(!confirm(scope==='item'?'Xoá item cuối khỏi SQL?':'Xoá mapping ngoại hình của item này?'))return;try{const result=await api('/api/delete',{id:model.item.id,scope,revision});message(result.message);if(scope==='item')startNew();else await loadItem(model.item.id);refreshList();refreshStatus()}catch(e){message(e.message,true)}}
 async function refreshStatus(){try{const d=await api('/api/status');$('status').textContent=`${d.database} · ${d.costumes} cải trang · ${d.pets} pet · ${d.parts} part`}catch(e){$('status').textContent='Chưa kết nối được DB';message(e.message,true)}}
 $('kind').onchange=()=>{startNew();refreshList()};let timer;$('search').oninput=()=>{clearTimeout(timer);timer=setTimeout(refreshList,250)};
-$('newItem').onclick=startNew;$('save').onclick=save;$('deleteMapping').onclick=()=>deleteAction('mapping');$('deleteItem').onclick=()=>deleteAction('item');
+$('newItem').onclick=()=>{startNew();closeCatalog()};$('save').onclick=save;$('deleteMapping').onclick=()=>deleteAction('mapping');$('deleteItem').onclick=()=>deleteAction('item');
 $('importParts').onclick=async()=>{if(!confirm('Cấp ID mới cho các part S14 trùng ID nhưng khác dữ liệu BE? Part cũ được giữ nguyên.'))return;try{const r=await api('/api/import-parts',{});message(`${r.added} part mới, ${r.reused} part giữ/tái sử dụng. ${r.message}`);refreshStatus()}catch(e){message(e.message,true)}};
-$('connectGame').onclick=async()=>{try{await api('/api/auth',{username:$('adminUser').value.trim(),password:$('adminPass').value});$('adminPass').value='';message('Đã xác thực tài khoản admin trên game server');await refreshStatus();await refreshList()}catch(e){message(e.message,true)}};
-$('frame').oninput=()=>{frame=+$('frame').value;$('frameNumber').textContent=frame;draw()};$('direction').onclick=()=>{dir=dir===1?-1:1;$('direction').textContent=dir===1?'→':'←';draw()};
-$('canvas').onpointerdown=e=>{if(!model)return;drag={x:e.clientX,y:e.clientY};$('canvas').setPointerCapture(e.pointerId)};
-$('canvas').onpointerup=e=>{if(!drag||!model)return;const p=model.mapping[selectedSlot],f=p.frames[selectedFrame];if(f){const scale=$('canvas').width/$('canvas').getBoundingClientRect().width;f[1]=Math.max(-128,Math.min(127,f[1]+Math.round((e.clientX-drag.x)*scale*(dir===1?1:-1))));f[2]=Math.max(-128,Math.min(127,f[2]+Math.round((e.clientY-drag.y)*scale)));renderParts();draw()}drag=null};
-(async()=>{try{const d=await api('/char-info.json');charInfo=d.frames;startNew();const meta=await api('/api/meta');if(meta.remote){$('remoteLogin').hidden=false;$('status').textContent='Chưa đăng nhập · '+meta.host;return}await refreshStatus();await refreshList()}catch(e){message(e.message,true)}})();
+$('connectGame').onclick=async()=>{const end=beginBusy('Đang kết nối và xác thực game server…');try{await api('/api/auth',{username:$('adminUser').value.trim(),password:$('adminPass').value});$('adminPass').value='';message('Đã xác thực tài khoản admin trên game server');await refreshStatus();await refreshList()}catch(e){message(e.message,true)}finally{end()}};
+function setFrame(value){
+  frame=Math.max(0,Math.min(charInfo.length-1,value));
+  $('frameNumber').textContent=frame;
+  if(!$('poseSheet').querySelector('.pose-card[data-frame="'+frame+'"]')){
+    actionFilter='all';$('actionFilter').value='all';renderSheet();
+  }
+  selectedFrame=charInfo[frame][infoSlot[selectedSlot]][0];
+  draw();
+}
+$('direction').onclick=()=>{dir=dir===1?-1:1;$('direction').textContent=dir===1?'→':'←';draw()};
+$('actionFilter').onchange=()=>{actionFilter=$('actionFilter').value;renderSheet();if(actionFilter!=='all')setFrame(actionGroups.find(group=>group.key===actionFilter).frames[0])};
+$('zoom').oninput=()=>{$('zoomValue').textContent=$('zoom').value+'×';draw()};
+$('moveScope').onchange=draw;
+function shiftFrames(parts,requestedX,requestedY){
+  const frames=parts.flatMap(part=>part.frames);
+  const dx=Math.max(Math.max(...frames.map(piece=>-128-piece[1])),Math.min(Math.min(...frames.map(piece=>127-piece[1])),requestedX));
+  const dy=Math.max(Math.max(...frames.map(piece=>-128-piece[2])),Math.min(Math.min(...frames.map(piece=>127-piece[2])),requestedY));
+  for(const piece of frames){piece[1]+=dx;piece[2]+=dy}
+  return {dx,dy};
+}
+function nudge(dx,dy){
+  if(!model)return;
+  const scope=$('moveScope').value==='auto'?selectedSlot:$('moveScope').value;
+  const parts=(scope==='all'?slots:[scope]).map(slot=>model.mapping[slot]).filter(filled);
+  if(!parts.length){message('Hãy nạp part của item trước khi chỉnh',true);return}
+  shiftFrames(parts,dx*dir,dy);renderParts();draw();
+}
+for(const button of document.querySelectorAll('[data-nudge]')){
+  const direction=button.dataset.nudge;
+  button.onclick=()=>nudge(direction==='left'?-1:direction==='right'?1:0,direction==='up'?-1:direction==='down'?1:0);
+}
+document.addEventListener('keydown',e=>{
+  if(document.activeElement?.tagName!=='CANVAS')return;
+  const moves={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+  if(moves[e.key]){e.preventDefault();nudge(...moves[e.key])}
+});
+function onPosePointerDown(e){
+  if(!model)return;
+  const canvas=e.currentTarget;
+  let scope=$('moveScope').value;
+  setFrame(+canvas.dataset.frame);
+  canvas.focus();
+  if(scope==='auto'){
+    const rect=canvas.getBoundingClientRect();
+    const x=(e.clientX-rect.left)*canvas.width/rect.width;
+    const y=(e.clientY-rect.top)*canvas.height/rect.height;
+    const hit=[...(canvas.hitRegions||[])].reverse().find(region=>x>=region.x&&x<=region.x+region.w&&y>=region.y&&y<=region.y+region.h);
+    if(!hit){message('Bấm trực tiếp lên đầu, thân hoặc chân để chọn part',true);return}
+    if(hit.sample){message(labels[hit.slot]+' đang là part mẫu; hãy nạp hoặc nhập ảnh trước khi chỉnh',true);return}
+    scope=hit.slot;selectedSlot=scope;selectedFrame=charInfo[frame][infoSlot[scope]][0];draw();
+  }
+  const parts=(scope==='all'?slots:[scope]).map(slot=>model.mapping[slot]).filter(filled);
+  if(!parts.length){message('Hãy nạp hoặc nhập ảnh part của item trước khi kéo chỉnh',true);return}
+  drag={canvas,startX:e.clientX,startY:e.clientY,appliedX:0,appliedY:0,parts,scope,scale:canvas.renderScale};
+  canvas.setPointerCapture(e.pointerId);e.preventDefault();
+}
+function movePointer(e){
+  if(!drag||e.currentTarget!==drag.canvas)return;
+  const canvas=drag.canvas,rect=canvas.getBoundingClientRect(),zoom=drag.scale||+$('zoom').value;
+  const rawX=Math.round((e.clientX-drag.startX)*canvas.width/rect.width/zoom)*dir;
+  const rawY=Math.round((e.clientY-drag.startY)*canvas.height/rect.height/zoom);
+  const applied=shiftFrames(drag.parts,rawX-drag.appliedX,rawY-drag.appliedY);
+  drag.appliedX+=applied.dx;drag.appliedY+=applied.dy;
+  if(applied.dx||applied.dy)draw();
+}
+function onPosePointerUp(e){
+  if(!drag)return;
+  movePointer(e);
+  const moved=drag.appliedX||drag.appliedY,scope=drag.scope;
+  drag=null;renderParts();draw();
+  if(moved)message('Đã dịch '+(scope==='all'?'các part của item':labels[scope])+' trên mọi frame; bấm Lưu vào SQL khi vừa ý');
+}
+function onPosePointerCancel(){drag=null;renderParts();draw()}
+(async()=>{try{const d=await api('/char-info.json');charInfo=d.frames;renderSheet();startNew();const meta=await api('/api/meta');if(meta.remote){$('remoteLogin').hidden=false;$('status').textContent='Chưa đăng nhập · '+meta.host;return}await refreshStatus();await refreshList()}catch(e){message(e.message,true)}})();
 </script>
 </body>
 </html>
