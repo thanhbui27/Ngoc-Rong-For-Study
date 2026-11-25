@@ -407,6 +407,7 @@ public final class PartEditorServer {
             out.addProperty("parts", scalar(c, "SELECT COUNT(*) FROM part"));
             out.addProperty("costumes", scalar(c, "SELECT COUNT(*) FROM item_template WHERE TYPE=5"));
             out.addProperty("pets", scalar(c, "SELECT COUNT(*) FROM item_template WHERE TYPE IN (18,21)"));
+            out.addProperty("avatarUpload", true);
             return out;
         }
     }
@@ -486,6 +487,11 @@ public final class PartEditorServer {
         }
         mapping.addProperty("bag", ids[3]);
         out.add("mapping", mapping);
+        int avatarId=-1;
+        if(type==5 && ids[0]>=0)try(PreparedStatement ps=c.prepareStatement("SELECT avatar_id FROM head_avatar WHERE head_id=? LIMIT 1")){
+            ps.setInt(1,ids[0]);try(ResultSet r=ps.executeQuery()){if(r.next())avatarId=r.getInt(1);}
+        }
+        template.addProperty("avatarId",avatarId);
         try(PreparedStatement ps=c.prepareStatement("SELECT source.source_item_id,ref.part_id FROM admin_catalog_item_source source JOIN reference_item_template ref ON ref.source_server=source.source_server AND ref.id=source.source_item_id WHERE source.item_id=?")){
             ps.setInt(1,id);
             try(ResultSet r=ps.executeQuery()){
@@ -539,10 +545,10 @@ public final class PartEditorServer {
                     int id = number(item,"id",-1); int type=number(item,"type",5);
                     if (type!=5 && type!=18 && type!=21) fail(400,"Chỉ sửa cải trang hoặc pet");
                     String name=string(item,"name","").trim(); String desc=string(item,"description","");
-                    int icon=number(item,"iconId",-1), gender=number(item,"gender",3);
+                    int icon=number(item,"iconId",-1), avatar=number(item,"avatarId",-1), gender=number(item,"gender",3);
                     int power=number(item,"power",0), itemPart=number(item,"part",-1);
                     if (name.isBlank() || name.length()>255 || desc.length()>255 || icon<0 || icon>32767
-                            || gender<0 || gender>3 || power<0 || itemPart < -1 || itemPart>32767) fail(400,"Thông tin item không hợp lệ");
+                            || avatar < -1 || avatar>32767 || gender<0 || gender>3 || power<0 || itemPart < -1 || itemPart>32767) fail(400,"Thông tin item không hợp lệ");
                     if(id>=0)lockItem(c,id);
                     JsonObject current = id < 0 ? null : loadItem(c,id);
                     if (current==null && !Files.isRegularFile(ICONS.resolve("1/icon/"+icon+".png"))&&!staged.containsKey(icon))
@@ -602,6 +608,12 @@ public final class PartEditorServer {
                             ps.setInt(1,id);ps.setInt(2,head);ps.setInt(3,body);ps.setInt(4,leg);ps.executeUpdate();
                         }
                     }
+                    if (type==5 && head>=0) {
+                        if(avatar<0)fail(400,"Chọn Avatar ID cho part đầu trước khi lưu");
+                        if(!Files.isRegularFile(ICONS.resolve("1/icon/"+avatar+".png"))&&!staged.containsKey(avatar))
+                            fail(400,"Avatar ID chưa có ảnh trên server: "+avatar);
+                        saveHeadAvatar(c,head,avatar);
+                    }
                     bump(c,true,true);
                     writePendingImages(referencedPendingImages(request,staged),staged,writtenImages);
                     c.commit();
@@ -620,6 +632,7 @@ public final class PartEditorServer {
         Set<Integer> referenced=new HashSet<>();
         JsonObject item=request.has("item")?request.getAsJsonObject("item"):null;
         if(item!=null)referenced.add(number(item,"iconId",-1));
+        if(item!=null)referenced.add(number(item,"avatarId",-1));
         JsonObject mapping=request.has("mapping")?request.getAsJsonObject("mapping"):null;
         if(mapping!=null)for(String slot:new String[]{"head","body","leg"}){
             JsonObject part=mapping.has(slot)&&mapping.get(slot).isJsonObject()?mapping.getAsJsonObject(slot):null;
@@ -685,6 +698,22 @@ public final class PartEditorServer {
 
     private static void execute(Connection c,String sql,int id) throws SQLException {
         try (PreparedStatement ps=c.prepareStatement(sql)) {ps.setInt(1,id);ps.executeUpdate();}
+    }
+    private static void saveHeadAvatar(Connection c,int head,int avatar) throws SQLException {
+        boolean exists;
+        try(PreparedStatement select=c.prepareStatement("SELECT avatar_id FROM head_avatar WHERE head_id=? LIMIT 1 FOR UPDATE")){
+            select.setInt(1,head);try(ResultSet row=select.executeQuery()){exists=row.next();}
+        }
+        if(!exists){
+            try(PreparedStatement insert=c.prepareStatement("INSERT INTO head_avatar (head_id,avatar_id) VALUES (?,?)")){
+                insert.setInt(1,head);insert.setInt(2,avatar);insert.executeUpdate();
+            }
+            return;
+        }
+        try(PreparedStatement update=c.prepareStatement("UPDATE head_avatar SET avatar_id=? WHERE head_id=?")){
+            update.setInt(1,avatar);update.setInt(2,head);
+            update.executeUpdate();
+        }
     }
     private static void lockItem(Connection c,int id) throws SQLException {
         try(PreparedStatement ps=c.prepareStatement("SELECT id FROM item_template WHERE id=? FOR UPDATE")){
@@ -820,12 +849,16 @@ public final class PartEditorServer {
             fail(400,"Ảnh nguồn cần kích thước logic 1–512 px sau khi chia zoom");
         int logicalWidth=base.getWidth()/sourceZoom, logicalHeight=base.getHeight()/sourceZoom;
         int sourceImageId=imageIdFromName(string(request,"sourceName",""));
+        boolean deduplicate=request.has("deduplicate") && request.get("deduplicate").getAsBoolean();
         String stageSession=string(request,"studioSession","local");
         synchronized(WRITE_LOCK){
             int id;
             boolean reused=false;
-            if(sourceImageId>=0 && Files.isRegularFile(ICONS.resolve(sourceZoom+"/icon/"+sourceImageId+".png"))){
+            Path named=ICONS.resolve(sourceZoom+"/icon/"+sourceImageId+".png");
+            if(sourceImageId>=0 && Files.isRegularFile(named) && java.util.Arrays.equals(bytes,Files.readAllBytes(named))){
                 id=sourceImageId;
+                reused=true;
+            }else if(deduplicate && (id=findMatchingImage(bytes,sourceZoom,stageSession))>=0){
                 reused=true;
             }else{
                 try(Connection c=connect()){id=allocateImageId(usedImageIds(c));}
@@ -838,11 +871,27 @@ public final class PartEditorServer {
             JsonObject out=new JsonObject();out.addProperty("imageId",id);out.addProperty("sourceZoom",sourceZoom);
             out.addProperty("logicalWidth",logicalWidth);out.addProperty("logicalHeight",logicalHeight);
             out.addProperty("reused",reused);
-            out.addProperty("staged",!reused);
-            out.addProperty("message",reused?"Ảnh đã có trên game server; dùng lại Image ID "+id:
+            boolean stagedResult=pendingImages(stageSession).containsKey(id);
+            out.addProperty("staged",stagedResult);
+            out.addProperty("message",reused&&!stagedResult?"Ảnh đã có trên game server; dùng lại Image ID "+id:
                     "Ảnh đang chờ lưu; chưa ghi vào resources. Tạm cấp Image ID "+id);
             return out;
         }
+    }
+
+    private static int findMatchingImage(byte[] bytes,int zoom,String stageSession) throws IOException {
+        for(Map.Entry<Integer,PendingImage> entry:pendingImages(stageSession).entrySet())
+            if(entry.getValue().sourceZoom()==zoom && java.util.Arrays.equals(bytes,entry.getValue().source()))
+                return entry.getKey();
+        try(var files=Files.list(ICONS.resolve(zoom+"/icon"))){
+            for(Path file:(Iterable<Path>)files::iterator){
+                String name=file.getFileName().toString();
+                if(!name.endsWith(".png") || Files.size(file)!=bytes.length)continue;
+                int id=imageIdFromName(name);
+                if(id>=0 && java.util.Arrays.equals(bytes,Files.readAllBytes(file)))return id;
+            }
+        }
+        return -1;
     }
 
     private static int imageIdFromName(String name){
