@@ -406,7 +406,7 @@ public final class PartEditorServer {
             out.addProperty("items", scalar(c, "SELECT COUNT(*) FROM item_template"));
             out.addProperty("parts", scalar(c, "SELECT COUNT(*) FROM part"));
             out.addProperty("costumes", scalar(c, "SELECT COUNT(*) FROM item_template WHERE TYPE=5"));
-            out.addProperty("pets", scalar(c, "SELECT COUNT(*) FROM item_template WHERE TYPE IN (18,21)"));
+            out.addProperty("pets", scalar(c, "SELECT COUNT(*) FROM item_template WHERE TYPE IN (18,21,72)"));
             out.addProperty("avatarUpload", true);
             return out;
         }
@@ -425,7 +425,7 @@ public final class PartEditorServer {
         String sql = "SELECT t.id,t.TYPE,t.gender,t.NAME,t.icon_id,t.part,"
                 + (kind.equals("pet") ? "EXISTS(SELECT 1 FROM mini_pet m WHERE m.id_temp=t.id)" :
                 "EXISTS(SELECT 1 FROM cai_trang m WHERE m.id_temp=t.id)")
-                + " FROM item_template t WHERE " + (kind.equals("pet") ? "t.TYPE IN (18,21)" : "t.TYPE=5")
+                + " FROM item_template t WHERE " + (kind.equals("pet") ? "t.TYPE IN (18,21,72)" : "t.TYPE=5")
                 + " AND t.NAME LIKE ? ORDER BY t.id LIMIT 32767";
         try (Connection c = connect(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, "%" + search + "%");
@@ -472,7 +472,7 @@ public final class PartEditorServer {
         String sql = type == 5 ? "SELECT head,body,leg,bag FROM cai_trang WHERE id_temp=?" :
                 "SELECT head,body,leg FROM mini_pet WHERE id_temp=? LIMIT 1";
         int[] ids = {-1,-1,-1,-1};
-        try (PreparedStatement ps = c.prepareStatement(sql)) {
+        if (type != 18 && type != 72) try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet r = ps.executeQuery()) {
                 if (r.next()) for (int i=0; i<(type==5?4:3); i++) ids[i] = r.getInt(i+1);
@@ -543,16 +543,24 @@ public final class PartEditorServer {
                     JsonObject mapping = request.getAsJsonObject("mapping");
                     if (item==null || mapping==null) fail(400,"Thiếu item hoặc mapping");
                     int id = number(item,"id",-1); int type=number(item,"type",5);
-                    if (type!=5 && type!=18 && type!=21) fail(400,"Chỉ sửa cải trang hoặc pet");
+                    if (type!=5 && type!=18 && type!=21 && type!=72) fail(400,"Chỉ sửa cải trang hoặc pet");
                     String name=string(item,"name","").trim(); String desc=string(item,"description","");
                     int icon=number(item,"iconId",-1), avatar=number(item,"avatarId",-1), gender=number(item,"gender",3);
                     int power=number(item,"power",0), itemPart=number(item,"part",-1);
                     if (name.isBlank() || name.length()>255 || desc.length()>255 || icon<0 || icon>32767
                             || avatar < -1 || avatar>32767 || gender<0 || gender>3 || power<0 || itemPart < -1 || itemPart>32767) fail(400,"Thông tin item không hợp lệ");
+                    if (type==18 || type==72) for (String slot:new String[]{"head","body","leg"}) {
+                        JsonObject part=mapping.has(slot) && mapping.get(slot).isJsonObject()?mapping.getAsJsonObject(slot):null;
+                        if (part!=null && (number(part,"id",-1)>=0
+                                || part.has("frames") && part.get("frames").isJsonArray()
+                                && part.getAsJsonArray("frames").size()>0))
+                            fail(400,"Pet type 18/72 dùng pet_follow và ảnh icon, không dùng part đầu/thân/chân");
+                    }
                     if(id>=0)lockItem(c,id);
                     JsonObject current = id < 0 ? null : loadItem(c,id);
-                    if (current==null && !Files.isRegularFile(ICONS.resolve("1/icon/"+icon+".png"))&&!staged.containsKey(icon))
-                        fail(400,"Item mới cần icon PNG đã có trong resources");
+                    if ((current==null || current.getAsJsonObject("item").get("iconId").getAsInt()!=icon)
+                            && !Files.isRegularFile(ICONS.resolve("1/icon/"+icon+".png"))&&!staged.containsKey(icon))
+                        fail(400,"Icon ID chưa có PNG trên server: "+icon);
                     if (id>=0 && current==null) fail(404,"Item đã bị xóa");
                     if (current!=null && !sha(current).equals(string(request,"revision",""))) fail(409,"Dữ liệu đã thay đổi, tải lại trước khi lưu");
                     if (id<0) {
@@ -560,9 +568,9 @@ public final class PartEditorServer {
                         id=scalar(c,"SELECT COALESCE(MAX(id),-1)+1 FROM item_template");
                         if (id!=count) fail(409,"Bảng item_template có ID bị khuyết; client cần ID liên tục");
                     }
-                    int head=savePart(c,mapping.getAsJsonObject("head"),0);
-                    int body=savePart(c,mapping.getAsJsonObject("body"),1);
-                    int leg=savePart(c,mapping.getAsJsonObject("leg"),2);
+                    int head=savePart(c,mapping.getAsJsonObject("head"),0,staged,type==21);
+                    int body=savePart(c,mapping.getAsJsonObject("body"),1,staged,type==21);
+                    int leg=savePart(c,mapping.getAsJsonObject("leg"),2,staged,type==21);
                     int bag=number(mapping,"bag",-1);
                     if (bag < -1 || bag>32767) fail(400,"Bag ID không hợp lệ");
                     if (current==null && type==5 && head<0 && body<0 && leg<0) fail(400,"Cải trang mới cần ít nhất một part");
@@ -659,7 +667,8 @@ public final class PartEditorServer {
         }
     }
 
-    private static int savePart(Connection c, JsonObject part, int expectedType) throws SQLException {
+    private static int savePart(Connection c, JsonObject part, int expectedType,
+            Map<Integer,PendingImage> staged, boolean requireImages) throws SQLException {
         if (part==null) return -1;
         if ("reference".equals(string(part,"source","runtime")))
             fail(400,"Phải nạp part S14 bằng nút Nạp part để xử lý ảnh trùng ID");
@@ -677,16 +686,19 @@ public final class PartEditorServer {
             if (prior==null || prior.get("type").getAsInt()!=expectedType) fail(400,"Part " + id + " không đúng loại");
             return id;
         }
-        if (id>=0) {
-            JsonObject prior=loadPart(c,id,false);
-            if (prior!=null && prior.get("type").getAsInt()==expectedType
-                    && prior.get("frames").equals(frames)) return id;
-        }
         if (frames.size()!=FRAME_COUNTS[expectedType]) fail(400,"Part loại " + expectedType + " cần " + FRAME_COUNTS[expectedType] + " frame");
         for (JsonElement element:frames) {
             if (!element.isJsonArray() || element.getAsJsonArray().size()!=3) fail(400,"Frame phải có [image,dx,dy]");
             JsonArray row=element.getAsJsonArray(); int image=row.get(0).getAsInt(),dx=row.get(1).getAsInt(),dy=row.get(2).getAsInt();
             if (image < -1 || image>32767 || dx<-128 || dx>127 || dy<-128 || dy>127) fail(400,"Frame vượt giới hạn client");
+            if (requireImages && image>0 && !staged.containsKey(image)
+                    && !Files.isRegularFile(ICONS.resolve("1/icon/"+image+".png")))
+                fail(400,"Frame tham chiếu ảnh chưa có trên server: "+image);
+        }
+        if (id>=0) {
+            JsonObject prior=loadPart(c,id,false);
+            if (prior!=null && prior.get("type").getAsInt()==expectedType
+                    && prior.get("frames").equals(frames)) return id;
         }
         int next=scalar(c,"SELECT COALESCE(MAX(id),-1)+1 FROM part");
         if (next>32767 || next!=scalar(c,"SELECT COUNT(*) FROM part")) fail(409,"ID part bị khuyết hoặc vượt giới hạn client");
@@ -858,13 +870,17 @@ public final class PartEditorServer {
             if(sourceImageId>=0 && Files.isRegularFile(named) && java.util.Arrays.equals(bytes,Files.readAllBytes(named))){
                 id=sourceImageId;
                 reused=true;
+            }else if((id=findMatchingPendingImage(bytes,sourceZoom,stageSession))>=0){
+                reused=true;
             }else if(deduplicate && (id=findMatchingImage(bytes,sourceZoom,stageSession))>=0){
                 reused=true;
             }else{
                 try(Connection c=connect()){id=allocateImageId(usedImageIds(c));}
                 Map<Integer,PendingImage> staged=pendingImages(stageSession);
                 long stagedBytes=staged.values().stream().mapToLong(PendingImage::size).sum();
-                if(staged.size()>=32||stagedBytes+bytes.length>32_000_000L)
+                // A complete pet can use 3 + 17 + 14 distinct frame images,
+                // plus its inventory icon and avatar before the first save.
+                if(staged.size()>=48||stagedBytes+bytes.length>64_000_000L)
                     fail(413,"Ảnh đang chờ lưu vượt giới hạn; hãy lưu item trước khi nhập thêm ảnh");
                 staged.put(id,new PendingImage(bytes,sourceZoom,logicalWidth,logicalHeight));
             }
@@ -879,10 +895,16 @@ public final class PartEditorServer {
         }
     }
 
-    private static int findMatchingImage(byte[] bytes,int zoom,String stageSession) throws IOException {
+    private static int findMatchingPendingImage(byte[] bytes,int zoom,String stageSession) {
         for(Map.Entry<Integer,PendingImage> entry:pendingImages(stageSession).entrySet())
             if(entry.getValue().sourceZoom()==zoom && java.util.Arrays.equals(bytes,entry.getValue().source()))
                 return entry.getKey();
+        return -1;
+    }
+
+    private static int findMatchingImage(byte[] bytes,int zoom,String stageSession) throws IOException {
+        int pending=findMatchingPendingImage(bytes,zoom,stageSession);
+        if(pending>=0)return pending;
         try(var files=Files.list(ICONS.resolve(zoom+"/icon"))){
             for(Path file:(Iterable<Path>)files::iterator){
                 String name=file.getFileName().toString();

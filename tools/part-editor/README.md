@@ -35,7 +35,10 @@ sau khi xác thực admin. Cần triển khai JAR BE mới và khởi động l�
 chỉ tải lại trang editor không thay được mã đang chạy trên game server.
 
 1. Chọn **Cải trang** hoặc **Pet** để tải toàn bộ item tương ứng từ DB; chọn
-   một item để xem mapping và từng part.
+   một item để xem mapping và từng part. Pet type 21 dùng ba part đầu/thân/chân
+   trong `mini_pet`. Pet type 18/72 đi theo dùng icon hoặc sprite `pet_follow`;
+   ba part này không áp dụng cho type 18/72. Tool liệt kê cả pet type 72 để
+   sửa icon của những pet cũ khi có PNG gốc.
 2. Chọn part BE theo ID, hoặc part S14 theo ID. Ô **Nạp nhiều part** nhận 2–3
    ID cùng lúc, tự xếp theo loại đầu/thân/chân và chỉ cập nhật preview sau
    khi mọi ID đều hợp lệ. Có thể tiếp tục nạp một ID riêng ở từng nhóm. Khi
@@ -56,7 +59,11 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    Ảnh #80 không tự được gắn vào body mới. Chọn đủ 17 PNG để thay cả frame 16.
    Part chân nhận tối đa 13 PNG ở frame 00–12 và
    tự dùng ảnh #34 ở frame 13; chọn đủ 14 PNG để thay ảnh mặc định. Các frame
-   còn lại để trống. Nếu chọn dư file, editor báo tên file đã bỏ qua. Kiểm tra
+   còn lại để trống. Có thể chọn nhiều lần: lần sau bắt đầu ở frame chưa có ảnh
+   đầu tiên và giữ các frame, tọa độ đã nhập. Chọn **Từ frame 00** hoặc vị trí
+   khác để thay một đoạn ảnh cũ mà vẫn giữ các frame bên ngoài đoạn đó. Nếu
+   chọn nhiều hơn số frame còn
+   lại, editor báo lỗi trước khi tải ảnh; không bỏ qua file âm thầm. Kiểm tra
    preview và bấm **Tự căn**
    nếu cần. Vẫn có thể tải một PNG vào từng hàng. Bảng xem trước lấy trực tiếp
    PNG **x4** và hiển thị
@@ -98,6 +105,8 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    toạ độ hoặc hình thay đổi, API cấp part ID mới. **Xóa mapping** bỏ ngoại
    hình nhưng giữ item; **Xóa item cuối** chỉ cho phép nếu ID là cuối bảng và
    không còn tham chiếu trong shop, sổ sưu tập hoặc túi nhân vật.
+   Pet type 21 cần đủ ba part; API kiểm tra PNG của mọi Image ID được gắn vào
+   frame trước khi lưu. Frame để `-1` là vị trí cố ý để trống.
    SQL lưu `part.DATA` thành các dòng `[imageId, dx, dy]`: loại 0 có 3 dòng,
    loại 1 có 17 dòng, loại 2 có 14 dòng. `cai_trang` hoặc `mini_pet` trỏ tới
    ba Part ID; 33 dáng Unity chỉ chọn lại các dòng này. Khi sửa item cũ,
