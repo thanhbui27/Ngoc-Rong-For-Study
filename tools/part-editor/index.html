@@ -56,7 +56,7 @@
   <header><div class="brand"><strong>PART STUDIO</strong><small>Ngọc Rồng</small></div><span id="status">Đang kết nối…</span><span id="remoteLogin" hidden><input id="adminUser" placeholder="Tài khoản admin" autocomplete="username"><input id="adminPass" type="password" placeholder="Mật khẩu" autocomplete="current-password"><button id="connectGame">Kết nối server</button></span></header>
   <div id="message"></div>
   <div id="catalogBackdrop" class="catalog-backdrop" hidden></div>
-  <div id="imageModal" class="image-modal" hidden role="dialog" aria-modal="true" aria-labelledby="imageModalTitle"><div class="image-modal-panel"><div class="image-modal-head"><h2 id="imageModalTitle">Chọn ảnh trên server</h2><button id="closeImageModal" type="button">Đóng</button></div><div class="image-modal-tools"><input id="imageSearch" inputmode="numeric" placeholder="Tìm Image ID"><button id="imageSearchButton" type="button">Tìm</button><button id="imagePrevious" type="button">← Trước</button><span id="imagePage"></span><button id="imageNext" type="button">Sau →</button></div><div id="imageModalGrid" class="image-modal-grid"></div><div class="image-modal-footer"><span id="imageSelection">Chưa chọn ảnh</span><button id="applyServerImages" class="primary" type="button">Gán ảnh đã chọn</button></div></div></div>
+  <div id="imageModal" class="image-modal" hidden role="dialog" aria-modal="true" aria-labelledby="imageModalTitle"><div class="image-modal-panel"><div class="image-modal-head"><h2 id="imageModalTitle">Chọn ảnh trên server</h2><button id="closeImageModal" type="button">Đóng</button></div><div class="image-modal-tools"><input id="imageSearch" inputmode="numeric" aria-label="Tìm Image ID" placeholder="Tìm Image ID"><input id="imageFrom" type="number" min="0" max="32767" aria-label="Từ Image ID" placeholder="Từ ID"><input id="imageTo" type="number" min="0" max="32767" aria-label="Đến Image ID" placeholder="Đến ID"><button id="imageSearchButton" type="button">Lọc ảnh</button></div><div class="image-modal-head"><button id="imagePrevious" type="button">← Trước</button><span id="imagePage"></span><button id="imageNext" type="button">Sau →</button></div><div id="imageModalGrid" class="image-modal-grid"></div><div class="image-modal-footer"><span id="imageSelection">Chưa chọn ảnh</span><button id="applyServerImages" class="primary" type="button">Gán ảnh đã chọn</button></div></div></div>
   <main>
     <aside>
       <div class="catalog-title"><h2>Kho vật phẩm</h2><button id="closeCatalog" type="button" aria-label="Đóng kho vật phẩm">✕</button></div>
@@ -146,12 +146,18 @@ function closeImageModal(){imagePicker=null;imageRequest++;$('imageModal').hidde
 async function refreshServerImages(){
   const request=++imageRequest;
   const grid=$('imageModalGrid');grid.textContent='Đang tải ảnh…';
+  $('imagePrevious').disabled=true;$('imageNext').disabled=true;
   try{
     const q=$('imageSearch').value.trim();
     if(!/^\d*$/.test(q))throw Error('Chỉ tìm theo Image ID');
-    const data=await api(`/api/image-list?page=${imagePage}&q=${encodeURIComponent(q)}`);
+    const fromText=$('imageFrom').value.trim(),toText=$('imageTo').value.trim();
+    if(!/^\d*$/.test(fromText)||!/^\d*$/.test(toText))throw Error('Khoảng lọc chỉ nhận Image ID dạng số');
+    const from=fromText===''?0:Number(fromText),to=toText===''?32767:Number(toText);
+    if(from>32767||to>32767||from>to)throw Error('Nhập Từ ID và Đến ID trong khoảng 0–32767; Từ ID không lớn hơn Đến ID');
+    const data=await api(`/api/image-list?page=${imagePage}&q=${encodeURIComponent(q)}&from=${from}&to=${to}`);
     if(!imagePicker||request!==imageRequest)return;
     imageTotal=data.total;grid.replaceChildren();
+    if(!data.items.length)grid.textContent='Không có ảnh trong khoảng ID này.';
     $('imagePage').textContent=`Trang ${imagePage+1}/${Math.max(1,Math.ceil(data.total/data.pageSize))} · ${data.total} ảnh`;
     $('imagePrevious').disabled=imagePage===0;$('imageNext').disabled=(imagePage+1)*data.pageSize>=data.total;
     for(const entry of data.items){
@@ -170,7 +176,7 @@ async function refreshServerImages(){
       };grid.append(button);
     }
     updateImageSelection();
-  }catch(error){if(request===imageRequest){const detail=error.message==='Không có action này'?'Game server chưa cập nhật chức năng chọn ảnh. Cần triển khai BE mới và khởi động lại.':error.message;grid.textContent=detail;message(detail,true)}}
+  }catch(error){if(request===imageRequest){const detail=error.message==='Không có action này'?'Game server chưa cập nhật chức năng chọn ảnh. Cần triển khai BE mới và khởi động lại.':error.message;imageTotal=0;$('imagePage').textContent='';grid.textContent=detail;message(detail,true)}}
 }
 function updateImageSelection(){
   $('imageSelection').textContent=imageSelection.length?imageSelection.map((id,j)=>imagePicker.multiple?`${String(imagePicker.start+j).padStart(2,'0')} ← #${id}`:`#${id}`).join(' · '):'Chưa chọn ảnh';
@@ -187,8 +193,9 @@ async function openImageModal(target){
 }
 $('closeImageModal').onclick=closeImageModal;
 $('imageModal').onclick=event=>{if(event.target===$('imageModal'))closeImageModal()};
-$('imageSearchButton').onclick=()=>{imagePage=0;refreshServerImages()};
-$('imageSearch').onkeydown=event=>{if(event.key==='Enter'){imagePage=0;refreshServerImages()}};
+function filterServerImages(){imagePage=0;refreshServerImages()}
+$('imageSearchButton').onclick=filterServerImages;
+for(const id of ['imageSearch','imageFrom','imageTo'])$(id).onkeydown=event=>{if(event.key==='Enter')filterServerImages()};
 $('imagePrevious').onclick=()=>{if(imagePage>0){imagePage--;refreshServerImages()}};
 $('imageNext').onclick=()=>{if((imagePage+1)*60<imageTotal){imagePage++;refreshServerImages()}};
 $('applyServerImages').onclick=()=>{

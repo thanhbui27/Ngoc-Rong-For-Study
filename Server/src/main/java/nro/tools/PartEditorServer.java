@@ -930,6 +930,8 @@ public final class PartEditorServer {
     private static JsonObject imageList(JsonObject request) throws IOException {
         String query=string(request,"q","").trim();
         if(!query.matches("[0-9]*")) fail(400,"Chỉ tìm ảnh theo Image ID");
+        int from=number(request,"from",0),to=number(request,"to",32767);
+        if(from<0 || to>32767 || from>to) fail(400,"Khoảng Image ID phải từ 0 đến 32767 và Từ ID không lớn hơn Đến ID");
         int page=number(request,"page",0);
         if(page<0 || page>10000) fail(400,"Trang ảnh không hợp lệ");
         List<Integer> ids=new ArrayList<>();
@@ -939,7 +941,7 @@ public final class PartEditorServer {
                 String name=path.getFileName().toString();
                 if(!name.toLowerCase(java.util.Locale.ROOT).endsWith(".png"))return;
                 int id=imageIdFromName(name);
-                if(id>=0 && (query.isEmpty() || Integer.toString(id).contains(query)))ids.add(id);
+                if(id>=from && id<=to && (query.isEmpty() || Integer.toString(id).contains(query)))ids.add(id);
             });
         }
         ids.sort(java.util.Comparator.reverseOrder());

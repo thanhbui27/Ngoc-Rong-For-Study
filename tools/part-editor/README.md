@@ -54,7 +54,8 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    `1/icon` phải chọn **x1**. Server giữ nguyên PNG ở mức zoom nguồn và tạo
    các mức còn lại theo kích thước logic của Unity. Mức chọn được nhớ trên máy.
    Nếu ảnh đã có trên game server, bấm **Ảnh trên server** ở icon hoặc từng
-   frame; modal tải thumbnail theo trang và tìm theo Image ID. Bấm **Chọn nhiều
+   frame; modal tải thumbnail theo trang, tìm theo Image ID hoặc lọc khoảng
+   **Từ ID → Đến ID** (bao gồm cả hai đầu). Bấm **Chọn nhiều
    ảnh server** để chọn theo thứ tự frame liên tiếp, rồi bấm **Gán ảnh đã chọn**.
    Ảnh part thiếu một mức zoom sẽ không cho chọn. Chức năng này cần BE đã
    triển khai action `image-list`; chỉ mở lại Part Studio trên máy không cập
