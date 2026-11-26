@@ -2,6 +2,7 @@ package nro.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
@@ -489,6 +490,20 @@ public final class PartEditorServer {
         }
         mapping.addProperty("bag", ids[3]);
         out.add("mapping", mapping);
+        if(type==72){
+            JsonElement follow=JsonNull.INSTANCE;
+            try(PreparedStatement ps=c.prepareStatement("SELECT icon,width,height,frame FROM pet_follow WHERE id_temp=? LIMIT 1")){
+                ps.setInt(1,id);
+                try(ResultSet r=ps.executeQuery()){
+                    if(r.next()){
+                        JsonObject sprite=new JsonObject();sprite.addProperty("iconId",r.getInt(1));
+                        sprite.addProperty("width",r.getInt(2));sprite.addProperty("height",r.getInt(3));
+                        sprite.addProperty("frames",r.getInt(4));follow=sprite;
+                    }
+                }
+            }
+            out.add("follow",follow);
+        }
         int avatarId=-1;
         if(type==5 && ids[0]>=0)try(PreparedStatement ps=c.prepareStatement("SELECT avatar_id FROM head_avatar WHERE head_id=? LIMIT 1")){
             ps.setInt(1,ids[0]);try(ResultSet r=ps.executeQuery()){if(r.next())avatarId=r.getInt(1);}
@@ -566,6 +581,13 @@ public final class PartEditorServer {
                         fail(400,"Icon ID chưa có PNG trên server: "+icon);
                     if (id>=0 && current==null) fail(404,"Item đã bị xóa");
                     if (current!=null && !sha(current).equals(string(request,"revision",""))) fail(409,"Dữ liệu đã thay đổi, tải lại trước khi lưu");
+                    JsonElement follow=request.has("follow")?request.get("follow"):null;
+                    boolean followChanged=type==72 && follow!=null
+                            && (current==null || !follow.equals(current.get("follow")));
+                    if(followChanged && !follow.isJsonNull())validateFollowSprite(follow.getAsJsonObject(),staged);
+                    if(followChanged && follow.isJsonNull()
+                            && !Files.isRegularFile(ICONS.resolve("1/icon/"+icon+".png"))&&!staged.containsKey(icon))
+                        fail(400,"Icon item chưa có PNG x1 để pet đi theo dùng làm ảnh tĩnh: "+icon);
                     if (id<0) {
                         id=scalar(c,"SELECT COALESCE(MAX(id),-1)+1 FROM item_template");
                     }
@@ -605,6 +627,7 @@ public final class PartEditorServer {
                         int oldType=current.getAsJsonObject("item").get("type").getAsInt();
                         if (oldType==5 && type!=5) execute(c,"DELETE FROM cai_trang WHERE id_temp=?",id);
                         if (oldType!=5 && type==5) execute(c,"DELETE FROM mini_pet WHERE id_temp=?",id);
+                        if (oldType==72 && type!=72) execute(c,"DELETE FROM pet_follow WHERE id_temp=?",id);
                     }
                     if (type==5 && (head>=0 || body>=0 || leg>=0 || bag>=0)) {
                         try (PreparedStatement ps=c.prepareStatement("INSERT INTO cai_trang (id_temp,head,body,leg,bag) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE head=VALUES(head),body=VALUES(body),leg=VALUES(leg),bag=VALUES(bag)")) {
@@ -618,6 +641,17 @@ public final class PartEditorServer {
                             ps.setInt(1,id);ps.setInt(2,head);ps.setInt(3,body);ps.setInt(4,leg);ps.executeUpdate();
                         }
                         if (type==18 || type==21) execute(c,"DELETE FROM pet_follow WHERE id_temp=?",id);
+                    }
+                    if(followChanged){
+                        execute(c,"DELETE FROM pet_follow WHERE id_temp=?",id);
+                        if(!follow.isJsonNull()){
+                            JsonObject sprite=follow.getAsJsonObject();
+                            try(PreparedStatement ps=c.prepareStatement("INSERT INTO pet_follow (id_temp,icon,width,height,frame) VALUES (?,?,?,?,?)")){
+                                ps.setInt(1,id);ps.setInt(2,number(sprite,"iconId",-1));
+                                ps.setInt(3,number(sprite,"width",0));ps.setInt(4,number(sprite,"height",0));
+                                ps.setInt(5,number(sprite,"frames",0));ps.executeUpdate();
+                            }
+                        }
                     }
                     if (type==5 && head>=0) {
                         if(avatar<0)fail(400,"Chọn Avatar ID cho part đầu trước khi lưu");
@@ -639,11 +673,31 @@ public final class PartEditorServer {
         }
     }
 
+    private static void validateFollowSprite(JsonObject sprite,Map<Integer,PendingImage> staged)throws IOException{
+        int imageId=number(sprite,"iconId",-1),width=number(sprite,"width",0);
+        int height=number(sprite,"height",0),frames=number(sprite,"frames",0);
+        if(imageId<0||imageId>32767||width<1||width>32767||height<1||height>32767||frames<1||frames>127)
+            fail(400,"Sprite pet đi theo cần Image ID, rộng, cao và 1–127 frame hợp lệ");
+        PendingImage pending=staged.get(imageId);
+        byte[] png;
+        if(pending!=null)png=pending.atZoom(1);
+        else{
+            for(int zoom=1;zoom<=4;zoom++)if(!Files.isRegularFile(ICONS.resolve(zoom+"/icon/"+imageId+".png")))
+                fail(400,"Sprite pet đi theo thiếu ảnh x"+zoom+" cho Image ID "+imageId);
+            png=Files.readAllBytes(ICONS.resolve("1/icon/"+imageId+".png"));
+        }
+        BufferedImage image=ImageIO.read(new ByteArrayInputStream(png));
+        if(image==null||image.getWidth()!=width||(long)height*frames>image.getHeight())
+            fail(400,"Sprite pet đi theo phải rộng đúng bằng PNG x1 và cao đủ cho số frame xếp dọc");
+    }
+
     private static Set<Integer> referencedPendingImages(JsonObject request,Map<Integer,PendingImage> staged){
         Set<Integer> referenced=new HashSet<>();
         JsonObject item=request.has("item")?request.getAsJsonObject("item"):null;
         if(item!=null)referenced.add(number(item,"iconId",-1));
         if(item!=null)referenced.add(number(item,"avatarId",-1));
+        JsonObject follow=request.has("follow")&&request.get("follow").isJsonObject()?request.getAsJsonObject("follow"):null;
+        if(item!=null&&number(item,"type",5)==72&&follow!=null)referenced.add(number(follow,"iconId",-1));
         JsonObject mapping=request.has("mapping")?request.getAsJsonObject("mapping"):null;
         if(mapping!=null)for(String slot:new String[]{"head","body","leg"}){
             JsonObject part=mapping.has(slot)&&mapping.get(slot).isJsonObject()?mapping.getAsJsonObject(slot):null;
@@ -859,9 +913,11 @@ public final class PartEditorServer {
         if(bytes.length<24 || (bytes[0]&0xff)!=0x89 || bytes[1]!='P' || bytes[2]!='N' || bytes[3]!='G')
             fail(400,"File nguồn phải là PNG");
         BufferedImage base=ImageIO.read(new ByteArrayInputStream(bytes));
+        boolean spriteSheet=request.has("spriteSheet")&&request.get("spriteSheet").getAsBoolean();
         if(base==null || base.getWidth()<sourceZoom || base.getHeight()<sourceZoom ||
-                base.getWidth()/sourceZoom>512 || base.getHeight()/sourceZoom>512)
-            fail(400,"Ảnh nguồn cần kích thước logic 1–512 px sau khi chia zoom");
+                base.getWidth()/sourceZoom>512 || base.getHeight()/sourceZoom>(spriteSheet?8192:512)
+                || spriteSheet && (long)(base.getWidth()/sourceZoom)*(base.getHeight()/sourceZoom)>1_000_000)
+            fail(400,spriteSheet?"Sprite pet cần rộng tối đa 512, cao tối đa 8192 px và không quá 1 triệu pixel ở mức x1":"Ảnh nguồn cần kích thước logic 1–512 px sau khi chia zoom");
         int logicalWidth=base.getWidth()/sourceZoom, logicalHeight=base.getHeight()/sourceZoom;
         int sourceImageId=imageIdFromName(string(request,"sourceName",""));
         boolean deduplicate=request.has("deduplicate") && request.get("deduplicate").getAsBoolean();

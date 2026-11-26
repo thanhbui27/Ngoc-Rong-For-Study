@@ -38,8 +38,12 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    một item để xem mapping và từng part. Pet type 18/21 dùng ba part đầu/thân/chân
    trong `mini_pet`. Pet type 18 thiếu bộ part sẽ không dùng được cho tới khi
    cấu hình đủ; ảnh `pet_follow` cũ không còn được dùng cho type 18.
-   Pet type 72 đi theo dùng icon hoặc sprite `pet_follow`; ba part này không áp
-   dụng cho type 72. Tool liệt kê cả pet type 72 để sửa icon khi có PNG gốc.
+   Pet type 72 đi theo dùng icon item hoặc sprite riêng trong `pet_follow`;
+   ba part đầu/thân/chân không áp dụng. Mục **Hình pet đi theo** cho chọn
+   sprite trên server hoặc tải PNG, nhập số frame và xem từng frame trước khi
+   lưu. Sprite là một PNG xếp các frame theo chiều dọc; rộng/cao là kích
+   thước một frame ở mức x1. Nếu bỏ sprite riêng, game dùng icon item làm
+   một frame tĩnh. Lưu item cập nhật `pet_follow` cùng transaction với item.
 2. Chọn part BE theo ID, hoặc part S14 theo ID. Ô **Nạp nhiều part** nhận 2–3
    ID cùng lúc, tự xếp theo loại đầu/thân/chân và chỉ cập nhật preview sau
    khi mọi ID đều hợp lệ. Có thể tiếp tục nạp một ID riêng ở từng nhóm. Khi
