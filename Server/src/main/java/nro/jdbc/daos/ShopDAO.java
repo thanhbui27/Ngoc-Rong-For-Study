@@ -53,7 +53,7 @@ public class ShopDAO {
             }
 
             try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT * FROM item_shop WHERE is_sell = 1 ORDER BY create_time DESC");
+                    "SELECT * FROM item_shop WHERE is_sell = 1 ORDER BY create_time DESC, id ASC");
                     ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     TabShop tab = tabs.get(rs.getInt("tab_id"));

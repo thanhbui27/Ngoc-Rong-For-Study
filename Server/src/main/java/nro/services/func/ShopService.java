@@ -378,6 +378,11 @@ public class ShopService {
     private void buyItemShopNormal(Player player, ItemShop is) {
         if (is != null) {
             int itemShopID = is.temp.id;
+            if (player.iDMark.getShopId() == ConstNpc.SHOP_SANTA_0
+                    && itemShopID >= 3000 && itemShopID <= 3004) {
+                Service.gI().sendThongBao(player, "Hộp mù đặc biệt chưa mở bán");
+                return;
+            }
             if (is.temp.id == 517 && player.inventory.itemsBag.size() >= 59) {
                 Service.getInstance().sendThongBao(player, "Đã đạt mức tối đa");
                 Service.getInstance().sendMoney(player);
