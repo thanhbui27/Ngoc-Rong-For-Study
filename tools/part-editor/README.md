@@ -53,6 +53,12 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    `Server/resources/normal/image/4/icon` phải chọn **x4**; ảnh lấy từ
    `1/icon` phải chọn **x1**. Server giữ nguyên PNG ở mức zoom nguồn và tạo
    các mức còn lại theo kích thước logic của Unity. Mức chọn được nhớ trên máy.
+   Nếu ảnh đã có trên game server, bấm **Ảnh trên server** ở icon hoặc từng
+   frame; modal tải thumbnail theo trang và tìm theo Image ID. Bấm **Chọn nhiều
+   ảnh server** để chọn theo thứ tự frame liên tiếp, rồi bấm **Gán ảnh đã chọn**.
+   Ảnh part thiếu một mức zoom sẽ không cho chọn. Chức năng này cần BE đã
+   triển khai action `image-list`; chỉ mở lại Part Studio trên máy không cập
+   nhật được action của BE đang chạy.
    Với part chưa có, nhấn **Tạo frame** hoặc **Chọn nhiều PNG** trong nhóm
    đầu/thân/chân. Nhiều file được xếp theo số trong tên. Part đầu nhận 2 PNG
    ở frame 00–01 và tự dùng ảnh #20 ở frame 02; chọn 3 PNG để thay ảnh mặc định.

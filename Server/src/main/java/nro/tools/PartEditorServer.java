@@ -166,6 +166,7 @@ public final class PartEditorServer {
             case "upload" -> upload(request);
             case "asset-check" -> assetCheck(request);
             case "asset" -> gameAsset(request);
+            case "image-list" -> imageList(request);
             default -> throw new ApiException(404, "Không có action này");
         };
     }
@@ -256,6 +257,7 @@ public final class PartEditorServer {
                 case "/api/prepare-reference" -> result = post ? prepareReference(readBody(exchange)) : methodError();
                 case "/api/upload" -> result = post ? upload(readBody(exchange)) : methodError();
                 case "/api/asset-check" -> result = assetCheck(queryObject(exchange));
+                case "/api/image-list" -> result = imageList(queryObject(exchange));
                 default -> throw new ApiException(404, "Không có action này");
             }
             sendJson(exchange, 200, result);
@@ -923,6 +925,39 @@ public final class PartEditorServer {
         if(file.toLowerCase(java.util.Locale.ROOT).endsWith(".png"))file=file.substring(0,file.length()-4);
         try{int id=Integer.parseInt(file);return id>=0&&id<=32767?id:-1;}
         catch(NumberFormatException ex){return -1;}
+    }
+
+    private static JsonObject imageList(JsonObject request) throws IOException {
+        String query=string(request,"q","").trim();
+        if(!query.matches("[0-9]*")) fail(400,"Chỉ tìm ảnh theo Image ID");
+        int page=number(request,"page",0);
+        if(page<0 || page>10000) fail(400,"Trang ảnh không hợp lệ");
+        List<Integer> ids=new ArrayList<>();
+        Path directory=ICONS.resolve("1/icon");
+        if(Files.isDirectory(directory))try(var files=Files.list(directory)){
+            files.forEach(path->{
+                String name=path.getFileName().toString();
+                if(!name.toLowerCase(java.util.Locale.ROOT).endsWith(".png"))return;
+                int id=imageIdFromName(name);
+                if(id>=0 && (query.isEmpty() || Integer.toString(id).contains(query)))ids.add(id);
+            });
+        }
+        ids.sort(java.util.Comparator.reverseOrder());
+        int start=Math.min(ids.size(),page*60);
+        JsonArray items=new JsonArray();
+        for(int i=start;i<Math.min(ids.size(),start+60);i++){
+            int id=ids.get(i);
+            JsonObject item=new JsonObject();item.addProperty("id",id);
+            boolean zoom4=Files.isRegularFile(ICONS.resolve("4/icon/"+id+".png"));
+            item.addProperty("zoom",zoom4?4:1);
+            item.addProperty("complete",zoom4
+                    && Files.isRegularFile(ICONS.resolve("2/icon/"+id+".png"))
+                    && Files.isRegularFile(ICONS.resolve("3/icon/"+id+".png")));
+            items.add(item);
+        }
+        JsonObject out=new JsonObject();out.add("items",items);
+        out.addProperty("total",ids.size());out.addProperty("page",page);
+        out.addProperty("pageSize",60);return out;
     }
 
     static byte[][] zoomVariants(byte[] source,BufferedImage image,int sourceZoom,int logicalWidth,int logicalHeight) throws IOException {
