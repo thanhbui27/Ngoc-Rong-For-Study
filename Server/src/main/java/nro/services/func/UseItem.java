@@ -502,6 +502,13 @@ public class UseItem {
                     case 1401: // đổi đệ tử
                         changePetCellBao(pl, item);
                         break;
+                    case 3000:
+                    case 3001:
+                    case 3002:
+                    case 3003:
+                    case 3004:
+                        Service.gI().sendThongBao(pl, "Túi mù chưa thể mở, phần thưởng đang được cập nhật");
+                        break;
                     default:
                         switch (item.template.type) {
                             case 7: // sách học, nâng skill

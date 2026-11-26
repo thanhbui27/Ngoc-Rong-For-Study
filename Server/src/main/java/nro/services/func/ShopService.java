@@ -379,8 +379,9 @@ public class ShopService {
         if (is != null) {
             int itemShopID = is.temp.id;
             if (player.iDMark.getShopId() == ConstNpc.SHOP_SANTA_0
-                    && itemShopID >= 3000 && itemShopID <= 3004) {
-                Service.gI().sendThongBao(player, "Hộp mù đặc biệt chưa mở bán");
+                    && itemShopID >= 3000 && itemShopID <= 3004
+                    && is.gem <= 0) {
+                Service.gI().sendThongBao(player, "Túi mù chưa được cập nhật giá ngọc");
                 return;
             }
             if (is.temp.id == 517 && player.inventory.itemsBag.size() >= 59) {
