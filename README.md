@@ -40,14 +40,16 @@ before restarting the game server. Fresh seeds already include NPC template 80.
 Migration V9 appends observed server-14 costume/pet templates that are absent
 from this BE or whose inventory icon differs. On the original clean seed it
 adds 482 costume/avatar entries and 112 pet entries, while retaining all old
-item IDs. It copies the 370 conflicting source icons to new IDs across x1–x4,
-without replacing the BE images. Imported entries are labeled `S14` and have
+item IDs. V9 historically copied 370 conflicting source icons to new IDs across
+x1–x4. V17 remaps those imported items to the existing local icon IDs and
+removes the duplicate PNGs; the original local images are preserved. Imported
+entries are labeled `S14` and have
 `part=-1` because the captured item data lacks verified full model mappings.
 They can be bought as inspection items; imported pets do not summon a pet in
 this BE. These entries are from the verified server-14 client session; their
 identity on server 15 remains unverified. Run
-`python tools/prepare_admin_catalog.py` to audit the inputs or add `--apply`
-to reproduce the icon and migration files.
+`python tools/part-editor/prepare_admin_catalog.py` to audit the original import.
+The script no longer rewrites the applied V9 migration or copies icon aliases.
 
 ## Part Studio
 
