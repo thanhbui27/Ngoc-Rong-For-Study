@@ -93,7 +93,7 @@
       <div class="preview-top">
         <div class="preview-title"><h2>Xem trước nhân vật</h2><span id="frameCount" class="preview-count">33 frame</span></div>
         <div class="preview-controls"><label>Hành động <select id="actionFilter"><option value="pet" hidden>MiniPet · 11 dáng thường dùng</option><option value="all">Tất cả 33 frame</option><option value="stand">Stand</option><option value="run">Run</option><option value="fall">Fall</option><option value="fly">Fly</option><option value="skillstand">Skill Stand</option><option value="inju">Injured</option><option value="other">Dáng khác</option></select></label><button id="direction" title="Đổi hướng">→</button><label title="Ảnh nguồn vẫn là PNG x4; chỉ đổi kích thước hiển thị">Cỡ ảnh <input id="zoom" type="range" min="0.5" max="5" step="0.5" value="2"><b id="zoomValue">2×</b></label></div>
-        <details class="preview-more"><summary>Tuỳ chọn căn chỉnh</summary><div class="preview-controls"><label>Chọn hình <select id="moveScope"><option value="auto">Bấm vào hình</option><option value="head">Đầu</option><option value="body">Thân</option><option value="leg">Chân</option></select></label><label title="Chỉ dùng để căn hình, không lưu part mẫu vào SQL"><input id="showSample" type="checkbox"> Hiện part mẫu cho frame trống</label><div class="nudge"><span>Dịch 1px</span><button type="button" data-nudge="left" title="Sang trái">←</button><button type="button" data-nudge="up" title="Lên">↑</button><button type="button" data-nudge="down" title="Xuống">↓</button><button type="button" data-nudge="right" title="Sang phải">→</button></div></div><p class="hint preview-tip">Phần mẫu chỉ để căn hình và không lưu SQL. Kéo hình để dịch các frame cùng Image ID.</p></details>
+        <details class="preview-more"><summary>Tuỳ chọn căn chỉnh</summary><div class="preview-controls"><label>Chọn hình <select id="moveScope"><option value="auto">Bấm vào hình</option><option value="head">Đầu</option><option value="body">Thân</option><option value="leg">Chân</option></select></label><label title="Chỉ dùng để căn hình, không lưu part mẫu vào SQL"><input id="showSample" type="checkbox"> Hiện part mẫu cho frame trống</label><div class="nudge"><span>Dịch 1px</span><button type="button" data-nudge="left" title="Sang trái">←</button><button type="button" data-nudge="up" title="Lên">↑</button><button type="button" data-nudge="down" title="Xuống">↓</button><button type="button" data-nudge="right" title="Sang phải">→</button></div></div><p class="hint preview-tip">Phần mẫu chỉ để căn hình và không lưu SQL. Kéo hình để dịch các frame cùng Image ID. MiniPet vẽ đầu phía trước thân giống Unity.</p></details>
         <div id="assetProgress" class="asset-progress" role="status" aria-live="polite"></div>
         <div id="details"></div>
       </div>
@@ -464,7 +464,7 @@ function drawPose(canvas,index){
   g.strokeStyle='#526d82';g.beginPath();g.moveTo(0,h-28+.5);g.lineTo(w,h-28+.5);g.stroke();
   if(!model||!charInfo.length)return;
   const info=charInfo[index],sprites=[];
-  for(const slot of ['head','leg','body']){
+  for(const slot of miniPetMode()?['leg','body','head']:['head','leg','body']){
     const own=model.mapping[slot],spec=info[infoSlot[slot]];
     const sample=!own?.frames?.[spec[0]]?.[0],part=sample&&$('showSample').checked?baseParts[slot]:own;
     if(!filled(part))continue;
