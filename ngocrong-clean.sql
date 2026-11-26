@@ -41101,7 +41101,8 @@ INSERT INTO `tab_shop` (`id`, `shop_id`, `NAME`) VALUES
 (42, 16, 'Shop<>linh thú'),
 (43, 16, 'Shop<>đặt biệt'),
 (44, 5, 'Shop<>Biến hình'),
-(45, 5, 'Shop<>Item');
+(45, 5, 'Shop<>Item'),
+(46, 9, 'Hộp mù<>đặc biệt');
 
 -- --------------------------------------------------------
 
@@ -41800,7 +41801,7 @@ ALTER TABLE `shop`
 -- AUTO_INCREMENT for table `tab_shop`
 --
 ALTER TABLE `tab_shop`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- Constraints for dumped tables
