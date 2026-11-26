@@ -44,6 +44,9 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    lưu. Sprite là một PNG xếp các frame theo chiều dọc; rộng/cao là kích
    thước một frame ở mức x1. Nếu bỏ sprite riêng, game dùng icon item làm
    một frame tĩnh. Lưu item cập nhật `pet_follow` cùng transaction với item.
+   Danh sách có bộ lọc riêng **Pet đi theo · 72** và tìm được bằng ID item.
+   Nếu SQL trỏ tới icon/sprite chưa có PNG trong `resources/normal/image`,
+   tool hiện dấu `?` và Image ID thiếu; có thể mở item để chọn hoặc tải ảnh mới.
 2. Chọn part BE theo ID, hoặc part S14 theo ID. Ô **Nạp nhiều part** nhận 2–3
    ID cùng lúc, tự xếp theo loại đầu/thân/chân và chỉ cập nhật preview sau
    khi mọi ID đều hợp lệ. Có thể tiếp tục nạp một ID riêng ở từng nhóm. Khi

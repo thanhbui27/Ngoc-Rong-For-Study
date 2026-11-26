@@ -422,23 +422,44 @@ public final class PartEditorServer {
         return list(query(exchange, "kind"), query(exchange, "q"));
     }
     private static JsonObject list(String requestedKind, String search) throws SQLException {
-        String kind = "pet".equals(requestedKind) ? "pet" : "costume";
+        String kind = switch(requestedKind==null?"costume":requestedKind){
+            case "pet", "follow", "mini" -> requestedKind;
+            default -> "costume";
+        };
         if (search == null) search = "";
+        search=search.trim();
         JsonArray items = new JsonArray();
+        String typeFilter=switch(kind){
+            case "follow" -> "t.TYPE=72";
+            case "mini" -> "t.TYPE IN (18,21)";
+            case "pet" -> "t.TYPE IN (18,21,72)";
+            default -> "t.TYPE=5";
+        };
         String sql = "SELECT t.id,t.TYPE,t.gender,t.NAME,t.icon_id,t.part,"
-                + (kind.equals("pet") ? "EXISTS(SELECT 1 FROM mini_pet m WHERE m.id_temp=t.id)" :
-                "EXISTS(SELECT 1 FROM cai_trang m WHERE m.id_temp=t.id)")
-                + " FROM item_template t WHERE " + (kind.equals("pet") ? "t.TYPE IN (18,21,72)" : "t.TYPE=5")
-                + " AND t.NAME LIKE ? ORDER BY t.id LIMIT 32767";
+                + "CASE WHEN t.TYPE=72 THEN EXISTS(SELECT 1 FROM pet_follow m WHERE m.id_temp=t.id) "
+                + "WHEN t.TYPE=5 THEN EXISTS(SELECT 1 FROM cai_trang m WHERE m.id_temp=t.id) "
+                + "ELSE EXISTS(SELECT 1 FROM mini_pet m WHERE m.id_temp=t.id) END,"
+                + "(SELECT f.icon FROM pet_follow f WHERE f.id_temp=t.id LIMIT 1)"
+                + " FROM item_template t WHERE " + typeFilter
+                + " AND (t.NAME LIKE ? OR CAST(t.id AS CHAR) LIKE ?) ORDER BY t.id LIMIT 32767";
         try (Connection c = connect(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, "%" + search + "%");
+            ps.setString(2, "%" + search + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     JsonObject row = new JsonObject();
                     row.addProperty("id", rs.getInt(1)); row.addProperty("type", rs.getInt(2));
                     row.addProperty("gender", rs.getInt(3)); row.addProperty("name", rs.getString(4));
-                    row.addProperty("iconId", rs.getInt(5)); row.addProperty("part", rs.getInt(6));
-                    row.addProperty("hasMapping", rs.getBoolean(7)); items.add(row);
+                    int icon=rs.getInt(5),sprite=rs.getInt(8);
+                    if(rs.wasNull())sprite=-1;
+                    row.addProperty("iconId", icon); row.addProperty("part", rs.getInt(6));
+                    row.addProperty("hasMapping", rs.getBoolean(7));
+                    if(rs.getInt(2)==72){
+                        row.addProperty("spriteId",sprite);
+                        row.addProperty("iconAvailable",Files.isRegularFile(ICONS.resolve("1/icon/"+icon+".png")));
+                        row.addProperty("spriteAvailable",sprite>=0&&Files.isRegularFile(ICONS.resolve("1/icon/"+sprite+".png")));
+                    }
+                    items.add(row);
                 }
             }
         }

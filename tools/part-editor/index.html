@@ -22,7 +22,7 @@
     aside input{width:100%;margin-bottom:9px}.list{height:calc(100vh - 232px);overflow:auto;border:1px solid #354053;border-radius:8px}
     .row{display:flex;align-items:center;gap:9px;padding:7px;border-bottom:1px solid #2b3344;cursor:pointer;font-size:13px}
     .row:hover,.row.selected{background:#2c384d}.row img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated;background:#0c1017}
-    .row small{display:block;color:#98a6bd}.row .missing{color:#efab81}
+    .row small{display:block;color:#98a6bd}.row .missing{color:#efab81}.row .missing-icon{display:grid;place-items:center;flex:none;width:38px;height:38px;border:1px dashed #885f50;border-radius:5px;color:#efab81;background:#2d2630}
     .image-modal{position:fixed;inset:0;z-index:30;background:#050910c9;display:grid;place-items:center;padding:16px}.image-modal[hidden]{display:none}.image-modal-panel{width:min(900px,100%);max-height:90vh;display:flex;flex-direction:column;background:#172131;border:1px solid #61728d;border-radius:12px;padding:15px;gap:10px}.image-modal-head,.image-modal-tools,.image-modal-footer{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.image-modal-head{justify-content:space-between}.image-modal-head h2{margin:0}.image-modal-tools input{flex:1;min-width:130px}.image-modal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;overflow:auto;min-height:150px;padding:4px}.image-choice{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px;background:#202e42}.image-choice.selected{border-color:#ffca7f;background:#453d30}.image-choice img{width:80px;height:80px;object-fit:contain;image-rendering:pixelated}.image-modal-footer span{flex:1;min-width:0;max-height:90px;overflow:auto;overflow-wrap:anywhere;color:#b3c1d4;font-size:12px}
     h2{font-size:16px;color:#ffc87b;margin:4px 0 12px}h3{font-size:14px;color:#e9c38d;margin:16px 0 8px}
     .editor{background:#141a25}.editor-title{position:sticky;top:-15px;z-index:4;background:#141a25;padding:13px 0 8px;margin:-13px 0 10px;border-bottom:1px solid #354053}.editor-title h2{margin:0;color:#f6ead2}.editor-title button{margin:0}.editor-section{border:1px solid #34445b;border-radius:11px;background:#1a2432;padding:14px;margin-bottom:12px}.section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}.section-heading h3{margin:0;color:#ffd194;font-size:14px}.section-heading small{color:#91a7bc;font-size:11px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.grid label{display:grid;gap:4px;font-size:12px;color:#b3c1d4;min-width:0}
@@ -61,7 +61,7 @@
   <main>
     <aside>
       <div class="catalog-title"><h2>Kho vật phẩm</h2><button id="closeCatalog" type="button" aria-label="Đóng kho vật phẩm">✕</button></div>
-      <div class="toolbar"><select id="kind"><option value="costume">Cải trang</option><option value="pet">Pet</option></select><button id="newItem">Thêm mới</button></div>
+      <div class="toolbar"><select id="kind"><option value="costume">Cải trang</option><option value="pet">Tất cả pet</option><option value="mini">MiniPet · 21</option><option value="follow">Pet đi theo · 72</option></select><button id="newItem">Thêm mới</button></div>
       <input id="search" placeholder="Tìm tên cải trang / pet">
       <div id="count" class="hint"></div><div id="list" class="list"></div>
     </aside>
@@ -225,7 +225,7 @@ $('chooseIconServer').onclick=()=>openImageModal({icon:true,multiple:false});
 $('followChooseServer').onclick=()=>openImageModal({follow:true,multiple:false});
 function image(id,from='be',zoom=4){if(id<=0)return null;const key=from+':'+id+':'+zoom;if(!imageCache.has(key)){const im=new Image();im.onload=scheduleDraw;im.onerror=()=>{im.failed=true;scheduleDraw()};im.src=imageUrl(id,from,zoom);imageCache.set(key,im)}return imageCache.get(key)}
 function emptyPart(slot){return {id:-1,type:slots.indexOf(slot),frames:[],source:'runtime'}}
-function startNew(){revision='';avatarPreviewSources.clear();showAllLegFrames=false;model={item:{id:-1,type:$('kind').value==='pet'?21:5,gender:3,name:'',description:'',iconId:0,avatarId:-1,part:-1,power:0},mapping:{head:emptyPart('head'),body:emptyPart('body'),leg:emptyPart('leg'),bag:-1}};actionFilter=miniPetMode()?'pet':'all';frame=0;render()}
+function startNew(){revision='';avatarPreviewSources.clear();showAllLegFrames=false;model={item:{id:-1,type:$('kind').value==='follow'?72:$('kind').value==='costume'?5:21,gender:3,name:'',description:'',iconId:0,avatarId:-1,part:-1,power:0},mapping:{head:emptyPart('head'),body:emptyPart('body'),leg:emptyPart('leg'),bag:-1}};actionFilter=miniPetMode()?'pet':'all';frame=0;render()}
 function field(id,value){$(id).value=value??''}
 function readFields(){const i=model.item;i.name=$('name').value.trim();i.description=$('description').value;i.type=+$('type').value;i.gender=+$('gender').value;i.iconId=+$('iconId').value;i.avatarId=$('avatarId').value===''?-1:+$('avatarId').value;i.part=+$('itemPart').value;i.power=+$('power').value;model.mapping.bag=+$('bag').value;if(i.type===72&&!$('followEditor').hidden){const raw=$('followIcon').value.trim();model.follow=raw===''?null:{iconId:+raw,width:+$('followWidth').value,height:+$('followHeight').value,frames:+$('followFrames').value}}}
 function render(){if(!model)return;const i=model.item;field('name',i.name);field('description',i.description);field('type',i.type);field('gender',i.gender);field('iconId',i.iconId);field('avatarId',i.avatarId>=0?i.avatarId:'');field('itemPart',i.part);field('power',i.power);field('bag',model.mapping.bag);$('itemId').textContent=i.id<0?'mới':'#'+i.id;const followPet=i.type===72,pet=i.type!==5;$('followPetNote').hidden=!followPet;$('followEditor').hidden=!followPet;$('partPetNote').hidden=i.type===5||followPet;$('clearFollowParts').hidden=!followPet||!slots.some(slot=>model.mapping[slot].id>=0||model.mapping[slot].frames.length);$('partEditor').hidden=followPet;$('miniPetGuide').hidden=!miniPetMode();$('characterPartGuide').hidden=miniPetMode();$('actionFilter').querySelector('option[value=pet]').hidden=!miniPetMode();$('actionFilter').value=actionFilter;$('characterPreview').hidden=followPet;document.querySelector('main').classList.toggle('follow-only',followPet);$('loadManyParts').disabled=followPet;$('avatarIdLabel').hidden=pet;$('useIconAsAvatar').hidden=pet;$('avatarTitle').textContent=pet?'Ảnh icon pet':'Ảnh đại diện';$('avatarFileLabel').firstChild.nodeValue=pet?'Chọn PNG icon':'Chọn PNG avatar';$('avatarPurpose').textContent=pet?'2 · Dùng cho item pet':'2 · Dùng cho part đầu';$('avatarHelp').textContent=pet?'PNG tải lên sẽ tự điền Icon ID của pet; ảnh đã có trên server sẽ được dùng lại.':'Ảnh này hiển thị ở bảng nhân vật; ảnh đã có trên server sẽ được dùng lại.';updateAvatarPreview();renderFollowEditor();renderReference();renderParts();renderSheet()}
@@ -262,7 +262,7 @@ function drawFollowPreview(){
   }
   const img=followPreviewImage;
   if(!img?.complete){$('followState').textContent=`Đang tải ảnh #${id}…`;return}
-  if(!img.naturalWidth){$('followState').textContent=`Không tải được ảnh #${id} từ server.`;return}
+  if(!img.naturalWidth){$('followState').textContent=custom?`Sprite #${id} thiếu PNG trên game server. Hãy chọn sprite khác hoặc tải PNG mới.`:`Icon item #${id} thiếu PNG trên game server. Hãy chọn icon khác hoặc tải PNG mới.`;return}
   followSourceSize={id,width:img.naturalWidth,height:img.naturalHeight};
   const width=custom?+$('followWidth').value:img.naturalWidth;
   const height=custom?+$('followHeight').value:img.naturalHeight;
@@ -318,7 +318,33 @@ async function loadManyParts(){
   }catch(e){message(e.message,true)}finally{end?.()}
 }
 $('loadManyParts').onclick=loadManyParts;
-async function refreshList(){try{const kind=$('kind').value,q=$('search').value;const data=await api(`/api/list?kind=${kind}&q=${encodeURIComponent(q)}`);$('count').textContent=`${data.count} mục trong DB`;$('list').replaceChildren();for(const i of data.items){const div=document.createElement('div');div.className='row'+(model?.item.id===i.id?' selected':'');const img=document.createElement('img');img.loading='lazy';img.src=imageUrl(i.iconId);const text=document.createElement('span');text.textContent=`#${i.id} ${i.name}`;const sub=document.createElement('small');const follow=i.type===72;sub.textContent=follow?`pet đi theo · icon ${i.iconId}`:`icon ${i.iconId} · ${i.hasMapping?'có mapping':'chưa có part'}`;if(!follow&&!i.hasMapping)sub.className='missing';text.append(sub);div.append(img,text);div.onclick=()=>loadItem(i.id);$('list').append(div)}}catch(e){message(e.message,true)}}
+async function refreshList(){
+  try{
+    const kind=$('kind').value,q=$('search').value;
+    const data=await api(`/api/list?kind=${kind}&q=${encodeURIComponent(q)}`);
+    $('count').textContent=`${data.count} mục trong DB`;$('list').replaceChildren();
+    for(const i of data.items){
+      const div=document.createElement('div');div.className='row'+(model?.item.id===i.id?' selected':'');
+      const img=document.createElement('img'),missingIcon=document.createElement('span');
+      missingIcon.className='missing-icon';missingIcon.textContent='?';missingIcon.hidden=true;
+      img.loading='lazy';img.onerror=()=>{img.hidden=true;missingIcon.hidden=false};
+      img.src=imageUrl(i.iconAvailable===false&&i.spriteAvailable?i.spriteId:i.iconId);
+      const label=document.createElement('span');label.textContent=`#${i.id} ${i.name}`;
+      const sub=document.createElement('small');
+      if(i.type===72){
+        const art=i.spriteAvailable?`sprite #${i.spriteId}`:i.iconAvailable?'icon tĩnh':'thiếu PNG icon và sprite';
+        sub.textContent=`pet đi theo · ${art}`;
+        if(i.iconAvailable===false)sub.textContent+=' · icon item thiếu PNG';
+        if(i.spriteId>=0&&!i.spriteAvailable)sub.textContent+=` · sprite #${i.spriteId} thiếu PNG`;
+        if(i.iconAvailable===false||i.spriteId>=0&&!i.spriteAvailable)sub.className='missing';
+      }else{
+        sub.textContent=`icon ${i.iconId} · ${i.hasMapping?'có mapping':'chưa có part'}`;
+        if(!i.hasMapping)sub.className='missing';
+      }
+      label.append(sub);div.append(img,missingIcon,label);div.onclick=()=>loadItem(i.id);$('list').append(div);
+    }
+  }catch(error){message(error.message,true)}
+}
 async function loadItem(id){const end=beginBusy('Đang tải item #'+id+' từ SQL…');try{const data=await api('/api/item?id='+id);revision=data.revision;delete data.revision;avatarPreviewSources.clear();model=data;showAllLegFrames=false;if(model.item.type===18)model.item.type=21;actionFilter=miniPetMode()?'pet':'all';frame=0;selectedSlot='head';selectedFrame=0;render();closeCatalog();refreshList();message('Đã tải item #'+id+' từ SQL')}catch(e){message(e.message,true)}finally{end()}}
 function openCatalog(){document.body.classList.add('catalog-open');$('catalogBackdrop').hidden=false;$('search').focus()}
 function closeCatalog(){document.body.classList.remove('catalog-open');$('catalogBackdrop').hidden=true}
