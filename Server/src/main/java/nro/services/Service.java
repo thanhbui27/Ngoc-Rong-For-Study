@@ -455,9 +455,16 @@ public class Service {
             _msg.reader().readUTF();
             _msg.reader().readUTF();
             String user = _msg.reader().readUTF();
-            ;
             String pass = _msg.reader().readUTF();
-            ;
+            registerAccount(session, user, pass);
+        } catch (Exception e) {
+            Log.error(Service.class, e);
+            sendThongBaoOK(session, "Không thể đăng ký tài khoản, vui lòng thử lại.");
+        }
+    }
+
+    public void registerAccount(Session session, String user, String pass) {
+        try {
             if (!(user.length() >= 4 && user.length() <= 18)) {
                 sendThongBaoOK(session, "Tài khoản phải có độ dài 4-18 ký tự");
                 return;
@@ -1974,7 +1981,8 @@ public class Service {
                     }
                 }
 
-                if (pl.getSession() != null && pl.getSession().version == 239) {
+                if (pl.getSession() != null
+                        && (pl.getSession().version == 231 || pl.getSession().version == 239)) {
                     msg.writer().writeInt(pl.pet.nPoint.hpg);
                     msg.writer().writeInt(pl.pet.nPoint.mpg);
                     msg.writer().writeInt(pl.pet.nPoint.dameg);

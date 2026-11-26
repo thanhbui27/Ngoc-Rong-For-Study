@@ -1060,14 +1060,23 @@ public class Manager {
         if ((value = properties.get("api.port")) != null) {
             Manager.apiPort = Integer.parseInt(String.valueOf(value));
         }
-        String linkServer = "";
+        StringBuilder linkServer = new StringBuilder();
         for (int i = 1; i <= 10; i++) {
             value = properties.get("server.sv" + i);
             if (value != null) {
-                linkServer += String.valueOf(value) + ":0,";
+                String entry = String.valueOf(value).split(",", 2)[0].trim();
+                if (!entry.isEmpty()) {
+                    if (linkServer.length() > 0) {
+                        linkServer.append(',');
+                    }
+                    linkServer.append(entry);
+                }
             }
         }
-        DataGame.LINK_IP_PORT = linkServer.substring(0, linkServer.length() - 1);
+        if (linkServer.length() == 0) {
+            throw new IllegalStateException("Missing server.sv1 in server.properties");
+        }
+        DataGame.LINK_IP_PORT = linkServer.append(",0,0").toString();
         if ((value = properties.get("server.waitlogin")) != null) {
             SECOND_WAIT_LOGIN = Byte.parseByte(String.valueOf(value));
         }

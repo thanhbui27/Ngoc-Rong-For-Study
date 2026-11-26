@@ -16,6 +16,7 @@ import nro.server.io.Session;
 import nro.services.*;
 import nro.services.func.*;
 import nro.utils.Log;
+import nro.utils.SkillUtil;
 import nro.utils.Util;
 import nro.tools.PartEditorAction;
 import org.apache.log4j.Logger;
@@ -628,6 +629,9 @@ public class Controller {
                     case 0 -> {
                         session.login(msg.reader().readUTF(), msg.reader().readUTF());
                     }
+                    case 1 -> {
+                        Service.getInstance().registerAccount(session, msg.reader().readUTF(), msg.reader().readUTF());
+                    }
                     // Message m77 = new Message(-77);
                     // m77.writer().ử
                     case 2 ->
@@ -709,6 +713,35 @@ public class Controller {
                             player.nPoint.increasePoint(type, point);
                         }
                         break;
+                    case 17: {
+                        byte petPointType = _msg.reader().readByte();
+                        short petPoints = _msg.reader().readShort();
+                        if (player != null && player.pet != null && player.pet.nPoint != null
+                                && petPointType >= 0 && petPointType <= 4 && petPoints > 0) {
+                            player.pet.nPoint.increasePoint(petPointType, petPoints);
+                            Service.getInstance().showInfoPet(player);
+                        }
+                        break;
+                    }
+                    case 19: {
+                        int skillIndex = _msg.reader().readUnsignedByte();
+                        _msg.reader().readShort(); // The client price is informational; calculate it on the server.
+                        int[] prices = {100, 150, 200, 500};
+                        if (player != null && player.pet != null && player.pet.playerSkill != null
+                                && skillIndex < prices.length
+                                && skillIndex < player.pet.playerSkill.skills.size()) {
+                            Skill petSkill = player.pet.playerSkill.skills.get(skillIndex);
+                            if (petSkill != null && petSkill.template != null
+                                    && petSkill.point < petSkill.template.maxPoint
+                                    && player.inventory.gem >= prices[skillIndex]
+                                    && SkillUtil.upSkillPet(player.pet.playerSkill.skills, skillIndex)) {
+                                player.inventory.subGem(prices[skillIndex]);
+                                Service.getInstance().sendMoney(player);
+                                Service.getInstance().showInfoPet(player);
+                            }
+                        }
+                        break;
+                    }
                     case 64:
                         int playerId = _msg.reader().readInt();
                         int menuId = _msg.reader().readShort();

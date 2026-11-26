@@ -317,7 +317,7 @@ public class DataGame {
         try {
             msg = new Message(-29);
             msg.writer().writeByte(2);
-            msg.writer().writeUTF(LINK_IP_PORT + ",0,0");
+            msg.writer().writeUTF(LINK_IP_PORT);
             msg.writer().writeByte(1);
             session.sendMessage(msg);
             msg.cleanup();
