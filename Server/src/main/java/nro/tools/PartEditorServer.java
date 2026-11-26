@@ -543,6 +543,7 @@ public final class PartEditorServer {
                     JsonObject mapping = request.getAsJsonObject("mapping");
                     if (item==null || mapping==null) fail(400,"Thiếu item hoặc mapping");
                     int id = number(item,"id",-1); int type=number(item,"type",5);
+                    if (type==18) type=21;
                     if (type!=5 && type!=18 && type!=21 && type!=72) fail(400,"Chỉ sửa cải trang hoặc pet");
                     String name=string(item,"name","").trim(); String desc=string(item,"description","");
                     int icon=number(item,"iconId",-1), avatar=number(item,"avatarId",-1), gender=number(item,"gender",3);
@@ -564,9 +565,7 @@ public final class PartEditorServer {
                     if (id>=0 && current==null) fail(404,"Item đã bị xóa");
                     if (current!=null && !sha(current).equals(string(request,"revision",""))) fail(409,"Dữ liệu đã thay đổi, tải lại trước khi lưu");
                     if (id<0) {
-                        int count=scalar(c,"SELECT COUNT(*) FROM item_template");
                         id=scalar(c,"SELECT COALESCE(MAX(id),-1)+1 FROM item_template");
-                        if (id!=count) fail(409,"Bảng item_template có ID bị khuyết; client cần ID liên tục");
                     }
                     int head=savePart(c,mapping.getAsJsonObject("head"),0,staged,type==18||type==21);
                     int body=savePart(c,mapping.getAsJsonObject("body"),1,staged,type==18||type==21);
@@ -616,6 +615,7 @@ public final class PartEditorServer {
                         if (head>=0 || body>=0 || leg>=0) try (PreparedStatement ps=c.prepareStatement("INSERT INTO mini_pet (id_temp,head,body,leg) VALUES (?,?,?,?)")) {
                             ps.setInt(1,id);ps.setInt(2,head);ps.setInt(3,body);ps.setInt(4,leg);ps.executeUpdate();
                         }
+                        if (type==18 || type==21) execute(c,"DELETE FROM pet_follow WHERE id_temp=?",id);
                     }
                     if (type==5 && head>=0) {
                         if(avatar<0)fail(400,"Chọn Avatar ID cho part đầu trước khi lưu");

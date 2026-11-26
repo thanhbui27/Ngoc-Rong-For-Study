@@ -135,7 +135,11 @@ private static final ScheduledExecutorService scheduler = Executors.newScheduled
                 case FOLLOW:
                     break;
             }
-            if (!master.inventory.itemsBody.get(11).isNotNullItem()) {
+            if (master.inventory == null || master.inventory.itemsBody == null
+                    || master.inventory.itemsBody.size() <= 11
+                    || !master.inventory.itemsBody.get(11).isNotNullItem()
+                    || (master.inventory.itemsBody.get(11).template.type != 18
+                        && master.inventory.itemsBody.get(11).template.type != 21)) {
                 MapService.gI().exitMap(this);
                 this.dispose();
                 master.minipet = null;

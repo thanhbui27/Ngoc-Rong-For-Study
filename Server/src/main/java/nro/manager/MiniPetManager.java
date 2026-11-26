@@ -24,6 +24,7 @@ public class MiniPetManager implements IManager<MinipetTemplate> {
     }
 
     public void load() {
+        list.clear();
         try (java.sql.Connection con = DBService.gI().getConnectionForGame()) {
             PreparedStatement ps = con.prepareStatement("SELECT * FROM mini_pet");
             ResultSet rs = ps.executeQuery();

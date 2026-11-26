@@ -610,6 +610,15 @@ public class Manager {
                 itemTemp.part = rs.getShort("part");
                 itemTemp.isUpToUp = rs.getBoolean("is_up_to_up");
                 itemTemp.strRequire = rs.getInt("power_require");
+                while (ITEM_TEMPLATES.size() < itemTemp.id) {
+                    ItemTemplate deleted = new ItemTemplate();
+                    deleted.id = (short) ITEM_TEMPLATES.size();
+                    deleted.type = -1;
+                    deleted.name = "";
+                    deleted.description = "";
+                    deleted.part = -1;
+                    ITEM_TEMPLATES.add(deleted);
+                }
                 ITEM_TEMPLATES.add(itemTemp);
             }
             rs.close();

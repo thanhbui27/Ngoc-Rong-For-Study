@@ -15,6 +15,7 @@ import nro.models.player.PetFollow;
 import nro.models.player.MiniPet;
 import nro.models.player.Player;
 import nro.server.io.Message;
+import nro.utils.Log;
 import nro.utils.Util;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -413,7 +414,8 @@ public class InventoryService {
                         itemsBody.set(10, item);
                     }
                 } else if (type >= 0 && type <= 5 || type == 32 || type == 11 || type == 17
-                        || type == 23 || type == 24 || type == 35 || type == 21
+                        || type == 23 || type == 24 || type == 35
+                        || type == 21 && !player.isPet
                         || type == 18 && !player.isPet && usesMiniPet(item.template) || type == 39) {
                     if (item.template.gender == player.gender || item.template.gender == 3) {
                         if (item.getId() == ConstItem.QUAN_DI_BIEN) {
@@ -489,7 +491,7 @@ public class InventoryService {
                 }
             }
         } catch (Exception e) {
-
+            Log.error(InventoryService.class, e);
         }
         return sItem;
     }
@@ -1157,31 +1159,7 @@ public class InventoryService {
     }
 
     public boolean isminipet(int id) {
-        switch (id) {
-            case 936: // tloc
-            case 892:// tho xam
-            case 893:// tho trang
-            case 942:
-            case 943:
-            case 944:
-            case 967:
-            case 1039:
-            case 1040:
-            case 1046:
-            case 916:
-            case 917:
-            case 918:
-            case 919:
-            case 1188:
-            case 1202:
-            case 1203:
-            case 1207:
-            case 1213:
-            case 1243:
-            case 1244:
-                return true;
-        }
-        return false;
+        return MiniPetManager.gI().findByID(id) != null;
     }
 
     public String itemsBagToString(Player player) {
