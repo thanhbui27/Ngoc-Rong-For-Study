@@ -29,6 +29,9 @@ public final class PartEditorAction {
     public static void handle(Session session, Message message) {
         int requestId = -1;
         try {
+            // Give the admin login request up to five minutes before the normal
+            // unauthenticated game-session countdown disconnects this socket.
+            if (!session.partEditorAuthenticated) session.timeWait = 375;
             requestId = message.reader().readInt();
             boolean last = message.reader().readBoolean();
             int size = message.reader().readUnsignedShort();

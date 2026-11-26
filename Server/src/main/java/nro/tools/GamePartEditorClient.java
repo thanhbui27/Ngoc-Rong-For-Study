@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 
 /** Small game-protocol bridge for the local browser editor. */
 public final class GamePartEditorClient implements AutoCloseable {
+    private static final int AUTH_RESPONSE_TIMEOUT_MS = 30_000;
+    private static final int EDITOR_RESPONSE_TIMEOUT_MS = 60 * 60 * 1_000;
     private final Socket socket = new Socket();
     private final DataInputStream input;
     private final DataOutputStream output;
@@ -38,6 +40,7 @@ public final class GamePartEditorClient implements AutoCloseable {
         keys = new byte[keyCount];
         keys[0] = handshake[1];
         for (int i = 1; i < keyCount; i++) keys[i] = (byte) (handshake[i + 1] ^ keys[i - 1]);
+        socket.setSoTimeout(AUTH_RESPONSE_TIMEOUT_MS);
     }
 
     public synchronized JsonObject request(String action, JsonObject params) throws IOException {
@@ -81,7 +84,7 @@ public final class GamePartEditorClient implements AutoCloseable {
         }
         try {
             JsonObject result = JsonParser.parseString(reply.toString(StandardCharsets.UTF_8)).getAsJsonObject();
-            if ("auth".equals(action) && !result.has("error")) socket.setSoTimeout(120_000);
+            if ("auth".equals(action) && !result.has("error")) socket.setSoTimeout(EDITOR_RESPONSE_TIMEOUT_MS);
             return result;
         }
         catch (Exception ex) { throw new IOException("JSON phản hồi không hợp lệ", ex); }

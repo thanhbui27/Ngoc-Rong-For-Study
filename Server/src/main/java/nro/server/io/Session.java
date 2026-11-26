@@ -40,7 +40,7 @@ public class Session {
 
     public boolean isLock = false;
 
-    public byte timeWait = 50;
+    public volatile int timeWait = 50;
 
     public boolean connected;
 
