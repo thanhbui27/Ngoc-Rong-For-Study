@@ -93,7 +93,7 @@
       <div class="preview-top">
         <div class="preview-title"><h2>Xem trước nhân vật</h2><span id="frameCount" class="preview-count">33 frame</span></div>
         <div class="preview-controls"><label>Hành động <select id="actionFilter"><option value="pet" hidden>MiniPet · 11 dáng thường dùng</option><option value="all">Tất cả 33 frame</option><option value="stand">Stand</option><option value="run">Run</option><option value="fall">Fall</option><option value="fly">Fly</option><option value="skillstand">Skill Stand</option><option value="inju">Injured</option><option value="other">Dáng khác</option></select></label><button id="direction" title="Đổi hướng">→</button><label title="Ảnh nguồn vẫn là PNG x4; chỉ đổi kích thước hiển thị">Cỡ ảnh <input id="zoom" type="range" min="0.5" max="5" step="0.5" value="2"><b id="zoomValue">2×</b></label></div>
-        <details class="preview-more"><summary>Tuỳ chọn căn chỉnh</summary><div class="preview-controls"><label>Chọn hình <select id="moveScope"><option value="auto">Bấm vào hình</option><option value="head">Đầu</option><option value="body">Thân</option><option value="leg">Chân</option></select></label><label title="Chỉ dùng để căn hình, không lưu part mẫu vào SQL"><input id="showSample" type="checkbox"> Hiện part mẫu cho frame trống</label><div class="nudge"><span>Dịch 1px</span><button type="button" data-nudge="left" title="Sang trái">←</button><button type="button" data-nudge="up" title="Lên">↑</button><button type="button" data-nudge="down" title="Xuống">↓</button><button type="button" data-nudge="right" title="Sang phải">→</button></div></div><p class="hint preview-tip">Phần mẫu chỉ để căn hình và không lưu SQL. Kéo hình để dịch các frame cùng Image ID. MiniPet vẽ đầu phía trước thân giống Unity.</p></details>
+        <details class="preview-more"><summary>Tuỳ chọn căn chỉnh</summary><div class="preview-controls"><label>Chọn hình <select id="moveScope"><option value="auto">Bấm vào hình</option><option value="head">Đầu</option><option value="body">Thân</option><option value="leg">Chân</option></select></label><label title="Chỉ dùng để căn hình, không lưu part mẫu vào SQL"><input id="showSample" type="checkbox"> Hiện part mẫu cho frame trống</label><div class="nudge"><span>Dịch 1px</span><button type="button" data-nudge="left" title="Sang trái">←</button><button type="button" data-nudge="up" title="Lên">↑</button><button type="button" data-nudge="down" title="Xuống">↓</button><button type="button" data-nudge="right" title="Sang phải">→</button></div></div><p class="hint preview-tip">Phần mẫu chỉ để căn hình và không lưu SQL. Kéo hình để dịch các frame cùng Image ID. MiniPet không vẽ part đầu ở dáng 07, 08, 12, 23 vì ảnh chân đã chứa đầu.</p></details>
         <div id="assetProgress" class="asset-progress" role="status" aria-live="polite"></div>
         <div id="details"></div>
       </div>
@@ -108,6 +108,7 @@ const token=new URLSearchParams(location.search).get('token')||'';
 const $=id=>document.getElementById(id);
 const slots=['head','body','leg'], counts={head:3,body:17,leg:14}, labels={head:'Đầu',body:'Thân',leg:'Chân'};
 const infoSlot={head:0,leg:1,body:2};
+const miniPetHeadlessFrames=new Set([7,8,12,23]);
 const petPoseFrames=[0,1,2,3,4,5,6,7,8,12,23];
 const petActionGroups=[
   {key:'stand',label:'Đứng',frames:[0,1]},
@@ -465,6 +466,7 @@ function drawPose(canvas,index){
   if(!model||!charInfo.length)return;
   const info=charInfo[index],sprites=[];
   for(const slot of miniPetMode()?['leg','body','head']:['head','leg','body']){
+    if(slot==='head'&&miniPetMode()&&miniPetHeadlessFrames.has(index))continue;
     const own=model.mapping[slot],spec=info[infoSlot[slot]];
     const sample=!own?.frames?.[spec[0]]?.[0],part=sample&&$('showSample').checked?baseParts[slot]:own;
     if(!filled(part))continue;
@@ -517,12 +519,13 @@ function renderActiveParts(){
   for(const slot of slots){
     const fi=charInfo[frame][infoSlot[slot]][0],own=model.mapping[slot]?.frames?.[fi],sample=!own?.[0];
     const part=sample&&$('showSample').checked?baseParts[slot]:model.mapping[slot],piece=part.frames[fi];
+    const hiddenHead=slot==='head'&&miniPetMode()&&miniPetHeadlessFrames.has(frame);
     const button=document.createElement('button');button.type='button';
     button.className='active-part'+(sample?' sample':'')+(selectedSlot===slot?' selected':'');
-    button.title=`${labels[slot]} · frame ${fi} · ${sample?'chưa có ảnh':'Image ID '+piece[0]}`;
+    button.title=`${labels[slot]} · frame ${fi} · ${hiddenHead?'không vẽ ở dáng này':sample?'chưa có ảnh':'Image ID '+piece[0]}`;
     const name=document.createElement('strong');name.textContent=labels[slot]+' '+String(fi).padStart(2,'0');
     const img=document.createElement('img');if(piece?.[0]>0)img.src=imageUrl(piece[0],part.source==='reference'?'source':'be',4);
-    const info=document.createElement('small');info.textContent=sample?($('showSample').checked?'Mẫu':'Trống'):`ID ${piece[0]} · ${piece[1]}, ${piece[2]}`;
+    const info=document.createElement('small');info.textContent=hiddenHead?'Không vẽ ở dáng này':sample?($('showSample').checked?'Mẫu':'Trống'):`ID ${piece[0]} · ${piece[1]}, ${piece[2]}`;
     button.append(name,img,info);
     button.onclick=()=>{if(sample){message(labels[slot]+' đang dùng hình mẫu; hãy nạp ảnh trước khi chỉnh',true);return}selectedSlot=slot;selectedFrame=fi;$('moveScope').value=slot;renderParts();draw()};
     area.append(button);
@@ -547,7 +550,7 @@ function draw(){
   const piece=model.mapping[scope]?.frames?.[info[infoSlot[scope]][0]];
   const group=(miniPetMode()?petActionGroups.find(entry=>entry.frames.includes(frame)):null)||actionGroups.find(entry=>entry.frames.includes(frame));
   $('details').textContent='Đang chọn '+poseLabel(frame,group)+' · frame '+frame+' · '+(dir===1?'phải':'trái')
-    +'\nĐầu '+info[0][0]+' · Chân '+info[1][0]+' · Thân '+info[2][0]
+    +'\nĐầu '+info[0][0]+(miniPetMode()&&miniPetHeadlessFrames.has(frame)?' (không vẽ)':'')+' · Chân '+info[1][0]+' · Thân '+info[2][0]
     +'\nĐang chỉnh '+labels[scope]+(piece?.[0]>0?' · Image ID '+piece[0]+' · dx '+piece[1]+' · dy '+piece[2]:' · chưa có ảnh part')
     +(fallback.length?'\n'+($('showSample').checked?'Part mẫu: ':'Frame trống: ')+fallback.join(', '):'');
   renderActiveParts();
