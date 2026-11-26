@@ -574,8 +574,7 @@ public final class PartEditorServer {
                     int bag=number(mapping,"bag",-1);
                     if (bag < -1 || bag>32767) fail(400,"Bag ID không hợp lệ");
                     if (current==null && type==5 && head<0 && body<0 && leg<0) fail(400,"Cải trang mới cần ít nhất một part");
-                    if ((type==18 || type==21) && (head<0 || body<0 || leg<0)
-                            && (type==21 || head>=0 || body>=0 || leg>=0))
+                    if ((type==18 || type==21) && (head<0 || body<0 || leg<0))
                         fail(400,"Pet dùng mini_pet cần đủ head/body/leg");
                     // Full costumes and pets commonly keep item_template.part=-1;
                     // their outfit IDs live in cai_trang/mini_pet instead.

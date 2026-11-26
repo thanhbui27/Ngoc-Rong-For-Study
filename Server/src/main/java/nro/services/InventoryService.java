@@ -406,7 +406,7 @@ public class InventoryService {
         try {
             byte type = item.getType();
             if (item.isNotNullItem()) {
-                if ((type == 18 || type == 72) && !player.isPet && !usesMiniPet(item.template)) {
+                if (type == 72 && !player.isPet) {
                     List<Item> itemsBody = player.inventory.itemsBody;
                     if (itemsBody.size() > 10) {
                         sItem = itemsBody.get(10);
@@ -502,12 +502,12 @@ public class InventoryService {
         if (item.isNotNullItem()) {
             PetFollow pet = null;
             boolean miniPet = usesMiniPet(item.template);
-            if (item.template.type == 21 && !miniPet) {
+            if ((item.template.type == 18 || item.template.type == 21) && !miniPet) {
                 Service.getInstance().sendThongBaoOK(player,
                         "Pet " + item.getId() + " chưa có đủ part trong mini_pet.");
                 return;
             }
-            if ((item.template.type == 18 || item.template.type == 72) && !miniPet) {
+            if (item.template.type == 72) {
                 pet = PetFollowManager.gI().findByID(item.getId());
                 if (pet == null) {
                     Service.getInstance().sendThongBaoOK(player,

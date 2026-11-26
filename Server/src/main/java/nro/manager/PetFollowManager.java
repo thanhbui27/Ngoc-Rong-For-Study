@@ -28,7 +28,8 @@ public class PetFollowManager extends AbsManager<PetFollow> {
     public void load() {
         list.clear();
         try (java.sql.Connection con = DBService.gI().getConnectionForGame()) {
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM pet_follow");
+            PreparedStatement ps = con.prepareStatement(
+                    "SELECT p.* FROM pet_follow p JOIN item_template t ON t.id = p.id_temp WHERE t.TYPE = 72");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 int id = rs.getInt("id_temp");
@@ -43,10 +44,10 @@ public class PetFollowManager extends AbsManager<PetFollow> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        // Imported and newly added pets can use their own item icon as a static
-        // follow image until an animated pet_follow sprite is configured.
+        // Type-72 pets can use their item icon as a static follow image until
+        // an animated pet_follow sprite is configured.
         for (ItemTemplate item : Manager.ITEM_TEMPLATES) {
-            if (item.type != 18 && item.type != 72) {
+            if (item.type != 72) {
                 continue;
             }
             PetFollow configured = findByID(item.id);

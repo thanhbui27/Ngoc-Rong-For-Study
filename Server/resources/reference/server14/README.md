@@ -66,8 +66,9 @@ Run `python tools/prepare_admin_catalog.py` to audit the generated inputs.
 
 Migration V14 configures the imported type-18 pets in `pet_follow` using each
 pet's own icon as a single static frame at its measured zoom-1 dimensions.
-The runtime also supplies this fallback for newly added type-18/type-72 pets
-whose icon PNG exists but whose `pet_follow` row is missing or points to an
-invalid sprite. Existing valid animated sprites take precedence. The 15 older
+Those historical rows remain in SQL, but type-18 pets now require a complete
+`mini_pet` head/body/leg mapping to be equipped. The runtime supplies an icon
+fallback only for type-72 pets whose `pet_follow` row is missing or invalid.
+Existing valid animated sprites take precedence for type 72. The 15 older
 type-72 pets with no follow sprite or item icon in the bundled assets still
 need their original images to display correctly.

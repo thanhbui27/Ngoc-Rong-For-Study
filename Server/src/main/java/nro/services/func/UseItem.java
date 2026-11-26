@@ -169,7 +169,9 @@ public class UseItem {
                                         msg.writer().writeUTF(
                                                 "Sau khi đổi đệ sẽ mất toàn bộ trang bị trên người đệ tử nếu chưa tháo");
                                         player.sendMessage(msg);
-                                    } else if (item.template.type == 18 || item.template.type == 72) {
+                                    } else if (item.template.type == 18) {
+                                        InventoryService.gI().itemBagToBody(player, index);
+                                    } else if (item.template.type == 72) {
                                         InventoryService.gI().itemBagToBody(player, index);
                                     } else {
                                         useItem(player, item, index);

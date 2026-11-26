@@ -705,17 +705,24 @@ public class GodGK {
                     player.setCollectionBook(book);
                     List<Item> itemsBody = player.inventory.itemsBody;
 
-                    // A type-18 pet equipped before mini_pet was configured may
-                    // still occupy the pet_follow slot. Move it when the mini
-                    // pet slot is empty so its saved parts take effect on login.
+                    // Type 18 no longer uses the pet_follow slot. Move older
+                    // equipped items into mini_pet when mapped, or back to an
+                    // empty bag slot without discarding the item.
                     Item oldFollow = itemsBody.get(10);
-                    if (oldFollow.isNotNullItem() && oldFollow.template.type == 18
-                            && !itemsBody.get(11).isNotNullItem()) {
+                    if (oldFollow.isNotNullItem() && oldFollow.template.type == 18) {
                         MinipetTemplate mapping = MiniPetManager.gI().findByID(oldFollow.getId());
                         if (mapping != null && mapping.getHead() >= 0 && mapping.getBody() >= 0
-                                && mapping.getLeg() >= 0) {
+                                && mapping.getLeg() >= 0 && !itemsBody.get(11).isNotNullItem()) {
                             itemsBody.set(11, oldFollow);
                             itemsBody.set(10, ItemService.gI().createItemNull());
+                        } else {
+                            for (int bagIndex = 0; bagIndex < player.inventory.itemsBag.size(); bagIndex++) {
+                                if (!player.inventory.itemsBag.get(bagIndex).isNotNullItem()) {
+                                    player.inventory.itemsBag.set(bagIndex, oldFollow);
+                                    itemsBody.set(10, ItemService.gI().createItemNull());
+                                    break;
+                                }
+                            }
                         }
                     }
 
@@ -723,7 +730,8 @@ public class GodGK {
                         MiniPet.callMiniPet(player, (player.inventory.itemsBody.get(11).template.id));
                     }
 
-                    if (itemsBody.get(10).isNotNullItem()) {
+                    if (itemsBody.get(10).isNotNullItem()
+                            && itemsBody.get(10).template.type == 72) {
                         PetFollow pet = PetFollowManager.gI().findByID(itemsBody.get(10).getId());
                         player.setPetFollow(pet);
                         PlayerService.gI().sendPetFollow(player);
