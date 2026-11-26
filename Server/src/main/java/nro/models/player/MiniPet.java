@@ -27,6 +27,10 @@ private static final ScheduledExecutorService scheduler = Executors.newScheduled
     private short head, body, leg;
 
     public static void callMiniPet(Player pl, int itemID) {
+        MinipetTemplate mapping = MiniPetManager.gI().findByID(itemID);
+        if (mapping == null || mapping.getHead() < 0 || mapping.getBody() < 0 || mapping.getLeg() < 0) {
+            return;
+        }
         MiniPet miniPet = pl.minipet;
         if (miniPet == null) {
             miniPet = new MiniPet(pl, itemID);

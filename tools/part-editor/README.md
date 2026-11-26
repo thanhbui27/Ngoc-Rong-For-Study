@@ -35,10 +35,10 @@ sau khi xác thực admin. Cần triển khai JAR BE mới và khởi động l�
 chỉ tải lại trang editor không thay được mã đang chạy trên game server.
 
 1. Chọn **Cải trang** hoặc **Pet** để tải toàn bộ item tương ứng từ DB; chọn
-   một item để xem mapping và từng part. Pet type 21 dùng ba part đầu/thân/chân
-   trong `mini_pet`. Pet type 18/72 đi theo dùng icon hoặc sprite `pet_follow`;
-   ba part này không áp dụng cho type 18/72. Tool liệt kê cả pet type 72 để
-   sửa icon của những pet cũ khi có PNG gốc.
+   một item để xem mapping và từng part. Pet type 18/21 dùng ba part đầu/thân/chân
+   trong `mini_pet`. Pet type 18 chưa có bộ part vẫn dùng ảnh `pet_follow` hiện có.
+   Pet type 72 đi theo dùng icon hoặc sprite `pet_follow`; ba part này không áp
+   dụng cho type 72. Tool liệt kê cả pet type 72 để sửa icon khi có PNG gốc.
 2. Chọn part BE theo ID, hoặc part S14 theo ID. Ô **Nạp nhiều part** nhận 2–3
    ID cùng lúc, tự xếp theo loại đầu/thân/chân và chỉ cập nhật preview sau
    khi mọi ID đều hợp lệ. Có thể tiếp tục nạp một ID riêng ở từng nhóm. Khi
@@ -105,8 +105,9 @@ chỉ tải lại trang editor không thay được mã đang chạy trên game 
    toạ độ hoặc hình thay đổi, API cấp part ID mới. **Xóa mapping** bỏ ngoại
    hình nhưng giữ item; **Xóa item cuối** chỉ cho phép nếu ID là cuối bảng và
    không còn tham chiếu trong shop, sổ sưu tập hoặc túi nhân vật.
-   Pet type 21 cần đủ ba part; API kiểm tra PNG của mọi Image ID được gắn vào
-   frame trước khi lưu. Frame để `-1` là vị trí cố ý để trống.
+   Pet type 18/21 cần đủ ba part khi dùng `mini_pet`; API kiểm tra PNG của mọi
+   Image ID được gắn vào frame trước khi lưu. Type 18 chưa có part nào có thể
+   tiếp tục dùng `pet_follow`. Frame để `-1` là vị trí cố ý để trống.
    SQL lưu `part.DATA` thành các dòng `[imageId, dx, dy]`: loại 0 có 3 dòng,
    loại 1 có 17 dòng, loại 2 có 14 dòng. `cai_trang` hoặc `mini_pet` trỏ tới
    ba Part ID; 33 dáng Unity chỉ chọn lại các dòng này. Khi sửa item cũ,

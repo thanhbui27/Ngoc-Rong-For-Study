@@ -12,7 +12,9 @@ import nro.consts.ConstMap;
 import nro.consts.ConstPlayer;
 import nro.jdbc.DBService;
 import nro.manager.AchiveManager;
+import nro.manager.MiniPetManager;
 import nro.manager.PetFollowManager;
+import nro.models.item.MinipetTemplate;
 import nro.models.player.PetFollow;
 import nro.models.clan.Clan;
 import nro.models.clan.ClanMember;
@@ -702,6 +704,20 @@ public class GodGK {
                     book.init();
                     player.setCollectionBook(book);
                     List<Item> itemsBody = player.inventory.itemsBody;
+
+                    // A type-18 pet equipped before mini_pet was configured may
+                    // still occupy the pet_follow slot. Move it when the mini
+                    // pet slot is empty so its saved parts take effect on login.
+                    Item oldFollow = itemsBody.get(10);
+                    if (oldFollow.isNotNullItem() && oldFollow.template.type == 18
+                            && !itemsBody.get(11).isNotNullItem()) {
+                        MinipetTemplate mapping = MiniPetManager.gI().findByID(oldFollow.getId());
+                        if (mapping != null && mapping.getHead() >= 0 && mapping.getBody() >= 0
+                                && mapping.getLeg() >= 0) {
+                            itemsBody.set(11, oldFollow);
+                            itemsBody.set(10, ItemService.gI().createItemNull());
+                        }
+                    }
 
                     if (itemsBody.get(11).isNotNullItem()) {
                         MiniPet.callMiniPet(player, (player.inventory.itemsBody.get(11).template.id));

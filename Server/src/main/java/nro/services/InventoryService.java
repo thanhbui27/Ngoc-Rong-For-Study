@@ -2,13 +2,17 @@ package nro.services;
 
 import nro.consts.ConstItem;
 import nro.manager.PetFollowManager;
+import nro.manager.MiniPetManager;
 import nro.models.item.Item;
 import nro.models.item.ItemOption;
+import nro.models.item.ItemTemplate;
+import nro.models.item.MinipetTemplate;
 import nro.models.map.war.BlackBallWar;
 import nro.models.npc.specialnpc.MabuEgg;
 import nro.models.npc.specialnpc.MagicTree;
 import nro.models.player.Pet;
 import nro.models.player.PetFollow;
+import nro.models.player.MiniPet;
 import nro.models.player.Player;
 import nro.server.io.Message;
 import nro.utils.Util;
@@ -388,19 +392,29 @@ public class InventoryService {
     }
 
     // ==========================================================================
+    static boolean usesMiniPet(ItemTemplate template) {
+        if (template.type != 18 && template.type != 21) {
+            return false;
+        }
+        MinipetTemplate mapping = MiniPetManager.gI().findByID(template.id);
+        return mapping != null && mapping.getHead() >= 0 && mapping.getBody() >= 0
+                && mapping.getLeg() >= 0;
+    }
+
     private Item putItemBody(Player player, Item item) {
         Item sItem = item;
         try {
             byte type = item.getType();
             if (item.isNotNullItem()) {
-                if ((type == 18 || type == 72) && !player.isPet) {
+                if ((type == 18 || type == 72) && !player.isPet && !usesMiniPet(item.template)) {
                     List<Item> itemsBody = player.inventory.itemsBody;
                     if (itemsBody.size() > 10) {
                         sItem = itemsBody.get(10);
                         itemsBody.set(10, item);
                     }
                 } else if (type >= 0 && type <= 5 || type == 32 || type == 11 || type == 17
-                        || type == 23 || type == 24 || type == 35 || type == 21 || type == 39) {
+                        || type == 23 || type == 24 || type == 35 || type == 21
+                        || type == 18 && !player.isPet && usesMiniPet(item.template) || type == 39) {
                     if (item.template.gender == player.gender || item.template.gender == 3) {
                         if (item.getId() == ConstItem.QUAN_DI_BIEN) {
                             List<Item> itemsBody = player.inventory.itemsBody;
@@ -452,6 +466,7 @@ public class InventoryService {
                                     index = 9;
                                     break;
                                 case 21:
+                                case 18:
                                     index = 11;
                                     break;
                                 case 39:
@@ -486,7 +501,13 @@ public class InventoryService {
         Item item = player.inventory.itemsBag.get(index);
         if (item.isNotNullItem()) {
             PetFollow pet = null;
-            if (item.template.type == 18 || item.template.type == 72) {
+            boolean miniPet = usesMiniPet(item.template);
+            if (item.template.type == 21 && !miniPet) {
+                Service.getInstance().sendThongBaoOK(player,
+                        "Pet " + item.getId() + " chưa có đủ part trong mini_pet.");
+                return;
+            }
+            if ((item.template.type == 18 || item.template.type == 72) && !miniPet) {
                 pet = PetFollowManager.gI().findByID(item.getId());
                 if (pet == null) {
                     Service.getInstance().sendThongBaoOK(player,
@@ -499,6 +520,9 @@ public class InventoryService {
                 return;
             }
             player.inventory.itemsBag.set(index, itemSwap);
+            if (miniPet) {
+                MiniPet.callMiniPet(player, item.getId());
+            }
             if (pet != null) {
                 player.setPetFollow(pet);
                 PlayerService.gI().sendPetFollow(player);

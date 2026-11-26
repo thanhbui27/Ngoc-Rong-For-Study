@@ -472,7 +472,7 @@ public final class PartEditorServer {
         String sql = type == 5 ? "SELECT head,body,leg,bag FROM cai_trang WHERE id_temp=?" :
                 "SELECT head,body,leg FROM mini_pet WHERE id_temp=? LIMIT 1";
         int[] ids = {-1,-1,-1,-1};
-        if (type != 18 && type != 72) try (PreparedStatement ps = c.prepareStatement(sql)) {
+        if (type != 72) try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet r = ps.executeQuery()) {
                 if (r.next()) for (int i=0; i<(type==5?4:3); i++) ids[i] = r.getInt(i+1);
@@ -549,12 +549,12 @@ public final class PartEditorServer {
                     int power=number(item,"power",0), itemPart=number(item,"part",-1);
                     if (name.isBlank() || name.length()>255 || desc.length()>255 || icon<0 || icon>32767
                             || avatar < -1 || avatar>32767 || gender<0 || gender>3 || power<0 || itemPart < -1 || itemPart>32767) fail(400,"Thông tin item không hợp lệ");
-                    if (type==18 || type==72) for (String slot:new String[]{"head","body","leg"}) {
+                    if (type==72) for (String slot:new String[]{"head","body","leg"}) {
                         JsonObject part=mapping.has(slot) && mapping.get(slot).isJsonObject()?mapping.getAsJsonObject(slot):null;
                         if (part!=null && (number(part,"id",-1)>=0
                                 || part.has("frames") && part.get("frames").isJsonArray()
                                 && part.getAsJsonArray("frames").size()>0))
-                            fail(400,"Pet type 18/72 dùng pet_follow và ảnh icon, không dùng part đầu/thân/chân");
+                            fail(400,"Pet type 72 dùng pet_follow và ảnh icon, không dùng part đầu/thân/chân");
                     }
                     if(id>=0)lockItem(c,id);
                     JsonObject current = id < 0 ? null : loadItem(c,id);
@@ -568,13 +568,15 @@ public final class PartEditorServer {
                         id=scalar(c,"SELECT COALESCE(MAX(id),-1)+1 FROM item_template");
                         if (id!=count) fail(409,"Bảng item_template có ID bị khuyết; client cần ID liên tục");
                     }
-                    int head=savePart(c,mapping.getAsJsonObject("head"),0,staged,type==21);
-                    int body=savePart(c,mapping.getAsJsonObject("body"),1,staged,type==21);
-                    int leg=savePart(c,mapping.getAsJsonObject("leg"),2,staged,type==21);
+                    int head=savePart(c,mapping.getAsJsonObject("head"),0,staged,type==18||type==21);
+                    int body=savePart(c,mapping.getAsJsonObject("body"),1,staged,type==18||type==21);
+                    int leg=savePart(c,mapping.getAsJsonObject("leg"),2,staged,type==18||type==21);
                     int bag=number(mapping,"bag",-1);
                     if (bag < -1 || bag>32767) fail(400,"Bag ID không hợp lệ");
                     if (current==null && type==5 && head<0 && body<0 && leg<0) fail(400,"Cải trang mới cần ít nhất một part");
-                    if (type==21 && (head<0 || body<0 || leg<0)) fail(400,"Pet dùng được cần đủ head/body/leg");
+                    if ((type==18 || type==21) && (head<0 || body<0 || leg<0)
+                            && (type==21 || head>=0 || body>=0 || leg>=0))
+                        fail(400,"Pet dùng mini_pet cần đủ head/body/leg");
                     // Full costumes and pets commonly keep item_template.part=-1;
                     // their outfit IDs live in cai_trang/mini_pet instead.
                     if (type==5 && head>=0 && body<0 && leg<0) {

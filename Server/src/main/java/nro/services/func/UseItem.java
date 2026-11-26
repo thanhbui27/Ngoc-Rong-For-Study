@@ -136,7 +136,6 @@ public class UseItem {
                                 Item item = player.inventory.itemsBag.get(index);
                                 if (item.isNotNullItem()) {
                                     if (item.template.type == 21) {
-                                        MiniPet.callMiniPet(player, item.template.id);
                                         InventoryService.gI().itemBagToBody(player, index);
                                         break;
                                     }
