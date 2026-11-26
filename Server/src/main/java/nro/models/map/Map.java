@@ -140,8 +140,7 @@ public class Map implements Runnable {
         }
         if (this.mapId == ConstMap.DAO_KAME
                 && Manager.NPC_TEMPLATES.stream().anyMatch(template ->
-                        template.id == ConstNpc.ADMIN_ITEM_CATALOG
-                        && "Kho admin".equals(template.name))) {
+                        template.id == ConstNpc.ADMIN_ITEM_CATALOG)) {
             this.npcs.add(NpcFactory.createNPC(this.mapId, 1, 1260, 408,
                     ConstNpc.ADMIN_ITEM_CATALOG, 0));
         }
