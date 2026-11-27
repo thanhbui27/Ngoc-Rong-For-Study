@@ -1,0 +1,4 @@
+models/
+runtime/
+*.log
+memory/

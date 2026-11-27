@@ -14,7 +14,7 @@ import app
 import bot
 from app import Handler, LocalServer, valid_batch, valid_config, valid_config_update
 from bot import BotConfig, BotManager, BotRunner
-from protocol import Mob, Reader, Wire, java_utf, parse_map
+from protocol import ItemMap, Mob, Reader, Wire, java_utf, parse_map, parse_shop
 from routes import Routes
 from storage import ConfigStore
 
@@ -54,6 +54,15 @@ def stats_payload():
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_shop_packet_with_item_options_keeps_following_items_aligned(self):
+        payload = bytearray([0, 1]) + java_utf("Trang bị") + bytes([2])
+        payload += struct.pack(">HiiBHHBB", 21, 700, 0, 1, 50, 5, 0, 0)
+        payload += struct.pack(">HiiBBB", 212, 100, 0, 0, 0, 0)
+        self.assertEqual(parse_shop(bytes(payload)), {
+            21: {"gold": 700, "gems": 0, "options": [{"id": 50, "param": 5}]},
+            212: {"gold": 100, "gems": 0, "options": []},
+        })
+
     def test_first_quest_moves_opens_chest_and_harvests(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
             runner = BotRunner(BotConfig("Quest", "testuser", "testpass"))
@@ -118,7 +127,7 @@ class ProtocolTests(unittest.TestCase):
                 self.assertIn("spaceship", {step["kind"]
                                             for step in bot.MOVEMENT.plan(5, goal, gender=0)})
                 self.assertTrue(runner._quest(time.monotonic()))
-                self.assertIn("map 4", runner.action)
+                self.assertIn("Rừng xương (ID: 4)", runner.action)
             finally:
                 runner.close()
 
@@ -185,6 +194,165 @@ class ProtocolTests(unittest.TestCase):
                 with patch.object(runner, "_travel_to", return_value=True) as travel:
                     self.assertTrue(runner._quest(12))
                     travel.assert_called_once_with(46, 12)
+            finally:
+                runner.close()
+
+    def test_travel_status_shows_map_name_and_id(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass"))
+            try:
+                runner.map_id = 1
+                runner.map_name = "Đồi hoa cúc"
+                runner.x, runner.y = 100, 336
+                runner.waypoints = bot.ROUTES.maps[1]
+                runner._send = Mock()
+                self.assertTrue(runner._travel_to(47, 10))
+                self.assertEqual(runner.action, "Đang đi tới cổng sang Rừng Karin (ID: 47)")
+                self.assertEqual(runner._map_label(46), "Tháp Karin (ID: 46)")
+                self.assertEqual(runner._map_label(9999), "Map (ID: 9999)")
+            finally:
+                runner.close()
+
+    def test_quest_bot_collects_drops_and_resumes_target_mob(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass", stat="off"))
+            try:
+                runner._ready = True
+                runner.status = "running"
+                runner.map_id = 1
+                runner.hp = runner.max_hp = 100
+                runner.power = 3000
+                runner.damage = 10
+                runner.x = runner.y = 100
+                runner.task = {"task_id": 13, "index": 1,
+                               "steps": [{}, {"map_id": -1, "npc_id": -1,
+                                              "title": "Tiêu diệt Heo da xanh"}]}
+                runner.mobs = {0: Mob(0, 17, 2, 100, 100, 200, 200, 5, 0)}
+                runner.items = {7: ItemMap(7, 100, 100, 100, -1)}
+                sent = []
+                runner._send = lambda command, payload=b"": sent.append((command, payload))
+                with patch.object(runner, "_best_quest_map", return_value=1):
+                    runner._tick()
+                self.assertEqual(sent[-1], (-20, struct.pack(">H", 7)))
+
+                runner.items.clear()
+                runner._next_action = 0
+                with patch.object(runner, "_best_quest_map", return_value=1):
+                    runner._tick()
+                self.assertEqual(sent[-1], (54, b"\x00"))
+
+                runner._next_action = 0
+                runner.task = {"task_id": 2, "index": 0,
+                               "steps": [{"map_id": -1, "npc_id": -1, "title": "Tìm đùi gà"}]}
+                runner.mobs = {0: Mob(0, 1, 2, 100, 100, 200, 200, 5, 0)}
+                runner.items[7] = ItemMap(7, 100, 100, 100, -1)
+                runner.items[8] = ItemMap(8, 73, 100, 100, -1)
+                runner._tick()
+                self.assertEqual(sent[-1], (-20, struct.pack(">H", 8)))
+
+                runner.items.pop(8)
+                runner._next_action = 0
+                runner._tick()
+                self.assertEqual(sent[-1], (-20, struct.pack(">H", 7)))
+            finally:
+                runner.close()
+
+    def test_skip_quest_returns_home_and_waits_for_server_task(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass", stat="off"))
+            try:
+                runner._ready = True
+                runner.status = "running"
+                runner.hp = runner.max_hp = 100
+                runner.map_id = 47
+                runner.task = {"task_id": 9, "index": 2, "steps": [{}, {}, {}]}
+                runner._send = Mock()
+                runner.request_skip_quest()
+                runner._tick()
+                runner._send.assert_called_with(-15)
+                runner.map_id = 21
+                runner._next_action = 0
+                runner._tick()
+                runner._send.assert_called_with(126)
+                runner.task = {"task_id": 10, "index": 0, "steps": [{}]}
+                runner._next_action = 0
+                runner._tick()
+                self.assertIsNone(runner._skip_quest_id)
+            finally:
+                runner.close()
+
+    def test_farm_mode_does_not_follow_quest(self):
+        config = valid_config({"name": "Farm", "username": "testuser", "password": "testpass",
+                               "mode": "farm"})
+        self.assertEqual(config.mode, "farm")
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(config)
+            try:
+                runner._ready = True
+                runner.status = "running"
+                runner.map_id = 1
+                runner.hp = runner.max_hp = 100
+                runner.task = {"task_id": 9, "index": 2, "steps": [{}, {}, {}]}
+                runner._send = Mock()
+                with patch.object(runner, "_quest") as quest:
+                    runner._tick()
+                    quest.assert_not_called()
+            finally:
+                runner.close()
+
+    def test_ai_only_offers_affordable_usable_gear_and_skill_books(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("AI", "testuser", "testpass", mode="ai"))
+            try:
+                runner.gender = 0
+                runner.power = 10000
+                runner.gold = 1000
+                runner.gems = 10
+                runner.mp = 100
+                runner.learned_skill_ids = {0}
+                runner.bag_slots = {94: 2}
+                runner.bag = {94: 1}
+                runner.shop = {
+                    21: {"gold": 700, "gems": 0, "options": []},
+                    24: {"gold": 15000, "gems": 0, "options": []},
+                    79: {"gold": 0, "gems": 5, "options": []},
+                }
+                choices = {entry["id"] for entry in runner._ai_choices(10)}
+                self.assertIn("learn:94", choices)
+                self.assertIn("buy:21", choices)
+                self.assertNotIn("buy:24", choices)
+                self.assertNotIn("buy:79", choices)
+                runner._send = Mock()
+                self.assertTrue(runner._ai_apply({"choice": "learn:94", "reason": "học chưởng"}, 10))
+                runner._send.assert_called_with(-43, bytes([0, 1, 2]))
+                runner._subcommand(bytes([23]) + struct.pack(">H", 7))
+                self.assertIn(7, runner.learned_skill_ids)
+                self.assertNotIn("learn:94", {entry["id"] for entry in runner._ai_choices(20)})
+            finally:
+                runner.close()
+
+    def test_ai_sets_own_farming_goal_and_stat_focus(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("AI", "testuser", "testpass", mode="ai"))
+            try:
+                runner._ready = True
+                runner.status = "running"
+                runner.hp = runner.max_hp = 100
+                runner.map_id = 1
+                runner.power = 3000
+                runner.potential = 1000
+                runner.base_damage = 10
+                runner.task = {"task_id": 9, "index": 2, "steps": [{}, {}, {}]}
+                runner._send = Mock()
+                now = time.monotonic()
+                self.assertTrue(runner._ai_apply({"choice": "goal:farm", "reason": "cần luyện"}, now))
+                self.assertEqual(runner._ai_goal, "farm")
+                self.assertTrue(runner._ai_apply({"choice": "stat:attack", "reason": "tăng sát thương"}, now))
+                self.assertEqual(runner._ai_stat_focus, "attack")
+                with patch.object(runner, "_ai_tick", return_value=False), patch.object(runner, "_quest") as quest:
+                    runner._tick()
+                    quest.assert_not_called()
+                runner._send.assert_any_call(-30, bytes([16, 2]) + struct.pack(">h", 1))
             finally:
                 runner.close()
 
@@ -461,7 +629,7 @@ class ProtocolTests(unittest.TestCase):
             try:
                 runner._tick()
                 self.assertEqual(sent, [-7])
-                self.assertEqual(runner.action, "Đang đi tới cổng sang map 21")
+                self.assertEqual(runner.action, "Đang đi tới cổng sang Nhà Gôhan (ID: 21)")
             finally:
                 runner.close()
 

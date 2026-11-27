@@ -8,7 +8,7 @@ import random
 import re
 import threading
 import webbrowser
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -63,9 +63,9 @@ def valid_config(raw: dict) -> BotConfig:
         raise ValueError("Tự tạo tài khoản yêu cầu tên đăng nhập 4–18 ký tự")
     if auto_register and not 5 <= len(password) <= 18:
         raise ValueError("Tự tạo tài khoản yêu cầu mật khẩu 5–18 ký tự")
-    if mode not in ("auto", "farm", "quest") or stat not in ("balanced", "attack", "hp", "mp", "def", "off"):
+    if mode not in ("auto", "farm", "ai") or stat not in ("balanced", "attack", "hp", "mp", "def", "off"):
         raise ValueError("Chế độ bot hoặc cộng chỉ số không hợp lệ")
-    return BotConfig(name, username, password, host, port, "auto", stat,
+    return BotConfig(name, username, password, host, port, mode, stat,
                      heal_item, shop_map, shop_npc, shop_menu, shop_item, shop_min,
                      shop_target, trade_partner, auto_register, gender)
 
@@ -98,7 +98,7 @@ def valid_batch(raw: dict) -> list[BotConfig]:
 
 
 def valid_config_update(current: BotConfig, raw: dict) -> BotConfig:
-    allowed = {"stat", "gender", "heal_item", "shop_map", "shop_npc", "shop_menu",
+    allowed = {"mode", "stat", "gender", "heal_item", "shop_map", "shop_npc", "shop_menu",
                "shop_item", "shop_min", "shop_target", "trade_partner"}
     unknown = set(raw) - allowed
     if unknown:
@@ -226,6 +226,10 @@ class Handler(BaseHTTPRequestHandler):
                     bot.item_action(str(payload.get("action", "")), str(payload.get("location", "")), item_id)
                 elif parts[3] == "box":
                     bot.request_box()
+                elif parts[3] == "skip-quest":
+                    bot.request_skip_quest()
+                    if bot.config.mode == "farm":
+                        bot = MANAGER.update_config(parts[2], replace(bot.config, mode="auto"))
                 elif parts[3] == "config":
                     bot = MANAGER.update_config(parts[2], valid_config_update(bot.config, self._body()))
                 else:

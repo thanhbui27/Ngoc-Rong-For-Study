@@ -113,6 +113,23 @@ public class TaskService {
                 + player.playerTask.taskMain.subTasks.get(player.playerTask.taskMain.index).name);
     }
 
+    public void skipTaskMainAtHome(Player player) {
+        if (player.zone == null || player.zone.map.mapId != player.gender + 21) {
+            Service.getInstance().sendThongBao(player, "Hãy về nhà để bỏ qua nhiệm vụ");
+            return;
+        }
+        TaskMain current = player.playerTask.taskMain;
+        TaskMain next = getTaskMainById(player, current.id + 1);
+        if (next == current) {
+            Service.getInstance().sendThongBao(player, "Không có nhiệm vụ tiếp theo để bỏ qua");
+            return;
+        }
+        player.playerTask.taskMain = next;
+        sendTaskMain(player);
+        Service.getInstance().sendThongBao(player, "Đã bỏ qua nhiệm vụ; nhiệm vụ tiếp theo là "
+                + next.subTasks.get(next.index).name);
+    }
+
     public void sendBackTaskMain(Player player) {
         rewardDoneTask(player);
         player.playerTask.taskMain = TaskService.gI().getTaskMainById(player, player.playerTask.taskMain.id - 1);

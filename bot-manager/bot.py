@@ -11,6 +11,7 @@ import threading
 import time
 import uuid
 from collections import deque
+from concurrent.futures import Future
 from dataclasses import asdict, dataclass, field
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -19,6 +20,8 @@ from protocol import ItemMap, Reader, Wire, java_utf, parse_map, parse_player, p
 from movement import MovementUtility
 from routes import Routes
 from storage import ConfigStore
+from ai.local_model import EXECUTOR as AI_EXECUTOR, MODEL_CLIENT
+from ai import memory as ai_memory
 
 LOG_DIR = Path(__file__).resolve().parent / "logs"
 ROUTES = Routes()
@@ -43,6 +46,8 @@ QUEST_ITEM_HUNT_RULES = {
               "name": "Truyện Doremon tập 2"},
 }
 XAYDA_ENERGY_SKILL_IDS = frozenset(range(56, 63))
+SKILL_BOOK_BASES = {66: 0, 79: 2, 87: 4, 94: 1, 101: 3,
+                    108: 5, 115: 6, 122: 7, 129: 8}
 HOME_NPC_IDS = (0, 2, 1)  # Gohan, Moori, Paragus
 PLANET_MAPS = (
     frozenset((*range(0, 7), 21, 24, 39, 42)),
@@ -123,7 +128,7 @@ class BotRunner:
         self.x = self.y = 0
         self.hp = self.mp = self.max_hp = self.max_mp = 0
         self.stamina = self.max_stamina = 0
-        self.gold = self.potential = self.power = 0
+        self.gold = self.gems = self.potential = self.power = 0
         self.damage = self.defense = 0
         self.base_hp = self.base_mp = self.base_damage = self.base_defense = 0
         self.mobs: dict = {}
@@ -158,6 +163,9 @@ class BotRunner:
         self._shop_current_item = 0
         self._quest_step_done = ""
         self._quest_request_due = 0.0
+        self._skip_quest_id: int | None = None
+        self._skip_quest_due = 0.0
+        self._skip_quest_sent = False
         self._trade_phase = 0
         self._trade_due = 0.0
         self._stat_cursor = 0
@@ -181,6 +189,18 @@ class BotRunner:
         self._mob_last_killed: dict[int, float] = {}
         self._mob_attack_watch: dict[int, tuple[int, float]] = {}
         self._quest_target_templates: set[int] = set()
+        self._ai_future: Future | None = None
+        self._ai_next = 0.0
+        self._ai_shop_goal: tuple[int, int] | None = None
+        self._ai_shop_phase = ""
+        self._ai_shop_due = 0.0
+        self._ai_shop_cooldown: dict[str, float] = {}
+        self._ai_action_cooldown: dict[str, float] = {}
+        self._ai_selected_skill = -1
+        self._ai_feedback: tuple[str, str, dict, float] | None = None
+        self._ai_goal = "quest"
+        self._ai_goal_until = 0.0
+        self._ai_stat_focus = ""
         self._reconnect_attempt = 0
         self._recovering = False
         self._recover_hp_target = False
@@ -244,7 +264,9 @@ class BotRunner:
                 "x": self.x, "y": self.y,
                 "hp": self.hp, "max_hp": self.max_hp, "mp": self.mp, "max_mp": self.max_mp,
                 "stamina": self.stamina, "max_stamina": self.max_stamina,
-                "gold": self.gold, "power": self.power, "potential": self.potential,
+                "gold": self.gold, "gems": self.gems, "power": self.power, "potential": self.potential,
+                "ai_installed": MODEL_CLIENT.installed(),
+                "ai_goal": self._ai_goal, "ai_stat_focus": self._ai_stat_focus,
                 "damage": self.damage, "defense": self.defense, "kills": self.kills,
                 "picks": self.picks, "purchases": self.purchases, "mobs": len(self.mobs),
                 "items": len(self.items), "task": self.task.get("name", ""),
@@ -290,6 +312,9 @@ class BotRunner:
             self._shop_phase = self._shop_attempts = 0
             self._quest_step_done = ""
             self._quest_request_due = 0
+            self._skip_quest_id = None
+            self._skip_quest_due = 0
+            self._skip_quest_sent = False
             self._trade_phase = 0
             self._travel_goal = self._travel_map = -1
             self._travel_attempts = 0
@@ -304,6 +329,17 @@ class BotRunner:
             self._mob_last_killed.clear()
             self._mob_attack_watch.clear()
             self._quest_target_templates.clear()
+            self._ai_future = None
+            self._ai_next = 0
+            self._ai_shop_goal = None
+            self._ai_shop_phase = ""
+            self._ai_shop_cooldown.clear()
+            self._ai_action_cooldown.clear()
+            self._ai_selected_skill = -1
+            self._ai_feedback = None
+            self._ai_goal = "quest"
+            self._ai_goal_until = 0
+            self._ai_stat_focus = ""
             self._reconnect_attempt = 0
             self._recovering = False
             self._recover_hp_target = False
@@ -330,7 +366,7 @@ class BotRunner:
             self.character = ""
             self.gender = self.config.gender
             self.learned_skill_ids.clear()
-            self.power = self.potential = self.gold = 0
+            self.power = self.potential = self.gold = self.gems = 0
             self.hp = self.mp = self.max_hp = self.max_mp = 0
             self.stamina = self.max_stamina = 0
             self.damage = self.defense = 0
@@ -422,12 +458,32 @@ class BotRunner:
             raise ValueError("Bot phải đang chạy để mở rương")
         home = 21 + self.gender
         if self.map_id != home:
-            raise ValueError(f"Rương chỉ mở được ở nhà (map {home}); bot đang ở map {self.map_id}")
+            raise ValueError(f"Rương chỉ mở được ở {self._map_label(home)}; bot đang ở {self._map_label(self.map_id)}")
         npc = self.npcs.get(3)
         if npc is None or (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
             raise ValueError("Bot cần đứng gần rương đồ trong nhà")
         self._send(33, struct.pack(">h", 3))
         self.log("Mở rương đồ để tải vật phẩm")
+
+    def request_skip_quest(self) -> None:
+        if self.status != "running" or not self._ready:
+            raise ValueError("Bot cần vào game trước khi bỏ qua nhiệm vụ")
+        task_id = self.task.get("task_id")
+        if task_id is None:
+            raise ValueError("Chưa nhận được nhiệm vụ hiện tại từ server")
+        with self._lock:
+            if self._skip_quest_id is not None:
+                raise ValueError("Bot đang chờ bỏ qua nhiệm vụ")
+            self._skip_quest_id = task_id
+            self._skip_quest_due = 0
+            self._skip_quest_sent = False
+            self._next_action = 0
+            self.error = ""
+            if self.config.mode == "ai":
+                self._ai_goal = "quest"
+                self._ai_goal_until = 0
+                self._ai_action_cooldown["goal:farm"] = time.monotonic() + 300
+        self.log(f"Yêu cầu bỏ qua nhiệm vụ {task_id}; bot sẽ về nhà trước")
 
     def _reset_session(self) -> None:
         self._ready = self._client_ok = self._finish_sent = False
@@ -475,7 +531,7 @@ class BotRunner:
         self.learned_skill_ids.clear()
         self.hp = self.mp = self.max_hp = self.max_mp = 0
         self.stamina = self.max_stamina = 0
-        self.gold = self.power = self.potential = 0
+        self.gold = self.gems = self.power = self.potential = 0
         self.damage = self.defense = 0
         self.home_map = self.map_id = -1
         self.mobs, self.npcs, self.items, self.bag, self.bag_slots, self.box_slots, self.shop, self.task = {}, {}, {}, {}, {}, {}, {}, {}
@@ -585,6 +641,7 @@ class BotRunner:
                         self.home_map = self.map_id
                     self.x, self.y = data["x"], data["y"]
                     self.mobs, self.npcs, self.items = data["mobs"], data["npcs"], data["items"]
+                    self.shop = {}
                     self._focused_mob = None
                     self._mob_last_killed.clear()
                     self._mob_attack_watch.clear()
@@ -604,7 +661,7 @@ class BotRunner:
                     self._client_ok = True
                     self._send(-28, bytes([13]))
                 self._shop_phase = 0
-                self.log(f"Vào map {self.map_id} {self.map_name}, khu {self.zone}; {len(self.mobs)} quái")
+                self.log(f"Vào {self._map_label(self.map_id)}, khu {self.zone}; {len(self.mobs)} quái")
             elif command == 46:
                 with self._lock:
                     self.x, self.y = reader.i16(), reader.i16()
@@ -620,7 +677,7 @@ class BotRunner:
                         self._send(32, struct.pack(">hb", npc_id, self._travel_menu))
                         self._travel_phase = "wait"
                         self._travel_next = time.monotonic() + 8
-                        self.set_action(f"Đã chọn tàu từ map {step[0]} tới map {step[1]}")
+                        self.set_action(f"Đã chọn tàu từ {self._map_label(step[0])} tới {self._map_label(step[1])}")
                     else:
                         self._block_travel_step(time.monotonic(), "Menu tàu không có lựa chọn đích")
             elif command == 38:
@@ -674,7 +731,7 @@ class BotRunner:
                 with self._lock:
                     self.items[item_map_id] = item
                 item_name = ROUTES.item_names.get(item_id, f"vật phẩm ID {item_id}")
-                self.log(f"Vật phẩm rơi: {item_name} (map ID {item_map_id}, chủ sở hữu {owner_id})")
+                self.log(f"Vật phẩm rơi: {item_name} (ID vật phẩm trên map: {item_map_id}, chủ sở hữu {owner_id})")
             elif command in (-21, -20):
                 item_map_id = reader.u16()
                 with self._lock:
@@ -682,7 +739,7 @@ class BotRunner:
                     if command == -20:
                         self.picks += 1
                 if command == -20:
-                    self.log(f"Nhặt vật phẩm map ID {item_map_id}")
+                    self.log(f"Nhặt vật phẩm có ID trên map: {item_map_id}")
             elif command == -36:
                 if reader.u8() == 0:
                     slots: dict[int, int] = {}
@@ -808,6 +865,8 @@ class BotRunner:
             elif command == -44:
                 with self._lock:
                     self.shop = parse_shop(payload)
+                    if self._ai_shop_goal:
+                        self._ai_next = 0
                 self.log(f"Shop mở: {len(self.shop)} món")
             elif command == -86:
                 self._trade_packet(reader)
@@ -818,6 +877,7 @@ class BotRunner:
             elif command == 6:
                 with self._lock:
                     self.gold = reader.i64()
+                    self.gems = reader.i32()
             elif command == -3:
                 kind, amount = reader.u8(), reader.i32()
                 with self._lock:
@@ -836,7 +896,7 @@ class BotRunner:
                                 "không thể di chuyển tới", "không thể di chuyển đến",
                             ))):
                         self._block_travel_step(
-                            time.monotonic(), f"Đường tới map {self._travel_step[1]} bị server từ chối"
+                            time.monotonic(), f"Đường tới {self._map_label(self._travel_step[1])} bị server từ chối"
                         )
                     if self._pending_item_action:
                         self._item_feedback = notice[:200]
@@ -889,7 +949,7 @@ class BotRunner:
         elif sub == 4:
             with self._lock:
                 self.gold = reader.i64()
-                reader.raw(4)
+                self.gems = reader.i32()
                 self.hp, self.mp = reader.i32(), reader.i32()
         elif sub == 5:
             with self._lock:
@@ -901,6 +961,16 @@ class BotRunner:
             reader.raw(4)
             with self._lock:
                 self.hp, self.mp = reader.i32(), reader.i32()
+        elif sub in (23, 62):
+            skill_id = reader.u16()
+            template_id = ROUTES.skills_by_id.get(skill_id, {}).get("template_id")
+            with self._lock:
+                if template_id is not None:
+                    self.learned_skill_ids = {old for old in self.learned_skill_ids
+                                              if ROUTES.skills_by_id.get(old, {}).get("template_id") != template_id}
+                self.learned_skill_ids.add(skill_id)
+                self._ai_next = 0
+            self.log(f"Đã học kỹ năng {ROUTES.skills_by_id.get(skill_id, {}).get('name', skill_id)}")
 
     def _task_title(self) -> str:
         index = self.task.get("index", -1)
@@ -911,6 +981,10 @@ class BotRunner:
     def _npc_label(npc_id: int) -> str:
         name = ROUTES.npc_names.get(npc_id)
         return f"{name} (ID: {npc_id})" if name else f"NPC (ID: {npc_id})"
+
+    def _map_label(self, map_id: int) -> str:
+        name = self.map_name if map_id == self.map_id and self.map_name else ROUTES.map_names.get(map_id)
+        return f"{name or 'Map'} (ID: {map_id})"
 
     def _trade_packet(self, reader: Reader) -> None:
         action = reader.u8()
@@ -956,10 +1030,41 @@ class BotRunner:
             self._send(-15)
             self._next_action = now + 5
             return
-        needs_potential_for_quest = self.task.get("task_id") == 3 and self.task.get("index") == 0
-        if (self.config.stat != "off" or needs_potential_for_quest) and now >= self._next_stat:
+        if self._skip_quest_id is not None:
+            if self.task.get("task_id") != self._skip_quest_id:
+                self._skip_quest_id = None
+                self._skip_quest_sent = False
+                self.error = ""
+                self.set_action("Đã nhận nhiệm vụ tiếp theo từ server")
+                return
+            home_map = 21 + self.gender
+            if self.map_id != home_map:
+                if now >= self._skip_quest_due:
+                    self._send(-15)
+                    self._skip_quest_due = now + 5
+                self.set_action(f"Về {self._map_label(home_map)} để bỏ qua nhiệm vụ")
+                return
+            if not self._skip_quest_sent:
+                self._send(126)
+                self._skip_quest_sent = True
+                self._skip_quest_due = now + 10
+                self.set_action("Đã yêu cầu server bỏ qua nhiệm vụ; chờ nhiệm vụ tiếp theo")
+                return
+            if now < self._skip_quest_due:
+                return
+            self._skip_quest_id = None
+            self._skip_quest_sent = False
+            self.error = "Server chưa xác nhận bỏ qua nhiệm vụ; cần cập nhật server hỗ trợ lệnh 126"
+            self.log(self.error, "error")
+            self.set_action(self.error)
+            return
+        doing_quest = self.config.mode != "farm" and not (self.config.mode == "ai" and self._ai_goal == "farm")
+        needs_potential_for_quest = doing_quest and self.task.get("task_id") == 3 and self.task.get("index") == 0
+        stat_mode = (self._ai_stat_focus or ("balanced" if needs_potential_for_quest else "off")
+                     if self.config.mode == "ai" else self.config.stat)
+        if (stat_mode != "off" or needs_potential_for_quest) and now >= self._next_stat:
             self._next_stat = now + 3
-            self._upgrade_stat(force=needs_potential_for_quest)
+            self._upgrade_stat(force=needs_potential_for_quest, mode=stat_mode)
         # A character with no stamina cannot keep fighting.  Let it buy/use
         # grapes before the low-KI recovery loop sends it home for beans.
         if self.max_stamina > 0 and self.stamina <= 0 and self.hp * 100 > self.max_hp * 35:
@@ -978,12 +1083,15 @@ class BotRunner:
             return
         if self._supply(now):
             return
+        if self.config.mode == "ai" and self._ai_tick(now):
+            return
         self._quest_target_templates.clear()
-        if self._quest(now):
+        doing_quest = self.config.mode != "farm" and not (self.config.mode == "ai" and self._ai_goal == "farm")
+        if doing_quest and self._quest(now):
             return
         owned_items = [item for item in self.items.values() if item.owner_id in (-1, self.player_id)]
         quest_hunt = (self.task.get("task_id"), self.task.get("index"))
-        if quest_hunt in QUEST_ITEM_HUNT_RULES:
+        if doing_quest and quest_hunt in QUEST_ITEM_HUNT_RULES:
             quest_item_id = QUEST_ITEM_HUNT_RULES[quest_hunt]["item"]
             quest_items = [item for item in owned_items if item.template_id == quest_item_id]
             if quest_items:
@@ -1045,11 +1153,300 @@ class BotRunner:
                 # A focused mob with unchanged HP usually means the server considered
                 # the client out of range. Move directly toward it and retry.
                 self._mob_attack_watch[target.mob_id] = (target.hp, now)
+                basic_skill = (0, 2, 4)[min(max(self.gender, 0), 2)]
+                if self.config.mode == "ai" and self._ai_selected_skill not in (-1, basic_skill):
+                    self._send(34, struct.pack(">h", basic_skill))
+                    self._ai_selected_skill = basic_skill
+                    self.log(f"AI đổi về đòn cơ bản khi quái {mob_name} không mất HP")
                 self._move_towards(target.x, target.y)
                 self.set_action(f"Quái {mob_name} (ID {target.mob_id}) chưa mất HP; áp sát lại")
                 return
             self._send(54, bytes([target.mob_id]))
             self.set_action(f"Đang đánh quái {mob_name} (ID {target.mob_id}, HP {target.hp})")
+
+    def _ai_skill_levels(self) -> dict[int, int]:
+        levels: dict[int, int] = {}
+        for skill_id in self.learned_skill_ids:
+            skill = ROUTES.skills_by_id.get(skill_id)
+            if skill and skill["gender"] == self.gender:
+                template = skill["template_id"]
+                levels[template] = max(levels.get(template, 0), skill["point"])
+        return levels
+
+    @staticmethod
+    def _ai_book(item_id: int) -> tuple[int, int] | None:
+        for first, template in SKILL_BOOK_BASES.items():
+            if first <= item_id <= first + 6:
+                return template, item_id - first + 1
+        if item_id == 86:
+            return 2, 7
+        return None
+
+    def _ai_book_usable(self, book: tuple[int, int] | None, levels: dict[int, int]) -> bool:
+        if book is None or levels.get(book[0], 0) != book[1] - 1:
+            return False
+        return any(skill["gender"] == self.gender and skill["template_id"] == book[0]
+                   and skill["point"] == book[1] and skill["power_require"] <= self.power
+                   for skill in ROUTES.skills_by_id.values())
+
+    @staticmethod
+    def _ai_option_labels(options: list[dict]) -> list[str]:
+        return [ROUTES.option_names.get(option["id"], f"Chỉ số {option['id']}: #")
+                .replace("#", str(option["param"]))
+                for option in options if ROUTES.option_names.get(option["id"], "unknown")]
+
+    def _ai_choices(self, now: float) -> list[dict]:
+        choices = [{"id": "none", "description": "Tiếp tục nhiệm vụ hoặc đánh quái hiện tại"}]
+        if self._ai_goal == "quest":
+            if now >= self._ai_action_cooldown.get("goal:farm", 0):
+                choices.append({"id": "goal:farm", "description":
+                                "Tạm luyện sức mạnh bằng quái phù hợp trong 5 phút, rồi quay lại nhiệm vụ"})
+        else:
+            choices.append({"id": "goal:quest", "description": "Quay lại làm nhiệm vụ hiện tại ngay"})
+        stat_costs = {"hp": self.base_hp + 1000, "mp": self.base_mp + 1000,
+                      "attack": self.base_damage * 100, "def": (self.base_defense + 5) * 100000}
+        if any(0 < cost <= self.potential for cost in stat_costs.values()):
+            for stat in ("attack", "hp", "mp", "def", "balanced"):
+                if stat != self._ai_stat_focus:
+                    choices.append({"id": f"stat:{stat}", "description":
+                                    f"Tập trung cộng {stat} bằng tiềm năng sau mỗi 3 giây; "
+                                    f"chi phí kế tiếp {stat_costs.get(stat, min(stat_costs.values()))}"})
+        levels = self._ai_skill_levels()
+        worn_power = {ROUTES.item_types.get(item_id): ROUTES.item_power_require.get(item_id, 0)
+                      for item_id in self.worn_details}
+        for item_id, slot in self.bag_slots.items():
+            item_type = ROUTES.item_types.get(item_id, -1)
+            if (item_type in (0, 1, 2, 3, 4)
+                    and ROUTES.item_genders.get(item_id, 3) in (self.gender, 3)
+                    and worn_power.get(item_type, -1) <= ROUTES.item_power_require.get(item_id, 0)
+                    and ROUTES.item_power_require.get(item_id, 0) <= self.power
+                    and now >= self._ai_action_cooldown.get(f"equip:{item_id}", 0)):
+                choices.append({"id": f"equip:{item_id}", "description":
+                                f"Mặc {ROUTES.item_names.get(item_id, item_id)} từ túi; loại {item_type}; "
+                                f"chỉ số {self._ai_option_labels(self.bag_details.get(item_id, {}).get('options', []))}"})
+            book = self._ai_book(item_id)
+            if (item_type == 7 and self._ai_book_usable(book, levels)
+                    and ROUTES.item_genders.get(item_id, 3) in (self.gender, 3)
+                    and now >= self._ai_action_cooldown.get(f"learn:{item_id}", 0)):
+                choices.append({"id": f"learn:{item_id}", "description":
+                                f"Dùng {ROUTES.item_names.get(item_id, item_id)} trong túi"})
+        affordable_gear: dict[int, list[tuple[int, dict]]] = {}
+        for item_id, price in self.shop.items():
+            if (price["gold"] > self.gold or price["gems"] > self.gems
+                    or not (price["gold"] > 0 or price["gems"] > 0)
+                    or ROUTES.item_genders.get(item_id, 3) not in (self.gender, 3)
+                    or ROUTES.item_power_require.get(item_id, 0) > self.power
+                    or item_id in self.bag or item_id in self.worn_details
+                    or now < self._ai_action_cooldown.get(f"buy:{item_id}", 0)):
+                continue
+            item_type = ROUTES.item_types.get(item_id, -1)
+            if item_type in (0, 1, 2, 3, 4):
+                if ROUTES.item_power_require.get(item_id, 0) >= worn_power.get(item_type, -1):
+                    affordable_gear.setdefault(item_type, []).append((item_id, price))
+            elif item_type == 7:
+                book = self._ai_book(item_id)
+                if self._ai_book_usable(book, levels):
+                    choices.append({"id": f"buy:{item_id}", "description":
+                                    f"Mua {ROUTES.item_names.get(item_id, item_id)}; "
+                                    f"giá {price['gold']} vàng, {price['gems']} ngọc"})
+        for group in affordable_gear.values():
+            group.sort(key=lambda entry: ROUTES.item_power_require.get(entry[0], 0), reverse=True)
+            for item_id, price in group[:2]:
+                choices.append({"id": f"buy:{item_id}", "description":
+                                f"Mua {ROUTES.item_names.get(item_id, item_id)}; "
+                                f"yêu cầu {ROUTES.item_power_require.get(item_id, 0)} sức mạnh; "
+                                f"giá {price['gold']} vàng, {price['gems']} ngọc; "
+                                f"chỉ số {self._ai_option_labels(price.get('options', []))}"})
+        for template in (0, 1, 2, 3, 4, 5):
+            known = [ROUTES.skills_by_id[skill_id] for skill_id in self.learned_skill_ids
+                     if skill_id in ROUTES.skills_by_id
+                     and ROUTES.skills_by_id[skill_id]["template_id"] == template
+                     and ROUTES.skills_by_id[skill_id]["gender"] == self.gender]
+            if known and template != self._ai_selected_skill:
+                skill = max(known, key=lambda entry: entry["point"])
+                if skill["mana_use"] <= self.mp:
+                    choices.append({"id": f"skill:{template}", "description":
+                                    f"Chọn {skill['name']} cấp {skill['point']} để đánh; "
+                                    f"KI {skill['mana_use']}, sát thương {skill['damage']}%, "
+                                    f"hồi chiêu {skill['cool_down']} ms"})
+        if self._ai_shop_goal is None and not self.shop:
+            if self.gold >= 500 and now >= self._ai_shop_cooldown.get("gear", 0):
+                choices.append({"id": "visit:gear", "description": "Đến cửa hàng ở làng để xem trang bị theo hệ"})
+            if self.gems >= 5 and now >= self._ai_shop_cooldown.get("skill", 0):
+                choices.append({"id": "visit:skill", "description": "Đến Uron ở trạm tàu để xem sách kỹ năng"})
+        return choices[:24]
+
+    def _ai_observation(self) -> dict:
+        return {
+            "gender": self.gender, "map": self._map_label(self.map_id),
+            "power": self.power, "damage": self.damage, "defense": self.defense,
+            "hp": self.hp, "max_hp": self.max_hp, "mp": self.mp, "max_mp": self.max_mp,
+            "gold": self.gold, "gems": self.gems,
+            "potential": self.potential, "goal": self._ai_goal,
+            "stat_focus": self._ai_stat_focus or "chưa chọn", "kills": self.kills,
+            "quest_count": self.task.get("count", 0), "current_action": self.action,
+            "worn": [{"name": ROUTES.item_names.get(item_id, str(item_id)),
+                      "type": ROUTES.item_types.get(item_id, -1),
+                      "options": self._ai_option_labels(info.get("options", []))}
+                     for item_id, info in self.worn_details.items()],
+            "skills": self._ai_skill_levels(), "task": self._task_title(),
+            "recent_feedback": ai_memory.recent(self.id),
+        }
+
+    def _ai_shop_step(self, now: float) -> bool:
+        goal = self._ai_shop_goal
+        if goal is None:
+            return False
+        map_id, npc_id = goal
+        if self.map_id != map_id:
+            return self._travel_to(map_id, now)
+        npc = self.npcs.get(npc_id)
+        if npc is None:
+            self.set_action(f"AI chờ {self._npc_label(npc_id)} ở {self._map_label(map_id)}")
+            return True
+        if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
+            self._move_towards(*npc)
+            self.set_action(f"AI đi tới {self._npc_label(npc_id)}")
+            return True
+        if self.shop:
+            self._ai_shop_phase = "ready"
+            return False
+        if not self._ai_shop_phase:
+            self._send(33, struct.pack(">h", npc_id))
+            self._ai_shop_phase = "opened"
+            self._ai_shop_due = now + 1
+            self.set_action(f"AI mở shop {self._npc_label(npc_id)}")
+            return True
+        if self._ai_shop_phase == "opened" and now >= self._ai_shop_due and npc_id != 16:
+            self._send(32, struct.pack(">hb", npc_id, 0))
+            self._ai_shop_phase = "waiting"
+            self._ai_shop_due = now + 8
+            return True
+        if self._ai_shop_phase == "opened" and npc_id == 16 and now >= self._ai_shop_due:
+            self._ai_shop_phase = "waiting"
+            self._ai_shop_due = now + 8
+        if self._ai_shop_phase == "waiting" and now >= self._ai_shop_due:
+            self.log("AI không nhận được danh sách shop", "error")
+            self._ai_shop_goal = None
+            self._ai_shop_phase = ""
+            self._ai_next = now + 120
+            return False
+        return True
+
+    def _ai_tick(self, now: float) -> bool:
+        if self._ai_goal == "farm" and now >= self._ai_goal_until:
+            self._ai_goal = "quest"
+            self.log("AI kết thúc lượt luyện sức mạnh; quay lại nhiệm vụ")
+        if self._ai_feedback and now - self._ai_feedback[3] >= 3:
+            choice, reason, before, _ = self._ai_feedback
+            outcome = "Chưa thấy thay đổi từ server"
+            if choice.startswith("buy:") and self.bag.get(int(choice.split(":")[1]), 0) > before["count"]:
+                outcome = "Đã mua và nhận vật phẩm"
+            elif choice.startswith("equip:") and int(choice.split(":")[1]) in self.worn_details:
+                outcome = "Đã mặc trang bị"
+            elif choice.startswith("learn:") and self.learned_skill_ids != before["skills"]:
+                outcome = "Server đã cập nhật kỹ năng"
+            elif choice.startswith("skill:"):
+                outcome = "Đã gửi lệnh chọn kỹ năng; chờ hiệu quả chiến đấu"
+            ai_memory.append(self.id, choice, reason, outcome)
+            if outcome == "Chưa thấy thay đổi từ server":
+                self._ai_action_cooldown[choice] = now + 300
+            self._ai_feedback = None
+        if self._ai_shop_goal and self._ai_shop_phase != "ready":
+            if self._ai_shop_step(now):
+                return True
+        if self._ai_future is not None:
+            if not self._ai_future.done():
+                if self._ai_shop_goal:
+                    self.set_action("AI đang đọc dữ liệu shop và chọn hành động")
+                    return True
+                return False
+            try:
+                decision = self._ai_future.result()
+            except Exception as exc:
+                self.log(f"AI cục bộ chưa trả quyết định: {exc}", "error")
+                self._ai_next = now + 120
+                self._ai_shop_goal = None
+                self._ai_shop_phase = ""
+                self._ai_future = None
+                return False
+            self._ai_future = None
+            self._ai_next = now + 60
+            return self._ai_apply(decision, now)
+        if now < self._ai_next:
+            return bool(self._ai_shop_goal)
+        choices = self._ai_choices(now)
+        if len(choices) <= 1:
+            self._ai_next = now + 60
+            return bool(self._ai_shop_goal)
+        self._ai_future = AI_EXECUTOR.submit(MODEL_CLIENT.decide, self._ai_observation(), choices)
+        self._ai_next = now + 60
+        if self._ai_shop_goal:
+            self.set_action("AI đang đánh giá trang bị và sách kỹ năng trong shop")
+            return True
+        return False
+
+    def _ai_apply(self, decision: dict, now: float) -> bool:
+        choice = decision["choice"]
+        reason = str(decision.get("reason", ""))[:160]
+        if choice not in {entry["id"] for entry in self._ai_choices(now)}:
+            self.log(f"AI bỏ hành động đã lỗi thời: {choice}")
+            self._ai_shop_goal = None
+            self._ai_shop_phase = ""
+            return False
+        if choice == "none":
+            self._ai_shop_goal = None
+            self._ai_shop_phase = ""
+            return False
+        if choice.startswith("goal:"):
+            self._ai_goal = choice.split(":", 1)[1]
+            self._ai_goal_until = now + 300 if self._ai_goal == "farm" else 0
+            self.set_action(f"AI chọn mục tiêu {self._ai_goal}: {reason}")
+            ai_memory.append(self.id, choice, reason, "Đã đổi mục tiêu chơi")
+            return True
+        if choice.startswith("stat:"):
+            self._ai_stat_focus = choice.split(":", 1)[1]
+            self.set_action(f"AI chọn hướng cộng chỉ số {self._ai_stat_focus}: {reason}")
+            ai_memory.append(self.id, choice, reason, "Đã đổi hướng xây dựng nhân vật")
+            return True
+        if choice.startswith("visit:"):
+            kind = choice.split(":", 1)[1]
+            if kind == "gear":
+                self._ai_shop_goal = (PLANET_VILLAGE_MAPS[self.gender], PLANET_SHOP_NPCS[self.gender])
+            elif kind == "skill":
+                self._ai_shop_goal = (24 + self.gender, 16)
+            else:
+                return False
+            self._ai_shop_phase = ""
+            self._ai_shop_cooldown[kind] = now + 300
+            self.shop = {}
+            self.set_action(f"AI chọn đến shop {kind}: {reason}")
+            return True
+        action, value = choice.split(":", 1)
+        item_id = int(value)
+        before = {"count": self.bag.get(item_id, 0), "skills": set(self.learned_skill_ids)}
+        if action == "buy" and item_id in self.shop:
+            price = self.shop[item_id]
+            if price["gold"] > self.gold or price["gems"] > self.gems:
+                return False
+            self._send(6, bytes([0]) + struct.pack(">h", item_id))
+            self.purchases += 1
+        elif action == "equip" and item_id in self.bag_slots:
+            self._send(-40, bytes([4, self.bag_slots[item_id]]))
+        elif action == "learn" and item_id in self.bag_slots:
+            self._send(-43, bytes([0, 1, self.bag_slots[item_id]]))
+        elif action == "skill" and item_id in {meta["template_id"] for meta in
+                                             (ROUTES.skills_by_id.get(sid) for sid in self.learned_skill_ids)
+                                             if meta}:
+            self._send(34, struct.pack(">h", item_id))
+            self._ai_selected_skill = item_id
+        else:
+            return False
+        self._ai_feedback = (choice, reason, before, now)
+        self._ai_shop_goal = None
+        self._ai_shop_phase = ""
+        self.set_action(f"AI chọn {choice}: {reason}")
+        return True
 
     def _recover(self, now: float) -> bool:
         low_hp = self.max_hp > 0 and self.hp * 100 <= self.max_hp * 35
@@ -1246,8 +1643,8 @@ class BotRunner:
         self._send(-7, bytes([0]) + struct.pack(">hh", x, y))
         self.x, self.y = x, y
 
-    def _upgrade_stat(self, force: bool = False) -> None:
-        choices = {"balanced": (0, 1, 2, 3), "hp": (0,), "mp": (1,), "attack": (2,), "def": (3,)}.get(self.config.stat, ())
+    def _upgrade_stat(self, force: bool = False, mode: str | None = None) -> None:
+        choices = {"balanced": (0, 1, 2, 3), "hp": (0,), "mp": (1,), "attack": (2,), "def": (3,)}.get(mode or self.config.stat, ())
         if force and not choices:
             choices = (0, 1, 2, 3)
         for offset in range(len(choices)):
@@ -1401,7 +1798,7 @@ class BotRunner:
             if quest_item:
                 self.set_action("Đang tìm vật thể lạ: Đứa bé")
                 return False  # Let the common item handler approach and pick it up.
-            self.set_action(f"Chờ vật thể lạ xuất hiện trên hành tinh của mình (map {quest_map})")
+            self.set_action(f"Chờ vật thể lạ xuất hiện trên hành tinh của mình ở {self._map_label(quest_map)}")
             return True
         if task_id == 3 and index == 2:
             home_map = 21 + self.gender
@@ -1433,7 +1830,7 @@ class BotRunner:
             self._quest_target_templates = {target_mob}
             mob_name = ROUTES.mob_names.get(target_mob, f"quái ID {target_mob}")
             if self.map_id != target_map:
-                self.set_action(f"Đang tới map {target_map} săn {mob_name} lấy {hunt_rule['name']}")
+                self.set_action(f"Đang tới {self._map_label(target_map)} săn {mob_name} lấy {hunt_rule['name']}")
                 return self._travel_to(target_map, now)
             self.set_action(f"Nhiệm vụ: săn {mob_name} để nhặt {hunt_rule['name']}")
             return False  # Farm only the mob verified to drop this quest item.
@@ -1705,7 +2102,7 @@ class BotRunner:
         blocked = set(self._travel_blocked)
         step = MOVEMENT.next_step(self.map_id, goal, blocked, self.gender, allow_spaceships)
         if step is None:
-            self.set_action(f"Chưa có tuyến hợp lệ từ map {self.map_id} tới {goal}; đang chờ thử lại")
+            self.set_action(f"Chưa có tuyến hợp lệ từ {self._map_label(self.map_id)} tới {self._map_label(goal)}; đang chờ thử lại")
             self._travel_next = now + 10
             return True
 
@@ -1723,30 +2120,30 @@ class BotRunner:
             npc_id = step["npc_id"]
             npc = self.npcs.get(npc_id)
             if npc is None:
-                self.set_action(f"Chờ {self._npc_label(npc_id)} tại trạm tàu map {self.map_id}")
+                self.set_action(f"Chờ {self._npc_label(npc_id)} tại trạm tàu {self._map_label(self.map_id)}")
                 return True
             if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
                 self._move_towards(*npc)
-                self.set_action(f"Đi tới {self._npc_label(npc_id)} để sang map {step['go_map']}")
+                self.set_action(f"Đi tới {self._npc_label(npc_id)} để sang {self._map_label(step['go_map'])}")
                 return True
             if self._travel_phase == "menu":
                 if now < self._travel_next:
-                    self.set_action(f"Chờ xác nhận menu tàu tới map {step['go_map']}")
+                    self.set_action(f"Chờ xác nhận menu tàu tới {self._map_label(step['go_map'])}")
                     return True
                 self._block_travel_step(now, f"NPC {self._npc_label(npc_id)} không mở menu tàu")
                 return True
             if self._travel_phase == "wait":
                 if now < self._travel_next:
-                    self.set_action(f"Chờ tàu tới map {step['go_map']}")
+                    self.set_action(f"Chờ tàu tới {self._map_label(step['go_map'])}")
                     return True
                 self._travel_attempts += 1
                 if self._travel_attempts >= 2:
-                    self._block_travel_step(now, f"Tàu không chuyển map tới {step['go_map']}")
+                    self._block_travel_step(now, f"Tàu không chuyển map tới {self._map_label(step['go_map'])}")
                     return True
             self._send(33, struct.pack(">h", npc_id))
             self._travel_phase = "menu"
             self._travel_next = now + 5
-            self.set_action(f"Xin menu tàu từ map {self.map_id} tới map {step['go_map']}")
+            self.set_action(f"Xin menu tàu từ {self._map_label(self.map_id)} tới {self._map_label(step['go_map'])}")
             return True
 
         live = next((wp for wp in self.waypoints
@@ -1754,7 +2151,7 @@ class BotRunner:
         if live is None:
             self._travel_blocked[edge] = now + 30
             self._travel_step = None
-            self.set_action(f"Không thấy cổng map {self.map_id} → {step['go_map']}; đổi tuyến")
+            self.set_action(f"Không thấy cổng từ {self._map_label(self.map_id)} → {self._map_label(step['go_map'])}; đổi tuyến")
             return True
 
         if self._travel_goal != goal or self._travel_map != self.map_id:
@@ -1771,23 +2168,23 @@ class BotRunner:
             elif now - self._travel_progress_at >= 12:
                 self._travel_blocked[edge] = now + 30
                 self._travel_step = None
-                self.set_action(f"Không tiến được tới cổng map {step['go_map']}; thử đường khác")
+                self.set_action(f"Không tiến được tới cổng sang {self._map_label(step['go_map'])}; thử đường khác")
                 return True
             if not self._travel_last_distance:
                 self._travel_last_distance = distance
             self._move_towards(x, y)
-            self.set_action(f"Đang đi tới cổng sang map {step['go_map']}")
+            self.set_action(f"Đang đi tới cổng sang {self._map_label(step['go_map'])}")
             return True
         if now >= self._travel_next and self._travel_attempts < 3:
             self._send(-23)
             self._travel_attempts += 1
             self._travel_next = now + 5
-            self.set_action(f"Đang qua cổng tới map {step['go_map']} (lần {self._travel_attempts})")
+            self.set_action(f"Đang qua cổng tới {self._map_label(step['go_map'])} (lần {self._travel_attempts})")
         elif self._travel_attempts >= 3 and now >= self._travel_next:
             self._travel_blocked[edge] = now + 30
             self._travel_step = None
             self._travel_attempts = 0
-            self.set_action(f"Cổng tới map {step['go_map']} không phản hồi; thử đường khác")
+            self.set_action(f"Cổng tới {self._map_label(step['go_map'])} không phản hồi; thử đường khác")
         return True
 
 
@@ -1897,3 +2294,4 @@ class BotManager:
             bots = list(self._bots.values())
         for bot in bots:
             bot.close()
+        MODEL_CLIENT.stop()

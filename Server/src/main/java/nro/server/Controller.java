@@ -530,6 +530,11 @@ public class Controller {
                 case -30:
                     messageSubCommand(_session, _msg);
                     break;
+                case 126: // Bỏ qua nhiệm vụ chính tại nhà; không nhận thưởng nhiệm vụ cũ.
+                    if (player != null) {
+                        TaskService.gI().skipTaskMainAtHome(player);
+                    }
+                    break;
                 case -15: // về nhà
                     if (player != null) {
                         player.isGoHome = true;

@@ -66,6 +66,7 @@ function renderList() {
 }
 
 function fill(id, value) { $(id).textContent = value ?? '—'; }
+function mapLabel(bot) { return bot.map_id >= 0 ? `${bot.map_name || 'Map'} (ID: ${bot.map_id})` : '—'; }
 
 function renderItems(container, items, location, running) {
   const entries = Object.values(items || {}).filter(item => Number(item.count) > 0);
@@ -100,7 +101,7 @@ function showTab(tab) {
 
 function populateConfig(bot) {
   const form = $('config-form');
-  for (const key of ['gender','stat','heal_item','shop_map','shop_npc','shop_menu','shop_item','shop_min','shop_target','trade_partner']) {
+  for (const key of ['mode','gender','stat','heal_item','shop_map','shop_npc','shop_menu','shop_item','shop_min','shop_target','trade_partner']) {
     const value = key === 'gender' ? bot.create_gender : bot[key];
     form.elements[key].value = value ?? (key === 'stat' ? 'balanced' : 0);
   }
@@ -134,12 +135,12 @@ function renderDetail(bot) {
   fill('detail-action', `${bot.character || bot.name}: ${bot.action}`);
   fill('detail-action-detail', bot.recovering
     ? `KI ${bot.mp}/${bot.max_mp} · Thể lực ${bot.stamina}/${bot.max_stamina} · Cây đậu ${bot.tree_peas >= 0 ? `${bot.tree_peas} hạt` : 'đang kiểm tra'}`
-    : bot.character ? `Nhân vật ${bot.character} · Thể lực ${bot.stamina}/${bot.max_stamina} · ${bot.map_name || 'chưa vào map'}` : `Tài khoản ${bot.username}`);
+    : bot.character ? `Nhân vật ${bot.character} · Thể lực ${bot.stamina}/${bot.max_stamina} · ${bot.map_id >= 0 ? mapLabel(bot) : 'chưa vào map'}` : `Tài khoản ${bot.username}`);
   fill('activity-badge', bot.status === 'running' ? '● Đang hoạt động' : bot.status === 'connecting' ? '● Đang kết nối' : bot.status === 'reconnecting' ? '● Chờ kết nối lại' : bot.status === 'error' ? '● Có lỗi' : '● Đã dừng');
   $('activity-badge').className = `activity-badge ${bot.status}`;
   $('detail-error').hidden = !bot.error;
   fill('detail-error', bot.error);
-  fill('stat-map', bot.map_id >= 0 ? `${bot.map_id} · ${bot.map_name}` : '—');
+  fill('stat-map', mapLabel(bot));
   fill('stat-hp', `${bot.hp} / ${bot.max_hp}`);
   fill('stat-mp', `${bot.mp} / ${bot.max_mp}`);
   fill('stat-stamina', `${bot.stamina} / ${bot.max_stamina}`);
@@ -162,7 +163,7 @@ function renderDetail(bot) {
   fill('character-potential', Number(bot.potential || 0).toLocaleString('vi-VN'));
   fill('character-damage', Number(bot.damage || 0).toLocaleString('vi-VN'));
   fill('character-defense', Number(bot.defense || 0).toLocaleString('vi-VN'));
-  fill('character-location', bot.map_id >= 0 ? `${bot.map_id} · ${bot.map_name} (${bot.x}, ${bot.y})` : 'Chưa vào map');
+  fill('character-location', bot.map_id >= 0 ? `${mapLabel(bot)} (${bot.x}, ${bot.y})` : 'Chưa vào map');
   renderItems($('character-worn'), bot.worn_details, 'worn', bot.status === 'running');
   renderItems($('character-bag'), bot.bag_details, 'bag', bot.status === 'running');
   renderItems($('character-box'), bot.box_details, 'box', bot.status === 'running');
@@ -170,7 +171,10 @@ function renderDetail(bot) {
   fill('quest-name', bot.task || 'Chưa có nhiệm vụ');
   fill('quest-step', bot.task_title ? `Bước ${bot.task_step + 1}: ${bot.task_title}${bot.task_count ? ` · ${bot.task_count}` : ''}` : 'Chưa có bước nhiệm vụ');
   const powerGoal = /Đạt\s+([\d.,]+)\s+triệu\s+sức mạnh/i.exec(bot.task_title || '');
-  if (powerGoal) {
+  if (bot.mode === 'farm') {
+    $('quest-progress').hidden = true;
+    fill('quest-hint', 'Chế độ chỉ đánh quái: bot tạm bỏ qua nhiệm vụ và chọn quái theo sức mạnh hiện tại.');
+  } else if (powerGoal) {
     const target = Number(powerGoal[1].replace(',', '.')) * 1000000;
     $('quest-progress').hidden = false;
     $('quest-progress-bar').style.width = `${Math.min(100, (bot.power || 0) / target * 100)}%`;
@@ -182,11 +186,17 @@ function renderDetail(bot) {
     $('quest-progress').hidden = true;
     fill('quest-hint', 'Bot ưu tiên quái của nhiệm vụ khi xác định được mục tiêu từ bước hiện tại.');
   }
+  if (bot.mode === 'ai') {
+    const goal = bot.ai_goal === 'farm' ? 'luyện sức mạnh' : 'làm nhiệm vụ';
+    const stat = bot.ai_stat_focus || 'đang chọn';
+    fill('quest-hint', `AI cục bộ: ${bot.ai_installed ? 'sẵn sàng' : 'chưa cài model'} · mục tiêu ${goal} · hướng cộng chỉ số ${stat}. ${$('quest-hint').textContent}`);
+  }
   fill('log-path', bot.log_file);
   $('log-path').title = bot.log_file;
   document.querySelectorAll('[data-command="start"]').forEach(button => button.disabled = ['running','connecting','reconnecting'].includes(bot.status));
   document.querySelectorAll('[data-command="stop"]').forEach(button => button.disabled = ['stopped','disconnected','error'].includes(bot.status));
   document.querySelectorAll('[data-command="trade"]').forEach(button => button.disabled = bot.status !== 'running');
+  $('skip-quest').disabled = bot.status !== 'running' || bot.task_step < 0;
   const currentLogVersion = `${bot.log_seq}:${bot.logs?.length || 0}`;
   if (logVersion !== currentLogVersion) {
     const log = $('event-log');
@@ -331,6 +341,7 @@ $('trade-form').onsubmit = async event => {
   } catch (error) { notice.textContent = error.message; notice.classList.add('error'); }
 };
 $('trade-invite').onclick = () => command('trade');
+$('skip-quest').onclick = () => command('skip-quest');
 $('auto-scroll').checked = localStorage.getItem('nro-bot-auto-scroll') !== 'false';
 $('auto-scroll').onchange = event => localStorage.setItem('nro-bot-auto-scroll', String(event.target.checked));
 ['username_prefix','start_number','count'].forEach(name => $('create-form').elements[name].addEventListener('input', previewBatch));

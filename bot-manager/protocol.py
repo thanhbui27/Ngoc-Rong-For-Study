@@ -206,7 +206,8 @@ def parse_player(payload: bytes) -> dict:
         skill_count = reader.u8()
         result["skill_ids"] = [reader.u16() for _ in range(skill_count)]
         result["gold"] = reader.i64()
-        reader.raw(8)  # ruby and gems
+        result["gems"] = reader.i32()
+        reader.raw(4)  # ruby
         worn_slots: dict[int, int] = {}
         worn_details: dict[int, dict] = {}
         worn_items = read_items(reader, worn_slots, worn_details)
@@ -301,10 +302,10 @@ def parse_shop(payload: bytes) -> dict[int, dict]:
         reader.utf()
         for _ in range(reader.u8()):
             item_id, gold, gems = reader.u16(), reader.i32(), reader.i32()
-            for _ in range(reader.u8()):
-                reader.raw(3)
+            options = [{"id": reader.u16(), "param": reader.u16()}
+                       for _ in range(reader.u8())]
             reader.raw(1)
             if reader.u8():
                 reader.raw(8)
-            items[item_id] = {"gold": gold, "gems": gems}
+            items[item_id] = {"gold": gold, "gems": gems, "options": options}
     return items

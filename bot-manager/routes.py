@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import json
 from collections import deque
 from pathlib import Path
 
@@ -10,7 +11,8 @@ SEED = Path(__file__).resolve().parent.parent / "ngocrong-clean.sql"
 ROW = re.compile(r"^\((\d+), '((?:''|[^'])*)', '[^']*', \d+, \d+, '([^']*)', '([^']*)'")
 MOB_ROW = re.compile(r"^\((\d+), \d+, '((?:''|[^'])*)', (\d+),")
 NPC_ROW = re.compile(r"^\((\d+), '((?:''|[^'])*)',")
-ITEM_ROW = re.compile(r"^\((\d+), (\d+), \d+, '((?:''|[^'])*)', '((?:''|[^'])*)', (\d+),")
+ITEM_ROW = re.compile(r"^\((\d+), (\d+), (\d+), '((?:''|[^'])*)', '((?:''|[^'])*)', (\d+), -?\d+, \d+, (\d+)\)[,;]$")
+SKILL_ROW = re.compile(r"^\((\d+), (\d+), '((?:''|[^'])*)', .*?, '(\[\{.*\}\])', '")
 OPTION_ROW = re.compile(r"^\((\d+), '((?:''|[^'])*)', \d+\)[,;]$")
 MOB_SPAWN = re.compile(r"\[(\d+),(\d+),(\d+),-?\d+,-?\d+\]")
 CAPTION_ROW = re.compile(r"^\((\d+), .*, (\d+)\)[,;]$")
@@ -21,16 +23,20 @@ HEAD_AVATAR_ROW = re.compile(r"^\((\d+), (\d+)\)[,;]$")
 class Routes:
     def __init__(self, seed: Path = SEED):
         self.maps: dict[int, list[dict]] = {}
+        self.map_names: dict[int, str] = {}
         self.farm_maps: set[int] = set()
         self.mob_names: dict[int, str] = {}
         self.npc_names: dict[int, str] = {}
         self.item_names: dict[int, str] = {}
         self.item_descriptions: dict[int, str] = {}
         self.item_types: dict[int, int] = {}
+        self.item_genders: dict[int, int] = {}
+        self.item_power_require: dict[int, int] = {}
         self.item_icon_ids: dict[int, int] = {}
         self.option_names: dict[int, str] = {}
         self.avatar_by_head: dict[int, int] = {}
         self.mob_hp: dict[int, int] = {}
+        self.skills_by_id: dict[int, dict] = {}
         self.map_mobs: dict[int, list[tuple[int, int, int]]] = {}
         self.power_thresholds: list[int] = []
         if not seed.exists():
@@ -42,12 +48,37 @@ class Routes:
         in_items = False
         in_options = False
         in_head_avatars = False
+        in_skills = False
         with seed.open(encoding="utf-8") as source:
             for line in source:
                 if line.startswith("INSERT INTO `map_template`"):
                     in_maps = True
                     in_mobs = False
                     in_captions = False
+                    continue
+                if line.startswith("INSERT INTO `skill_template`"):
+                    in_skills = True
+                    in_maps = in_mobs = in_captions = in_npcs = in_items = in_options = False
+                    continue
+                if in_skills:
+                    match = SKILL_ROW.match(line)
+                    if match:
+                        try:
+                            levels = json.loads(match.group(4).replace('\\"', '"'))
+                        except json.JSONDecodeError:
+                            levels = []
+                        for level in levels:
+                            self.skills_by_id[int(level["id"])] = {
+                                "gender": int(match.group(1)), "template_id": int(match.group(2)),
+                                "name": match.group(3).replace("''", "'"),
+                                "power_require": level.get("power_require", 0),
+                                "point": level.get("point", 0),
+                                "mana_use": level.get("mana_use", 0),
+                                "cool_down": level.get("cool_down", 0),
+                                "damage": level.get("damage", 0),
+                            }
+                    elif line.startswith("CREATE TABLE") or line.strip() == "--":
+                        in_skills = False
                     continue
                 if line.startswith("INSERT INTO `item_template`"):
                     in_items = True
@@ -80,9 +111,11 @@ class Routes:
                     if match:
                         item_id, item_type = int(match.group(1)), int(match.group(2))
                         self.item_types[item_id] = item_type
-                        self.item_names[item_id] = match.group(3).replace("''", "'")
-                        self.item_descriptions[item_id] = match.group(4).replace("''", "'")
-                        self.item_icon_ids[item_id] = int(match.group(5))
+                        self.item_genders[item_id] = int(match.group(3))
+                        self.item_names[item_id] = match.group(4).replace("''", "'")
+                        self.item_descriptions[item_id] = match.group(5).replace("''", "'")
+                        self.item_icon_ids[item_id] = int(match.group(6))
+                        self.item_power_require[item_id] = int(match.group(7))
                     elif line.startswith("CREATE TABLE") or line.strip() == "--":
                         in_items = False
                     continue
@@ -129,6 +162,7 @@ class Routes:
                         in_maps = False
                     continue
                 map_id = int(match.group(1))
+                self.map_names[map_id] = match.group(2).replace("''", "'")
                 spawns = [tuple(map(int, spawn)) for spawn in MOB_SPAWN.findall(match.group(4))]
                 self.map_mobs[map_id] = spawns
                 if spawns:
