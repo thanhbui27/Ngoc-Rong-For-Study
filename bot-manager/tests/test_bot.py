@@ -303,12 +303,35 @@ class ProtocolTests(unittest.TestCase):
                 runner._packet(32, confirm)
                 runner._send.assert_called_with(32, struct.pack(">hb", 18, 0))
                 boss_id = -351126
+                self.assertEqual(runner._karin_boss_id, boss_id)
+                self.assertEqual(runner._karin_boss_pos, (420, 408))
                 boss = (bytes([7]) + struct.pack(">i", boss_id) + bytes(11) + java_utf("Karin")
                         + struct.pack(">ii", 500, 500) + bytes(6) + struct.pack(">hh", 100, 100))
                 runner._packet(-30, boss)
                 self.assertEqual(runner._karin_boss_id, boss_id)
                 self.assertTrue(runner._quest(20))
                 runner._send.assert_called_with(-60, struct.pack(">i", boss_id))
+            finally:
+                runner.close()
+
+    def test_tau_quest_trains_when_weak_and_attacks_when_ready(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Tau", "testuser", "testpass"))
+            runner._send = Mock()
+            try:
+                runner.player_id = 49
+                runner.task = {"task_id": 10, "index": 1, "steps": [
+                    {}, {"map_id": 0, "npc_id": -1, "title": "Tiêu diệt Tàu Pảy Pảy"}]}
+                runner.map_id = 46
+                runner.damage, runner.max_hp = 24, 1048
+                self.assertTrue(runner._quest(10))
+                runner._send.assert_called_with(-15)
+                runner.map_id = 21
+                self.assertFalse(runner._quest(11))
+                runner.map_id, runner.x, runner.y = 47, 775, 300
+                runner.damage, runner.max_hp = 500, 4000
+                self.assertTrue(runner._quest(12))
+                runner._send.assert_called_with(-60, struct.pack(">i", -10251052))
             finally:
                 runner.close()
 
