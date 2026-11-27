@@ -11,9 +11,11 @@ import webbrowser
 from dataclasses import asdict, replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from bot import BotConfig, BotManager, human_nickname
+from ai.chatgpt_model import CHATGPT_MODEL
+from ai.local_model import MODEL_CLIENT
 
 ROOT = Path(__file__).resolve().parent
 MANAGER = BotManager()
@@ -113,7 +115,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, fmt: str, *args) -> None:
         # Credentials and request bodies never go to console logs.
-        if not self.path.startswith("/api/bots"):
+        if not self.path.startswith(("/api/bots", "/api/ai", "/auth/chatgpt/callback")):
             super().log_message(fmt, *args)
 
     def _json(self, status: int, data: dict | list) -> None:
@@ -142,7 +144,29 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         try:
             parts = self._parts()
-            if len(parts) == 3 and parts[:2] == ["assets", "icon"] and re.fullmatch(r"\d+\.png", parts[2]):
+            if parts == ["auth", "chatgpt", "callback"]:
+                try:
+                    CHATGPT_MODEL.finish_sign_in(parse_qs(urlparse(self.path).query))
+                    if CHATGPT_MODEL.status()["provider"] == "chatgpt":
+                        MODEL_CLIENT.stop()
+                    message = "Đã kết nối ChatGPT. Quay lại Bot Manager để chọn model."
+                except Exception as exc:
+                    message = "Kết nối ChatGPT thất bại: " + str(exc)
+                import html
+                content = ("<!doctype html><html lang='vi'><meta charset='utf-8'>"
+                           "<title>Kết nối ChatGPT</title><body><h2>" + html.escape(message) +
+                           "</h2><a href='/'>Quay lại Bot Manager</a></body></html>").encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            elif parts == ["api", "ai", "status"]:
+                self._json(200, CHATGPT_MODEL.status())
+            elif parts == ["api", "ai", "models"]:
+                self._json(200, CHATGPT_MODEL.models())
+            elif len(parts) == 3 and parts[:2] == ["assets", "icon"] and re.fullmatch(r"\d+\.png", parts[2]):
                 icon_id = int(parts[2][:-4])
                 image = ROOT.parent / "Server" / "resources" / "normal" / "image" / "3" / "icon" / f"{icon_id}.png"
                 if not image.is_file():
@@ -181,16 +205,44 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(404, {"error": "Không tìm thấy"})
         except KeyError:
             self._json(404, {"error": "Bot không tồn tại"})
+        except RuntimeError as exc:
+            self._json(400, {"error": str(exc)})
 
     def do_POST(self) -> None:
         try:
             parts = self._parts()
-            if parts == ["api", "bots", "start-all"]:
+            if parts == ["api", "ai", "sign-in"]:
+                payload = self._body()
+                callback = f"http://127.0.0.1:{self.server.server_address[1]}/auth/chatgpt/callback"
+                url = CHATGPT_MODEL.start_sign_in(callback, new_account=payload.get("new_account") is True)
+                self._json(200, {"url": url})
+            elif parts == ["api", "ai", "provider"]:
+                CHATGPT_MODEL.set_provider(str(self._body().get("provider", "")))
+                if CHATGPT_MODEL.status()["provider"] == "chatgpt":
+                    MODEL_CLIENT.stop()
+                self._json(200, CHATGPT_MODEL.status())
+            elif parts == ["api", "ai", "model"]:
+                CHATGPT_MODEL.select_model(str(self._body().get("model", "")))
+                self._json(200, CHATGPT_MODEL.status())
+            elif parts == ["api", "ai", "research"]:
+                self._body()
+                self._json(200, {"research": CHATGPT_MODEL.research()})
+            elif parts == ["api", "bots", "start-all"]:
                 bots = MANAGER.all()
                 candidates = [MANAGER.get(item["id"]) for item in bots
                               if item["status"] not in ("running", "connecting", "reconnecting")]
                 MANAGER.start_many(candidates)
                 self._json(200, {"ok": True, "count": len(candidates)})
+            elif parts == ["api", "bots", "ai-all"]:
+                if CHATGPT_MODEL.status()["provider"] != "chatgpt":
+                    raise ValueError("Hãy kết nối và chọn model ChatGPT trước")
+                changed = 0
+                for item in MANAGER.all():
+                    bot = MANAGER.get(item["id"])
+                    if bot.config.mode != "ai":
+                        MANAGER.update_config(item["id"], replace(bot.config, mode="ai"))
+                        changed += 1
+                self._json(200, {"ok": True, "count": changed})
             elif parts == ["api", "bots", "delete-all"]:
                 self._json(200, {"ok": True, "count": MANAGER.remove_all()})
             elif parts == ["api", "bots", "stop-all"]:

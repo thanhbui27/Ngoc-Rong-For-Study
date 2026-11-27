@@ -21,6 +21,7 @@ from movement import MovementUtility
 from routes import Routes
 from storage import ConfigStore
 from ai.local_model import EXECUTOR as AI_EXECUTOR, MODEL_CLIENT
+from ai.chatgpt_model import CHATGPT_MODEL, EXECUTOR as CHATGPT_EXECUTOR
 from ai import memory as ai_memory
 
 LOG_DIR = Path(__file__).resolve().parent / "logs"
@@ -272,6 +273,7 @@ class BotRunner:
                 "gold": self.gold, "gems": self.gems, "power": self.power, "potential": self.potential,
                 "ai_installed": MODEL_CLIENT.installed(),
                 "ai_runtime_running": MODEL_CLIENT.running(),
+                "ai_provider": CHATGPT_MODEL.status()["provider"],
                 "ai_goal": self._ai_goal, "ai_stat_focus": self._ai_stat_focus,
                 "damage": self.damage, "defense": self.defense, "kills": self.kills,
                 "picks": self.picks, "purchases": self.purchases, "mobs": len(self.mobs),
@@ -1445,7 +1447,10 @@ class BotRunner:
         if len(choices) <= 1:
             self._ai_next = now + 60
             return bool(self._ai_shop_goal)
-        self._ai_future = AI_EXECUTOR.submit(MODEL_CLIENT.decide, self._ai_observation(), choices)
+        use_chatgpt = CHATGPT_MODEL.status()["provider"] == "chatgpt"
+        executor = CHATGPT_EXECUTOR if use_chatgpt else AI_EXECUTOR
+        client = CHATGPT_MODEL if use_chatgpt else MODEL_CLIENT
+        self._ai_future = executor.submit(client.decide, self._ai_observation(), choices)
         self._ai_next = now + 60
         if self._ai_shop_goal:
             self.set_action("AI đang đánh giá trang bị và sách kỹ năng trong shop")

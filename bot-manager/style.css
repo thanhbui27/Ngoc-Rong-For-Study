@@ -141,6 +141,12 @@ details { border-top:1px solid #2a3d54; padding-top:12px; }.form-body summary { 
 .feature-panel p,.feature-hint { color:#9eb2ce; font-size:13px; }
 .ai-summary { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0; }
 .ai-summary span { padding:7px 10px; border:1px solid #344b68; border-radius:8px; color:#c9d9ef; background:#102138; font-size:12px; }
+.ai-connection { border:1px solid #344b68; border-radius:10px; padding:16px; margin:18px 0; background:#102138; display:grid; gap:12px; }
+.ai-connection h3,.ai-connection p { margin:0; }
+.ai-connection label { display:grid; gap:6px; }
+.ai-connection select { width:100%; }
+#ai-research-result { color:#a8bad5; white-space:pre-wrap; }
+#ai-connection-notice { color:#d9c9ff; }
 .ai-history { display:grid; gap:10px; max-height:65vh; overflow:auto; padding-right:4px; }
 .ai-entry { border:1px solid #344b68; border-radius:10px; padding:12px 14px; background:#101e31; overflow-wrap:anywhere; }
 .ai-entry-head { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }

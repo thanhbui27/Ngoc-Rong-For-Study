@@ -2,3 +2,4 @@ models/
 runtime/
 *.log
 memory/
+state/
