@@ -11,6 +11,7 @@ let rendered = null;
 let logVersion = null;
 let aiVersion = null;
 let aiConnectionVersion = null;
+let aiBotModesVersion = null;
 let createMode = 'single';
 let view = 'manage';
 let activeTab = 'overview';
@@ -25,13 +26,15 @@ async function request(path, options = {}) {
 
 function showView(next) {
   view = next;
-  $('nav-manage').classList.toggle('active', next === 'manage' && activeTab !== 'ai');
+  $('nav-manage').classList.toggle('active', next === 'manage');
   $('nav-create').classList.toggle('active', next === 'create');
-  $('nav-ai').classList.toggle('active', next === 'manage' && activeTab === 'ai');
+  $('nav-ai').classList.toggle('active', next === 'ai');
   $('create-view').hidden = next !== 'create';
+  $('ai-connection-view').hidden = next !== 'ai';
   $('overview-view').hidden = next !== 'manage' || !selected;
   $('empty-view').hidden = next !== 'manage' || !!selected;
   if (next === 'manage' && selected) loadDetail();
+  if (next === 'ai') loadAiConnection();
 }
 
 function setCreateMode(mode) {
@@ -100,12 +103,10 @@ async function loadAiConnection() {
     const status = await request('/api/ai/status');
     const version = JSON.stringify(status);
     if (version === aiConnectionVersion) return;
-    aiConnectionVersion = version;
     fill('ai-provider-status', status.provider === 'chatgpt'
       ? `Đang dùng ChatGPT${status.email ? ` · ${status.email}` : ''}${status.model ? ` · ${status.model}` : ''}`
       : `Đang dùng model cục bộ${status.connected ? ` · ChatGPT ${status.email} đã kết nối` : ''}`);
     $('ai-use-local').disabled = status.provider === 'local';
-    $('ai-all-bots').disabled = status.provider !== 'chatgpt';
     $('ai-research').disabled = !status.model;
     fill('ai-research-result', status.research ? `GPT đã ghi nhớ: ${status.research}` : 'Chưa tìm hiểu tài liệu NRO.');
     $('ai-sign-in').textContent = status.connected ? 'Đăng nhập lại ChatGPT' : 'Kết nối ChatGPT';
@@ -114,7 +115,23 @@ async function loadAiConnection() {
       $('ai-model').innerHTML = '<option value="">Chọn model</option>' + models.map(item => `<option value="${esc(item.slug)}">${esc(item.name)}</option>`).join('');
       $('ai-model').value = status.model || '';
     } else $('ai-model').innerHTML = '<option value="">Kết nối để xem model</option>';
+    aiConnectionVersion = version;
   } catch (error) { fill('ai-connection-notice', error.message); }
+}
+
+function renderAiBotModes() {
+  const version = JSON.stringify(bots.map(bot => [bot.id, bot.name, bot.mode, bot.status]));
+  if (version === aiBotModesVersion) return;
+  aiBotModesVersion = version;
+  $('ai-bot-modes').innerHTML = bots.length ? bots.map(bot => `
+    <div class="ai-bot-mode">
+      <div><strong>${esc(bot.character || bot.name)}</strong><small>${esc(statusNames[bot.status] || bot.status)}</small></div>
+      <select data-ai-bot-id="${esc(bot.id)}" aria-label="Chế độ ${esc(bot.name)}">
+        <option value="auto" ${bot.mode === 'auto' ? 'selected' : ''}>Làm nhiệm vụ</option>
+        <option value="farm" ${bot.mode === 'farm' ? 'selected' : ''}>Chỉ đánh quái</option>
+        <option value="ai" ${bot.mode === 'ai' ? 'selected' : ''}>Dùng AI</option>
+      </select>
+    </div>`).join('') : '<div class="empty-small">Chưa có bot</div>';
 }
 
 function renderItems(container, items, location, running) {
@@ -141,13 +158,10 @@ function renderItems(container, items, location, running) {
 
 function showTab(tab) {
   activeTab = tab;
-  $('nav-ai').classList.toggle('active', view === 'manage' && tab === 'ai');
-  $('nav-manage').classList.toggle('active', view === 'manage' && tab !== 'ai');
   document.querySelectorAll('[data-tab]').forEach(button => button.classList.toggle('active', button.dataset.tab === tab));
   $('summary-section').hidden = tab !== 'overview';
   $('logs-section').hidden = !['overview','logs'].includes(tab);
   for (const name of ['config','character','quest','ai','trade']) $(`${name}-section`).hidden = tab !== name;
-  if (tab === 'ai') loadAiConnection();
   $('main-panel')?.scrollTo?.({top:0});
 }
 
@@ -280,6 +294,7 @@ async function refresh() {
     bots = await request('/api/bots');
     if (selected && !bots.some(bot => bot.id === selected)) { selected = null; rendered = null; }
     renderList();
+    renderAiBotModes();
     $('overview-view').hidden = view !== 'manage' || !selected;
     $('empty-view').hidden = view !== 'manage' || !!selected;
     await loadDetail();
@@ -325,14 +340,7 @@ async function bulkCommand(action) {
 
 $('nav-manage').onclick = () => showView('manage');
 $('nav-create').onclick = () => showView('create');
-$('nav-ai').onclick = async () => {
-  if (!bots.length) await refresh();
-  if (!selected && bots.length) selected = bots[0].id;
-  if (!selected) { showView('create'); return; }
-  showView('manage');
-  await loadDetail();
-  showTab('ai');
-};
+$('nav-ai').onclick = () => showView('ai');
 $('roster-create').onclick = () => showView('create');
 $('empty-create').onclick = () => showView('create');
 $('mode-single').onclick = () => setCreateMode('single');
@@ -417,12 +425,21 @@ $('ai-use-local').onclick = async () => {
     await refresh();
   } catch (error) { fill('ai-connection-notice', error.message); }
 };
-$('ai-all-bots').onclick = async () => {
+$('ai-bot-modes').onchange = async event => {
+  const input = event.target.closest('select[data-ai-bot-id]');
+  if (!input) return;
+  input.disabled = true;
   try {
-    const result = await request('/api/bots/ai-all', {method:'POST',body:'{}'});
-    fill('ai-connection-notice', `Đã bật AI cho ${result.count} bot. Các bot đang chạy sẽ bắt đầu dùng ChatGPT ở lượt quyết định tiếp theo.`);
+    await request(`/api/bots/${encodeURIComponent(input.dataset.aiBotId)}/config`, {
+      method:'POST', body:JSON.stringify({mode:input.value})
+    });
+    fill('ai-bot-modes-notice', 'Đã lưu chế độ bot.');
+    aiBotModesVersion = null;
     await refresh();
-  } catch (error) { fill('ai-connection-notice', error.message); }
+  } catch (error) {
+    fill('ai-bot-modes-notice', error.message);
+    input.disabled = false;
+  }
 };
 $('ai-research').onclick = async () => {
   const button = $('ai-research');
