@@ -518,7 +518,7 @@ public class Service {
     }
 
     public void callTau77(Player player) {
-        if (TaskService.gI().getIdTask(player) > ConstTask.TASK_9_1
+        if (TaskService.gI().getIdTask(player) >= ConstTask.TASK_9_1
                 && TaskService.gI().getIdTask(player) < ConstTask.TASK_10_2
                 && BossManager.gI().getBossTau77ByPlayer(player) == null) {
             try {

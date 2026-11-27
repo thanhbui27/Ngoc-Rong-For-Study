@@ -25,6 +25,8 @@ ROUTES = Routes()
 MOVEMENT = MovementUtility(ROUTES)
 PEA_ITEMS = (13, 60, 61, 62, 63, 64, 65, 352, 523, 595)
 GREEN_GRAPE_ID = 212
+STARTER_GEAR = ((21, 6, 0, 27, 12), (22, 7, 1, 28, 12),
+                (23, 8, 2, 29, 12))  # Gloves, pants, shirt, shoes, radar.
 PLANET_VILLAGE_MAPS = (0, 7, 14)  # Earth, Namek, Xayda
 PLANET_SHOP_NPCS = (7, 8, 9)  # Bunma, Dende, Appule
 DRAGON_BALL_7_STAR_ID = 20
@@ -149,9 +151,11 @@ class BotRunner:
         self._next_stat = 0.0
         self._next_heal = 0.0
         self._next_shop = 0.0
+        self._next_gear = 0.0
         self._shop_phase = 0
         self._shop_attempts = 0
         self._shop_before = -1
+        self._shop_current_item = 0
         self._quest_step_done = ""
         self._quest_request_due = 0.0
         self._trade_phase = 0
@@ -951,6 +955,11 @@ class BotRunner:
         if (self.config.stat != "off" or needs_potential_for_quest) and now >= self._next_stat:
             self._next_stat = now + 3
             self._upgrade_stat(force=needs_potential_for_quest)
+        # A character with no stamina cannot keep fighting.  Let it buy/use
+        # grapes before the low-KI recovery loop sends it home for beans.
+        if self.max_stamina > 0 and self.stamina <= 0 and self.hp * 100 > self.max_hp * 35:
+            if self._restore_stamina(now):
+                return
         if self._recover(now):
             return
         if self._restore_stamina(now):
@@ -959,6 +968,8 @@ class BotRunner:
             self._send(-43, bytes([0, 1, self.bag_slots[self.config.heal_item]]))
             self._next_heal = now + 10
             self.set_action(f"Dùng vật phẩm hồi phục {self.config.heal_item}")
+            return
+        if self._equip_starter_gear(now):
             return
         if self._supply(now):
             return
@@ -1244,38 +1255,82 @@ class BotRunner:
                 self.log(f"Cộng 1 điểm {('HP', 'KI', 'sức đánh', 'giáp')[stat]}")
                 return
 
+    def _equip_starter_gear(self, now: float) -> bool:
+        if now < self._next_gear:
+            return False
+        worn_types = {ROUTES.item_types.get(item_id) for item_id in self.worn_details}
+        for item_id, slot in self.bag_slots.items():
+            item_type = ROUTES.item_types.get(item_id)
+            if item_type in (0, 1, 2, 3, 4) and item_type not in worn_types:
+                self._send(-40, bytes([4, slot]))
+                self._next_gear = now + 30
+                self.set_action(f"Mặc {ROUTES.item_names.get(item_id, 'trang bị')} từ túi")
+                return True
+        return False
+
     def _supply(self, now: float) -> bool:
         cfg = self.config
-        if cfg.shop_item <= 0 or cfg.shop_min <= 0 or (self._shop_phase != 3 and self.bag.get(cfg.shop_item, 0) >= cfg.shop_min):
+        item_id, shop_map, shop_npc = cfg.shop_item, cfg.shop_map, cfg.shop_npc
+        minimum, target = cfg.shop_min, cfg.shop_target
+        menu = cfg.shop_menu
+        if item_id <= 0:
+            planet = min(max(self.gender, 0), 2)
+            village = PLANET_VILLAGE_MAPS[planet]
+            if self.map_id != village and self.task:
+                return False
+            worn_types = {ROUTES.item_types.get(item) for item in self.worn_details}
+            bag_types = {ROUTES.item_types.get(item) for item in self.bag if self.bag[item] > 0}
+            item_id = next((item for item in STARTER_GEAR[planet]
+                            if ROUTES.item_types.get(item) not in worn_types
+                            and ROUTES.item_types.get(item) not in bag_types), 0)
+            if item_id <= 0 or self.gold < 1500:
+                self._shop_phase = 0
+                self._shop_current_item = 0
+                return False
+            shop_map, shop_npc = village, PLANET_SHOP_NPCS[planet]
+            minimum = target = 1
+            menu = 0
+        if item_id <= 0 or minimum <= 0 or (self._shop_phase != 3 and self.bag.get(item_id, 0) >= minimum):
             self._shop_phase = 0
             return False
+        if self._shop_current_item != item_id:
+            self._shop_current_item = item_id
+            self._shop_phase = 0
+            self._shop_attempts = 0
+            self._shop_before = -1
         if self._shop_phase == 4:
-            return False
-        if cfg.shop_map >= 0 and cfg.shop_map != self.map_id:
-            return self._travel_to(cfg.shop_map, now)
-        npc = self.npcs.get(cfg.shop_npc)
+            if now < self._next_shop:
+                return False
+            self._shop_phase = 0
+        if shop_map >= 0 and shop_map != self.map_id:
+            return self._travel_to(shop_map, now)
+        npc = self.npcs.get(shop_npc)
         if npc is None:
-            self.set_action(f"Thiếu item {cfg.shop_item}; chờ NPC shop {cfg.shop_npc} ở map hiện tại")
+            self.set_action(f"Thiếu item {item_id}; chờ NPC shop {shop_npc} ở map hiện tại")
+            if cfg.shop_item <= 0:
+                self._shop_phase = 4
+                self._next_shop = now + 60
+                return False
             return True
         if abs(npc[0] - self.x) > 55:
             self._move_towards(*npc)
-            self.set_action(f"Đi tới NPC shop {cfg.shop_npc}")
+            self.set_action(f"Đi tới NPC shop {shop_npc}")
             return True
         if self._shop_phase == 0:
             self.shop = {}
-            self._send(33, struct.pack(">h", cfg.shop_npc))
+            self._send(33, struct.pack(">h", shop_npc))
             self._shop_phase = 1
             self._next_shop = now + 0.8
-            self.set_action(f"Mở shop NPC {cfg.shop_npc}")
+            self.set_action(f"Mở shop NPC {shop_npc}")
             return True
         if self._shop_phase == 1 and now >= self._next_shop:
-            self._send(32, struct.pack(">hb", cfg.shop_npc, cfg.shop_menu))
+            self._send(32, struct.pack(">hb", shop_npc, menu))
             self._shop_phase = 2
             self._next_shop = now + 8
             self.set_action("Chờ danh sách shop")
             return True
         if self._shop_phase == 2:
-            price = self.shop.get(cfg.shop_item)
+            price = self.shop.get(item_id)
             if price and price["gold"] > 0 and price["gems"] == 0 and self.gold >= price["gold"]:
                 self._shop_phase = 3
                 self._shop_attempts = 0
@@ -1283,22 +1338,24 @@ class BotRunner:
             elif now >= self._next_shop:
                 self.set_action("Không mua được: shop thiếu item hoặc thiếu vàng")
                 self._shop_phase = 4
+                self._next_shop = now + 60
             return True
         if self._shop_phase == 3:
-            count = self.bag.get(cfg.shop_item, 0)
-            if count >= cfg.shop_target:
+            count = self.bag.get(item_id, 0)
+            if count >= target:
                 self._shop_phase = 0
                 self.set_action("Mua tiếp tế xong")
             elif count == self._shop_before and self._shop_attempts >= 3:
                 self._shop_phase = 4
                 self.set_action("Dừng mua: túi không tăng sau 3 lần")
+                self._next_shop = now + 60
             elif now >= self._next_shop:
                 self._shop_attempts = self._shop_attempts + 1 if count == self._shop_before else 1
                 self._shop_before = count
-                self._send(6, bytes([0]) + struct.pack(">h", cfg.shop_item))
+                self._send(6, bytes([0]) + struct.pack(">h", item_id))
                 self.purchases += 1
                 self._next_shop = now + 1.3
-                self.set_action(f"Mua item {cfg.shop_item} ({count}/{cfg.shop_target})")
+                self.set_action(f"Mua {ROUTES.item_names.get(item_id, 'item ' + str(item_id))} ({count}/{target})")
             return True
         return True
 
@@ -1426,6 +1483,30 @@ class BotRunner:
             self._quest_request_due = now + 5
             self.set_action(f"Báo cáo Truyện Doremon tập 2 với {self._npc_label(npc_id)}")
             return True
+        mentor_map = (5, 13, 20)[task_planet]
+        if task_id == 9:
+            if index in (0, 1) and self.map_id != 47:
+                return self._travel_to(47, now)
+            if index == 1:
+                self.set_action("Chờ Tàu Pảy Pảy xuất hiện ở Rừng Karin để hoàn thành bước đụng độ")
+                return True
+            if index in (2, 3) and self.map_id != 46:
+                return self._travel_to(46, now)
+            if index == 2:
+                self.set_action("Đã lên Tháp Karin; chờ server xác nhận nhiệm vụ")
+                return True
+        if task_id == 10 and index == 2 and self.map_id != 47:
+            return self._travel_to(47, now)
+        if task_id == 11 and index == 0 and self.map_id != mentor_map:
+            return self._travel_to(mentor_map, now)
+        if task_id == 11 and index == 1 and self.map_id != 21 + task_planet:
+            return self._travel_to(21 + task_planet, now)
+        if task_id == 12 and index == 1 and self.map_id != mentor_map:
+            return self._travel_to(mentor_map, now)
+        if (task_id in (13, 15, 16, 17, 20, 21, 22, 23)
+                and step.get("title", "").casefold().startswith("báo cáo với")
+                and self.map_id != mentor_map):
+            return self._travel_to(mentor_map, now)
         if step["map_id"] >= 0 and step["map_id"] != self.map_id:
             return self._travel_to(step["map_id"], now)
         if task_id == 0 and index == 3:
@@ -1468,6 +1549,10 @@ class BotRunner:
             title = step.get("title", "").casefold()
             if task_id == 11 and index == 0:
                 npc_id = 13 + self.gender
+            elif (task_id == 9 and index == 0) or (task_id == 10 and index == 2):
+                npc_id = 17  # Bò Mộng ở Rừng Karin.
+            elif task_id == 9 and index == 3:
+                npc_id = 18  # Thần Mèo trên Tháp Karin.
             elif task_id == 11 and index == 1:
                 npc_id = HOME_NPC_IDS[self.gender]
             elif task_id == 7 and index == 2:
@@ -1478,6 +1563,9 @@ class BotRunner:
                 self.set_action("Chờ được mời vào bang hội để tiếp tục nhiệm vụ")
                 return True
             elif task_id == 12 and index == 1:
+                npc_id = 13 + self.gender
+            elif (task_id in (13, 15, 16, 17, 20, 21, 22, 23)
+                  and title.startswith("báo cáo với")):
                 npc_id = 13 + self.gender
             elif task_id == 16:
                 self.set_action("Nhiệm vụ cần thắng thách đấu PvP với người chơi khác")
@@ -1536,18 +1624,22 @@ class BotRunner:
         return True
 
     def _best_quest_map(self, target_templates: set[int]) -> int | None:
-        """Choose a reachable map with a requested mob, including ship links."""
+        """Prefer a nearby, survivable quest mob over a higher-level spawn."""
         candidates: list[tuple[tuple[int, int, int, int], int]] = []
+        blocked = set(self._travel_blocked)
+        level_limit = ROUTES.player_level(self.power) + 2
+        hp_limit = max(250, self.damage * 25)
         for map_id, spawns in ROUTES.map_mobs.items():
-            matching = [(level, reward) for template, level, reward in spawns
+            matching = [(template, level) for template, level, _ in spawns
                         if template in target_templates]
             if not matching:
                 continue
-            path = MOVEMENT.plan(self.map_id, map_id, gender=self.gender)
+            path = MOVEMENT.plan(self.map_id, map_id, blocked, gender=self.gender)
             if path is None:
                 continue
-            score = (max(level for level, _ in matching),
-                     max(reward for _, reward in matching), -len(path), -map_id)
+            viable = any(level <= level_limit and ROUTES.mob_hp.get(template, 0) <= hp_limit
+                         for template, level in matching)
+            score = (int(viable), -len(path), -min(level for _, level in matching), -map_id)
             candidates.append((score, map_id))
         return max(candidates, default=(None, None), key=lambda candidate: candidate[0])[1]
 

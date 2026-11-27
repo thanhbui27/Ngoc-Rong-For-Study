@@ -139,6 +139,76 @@ class ProtocolTests(unittest.TestCase):
             finally:
                 runner.close()
 
+    def test_quest_map_prefers_nearby_survivable_mob(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass"))
+            try:
+                runner.map_id, runner.power, runner.damage = 1, 0, 10
+                with patch.object(bot.ROUTES, "map_mobs", {1: [(9, 1, 50)], 17: [(9, 9, 200)]}):
+                    self.assertEqual(runner._best_quest_map({9}), 1)
+            finally:
+                runner.close()
+
+    def test_mentor_quest_travels_to_npc_map_before_talking(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass", gender=1))
+            try:
+                runner.gender, runner.map_id = 1, 8
+                runner.task = {"task_id": 11, "index": 0,
+                               "steps": [{"map_id": -1, "npc_id": -1, "title": "Tìm trưởng lão Guru"}]}
+                with patch.object(runner, "_travel_to", return_value=True) as travel:
+                    self.assertTrue(runner._quest(10))
+                    travel.assert_called_once_with(13, 10)
+            finally:
+                runner.close()
+
+    def test_cat_quest_finds_bo_mong_then_climbs_karin_tower(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Quest", "testuser", "testpass"))
+            try:
+                runner._send = Mock()
+                runner.task = {"task_id": 9, "index": 0,
+                               "steps": [{"map_id": -1, "npc_id": -1,
+                                          "title": "Nói chuyện với Bò Mộng"},
+                                         {"map_id": -1, "npc_id": -1, "title": "Đụng độ Tàu Pảy Pảy"},
+                                         {"map_id": -1, "npc_id": -1, "title": "Bỏ chạy lên tháp Karin"}]}
+                runner.map_id = 1
+                with patch.object(runner, "_travel_to", return_value=True) as travel:
+                    self.assertTrue(runner._quest(10))
+                    travel.assert_called_once_with(47, 10)
+                runner.map_id = 47
+                runner.npcs = {17: (100, 100)}
+                runner.x = runner.y = 100
+                self.assertTrue(runner._quest(11))
+                runner._send.assert_called_with(33, struct.pack(">h", 17))
+                runner.task["index"] = 2
+                with patch.object(runner, "_travel_to", return_value=True) as travel:
+                    self.assertTrue(runner._quest(12))
+                    travel.assert_called_once_with(46, 12)
+            finally:
+                runner.close()
+
+    def test_starter_gear_is_bought_and_equipped_from_own_village(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Gear", "testuser", "testpass"))
+            try:
+                runner._send = Mock()
+                runner.map_id, runner.gender, runner.gold = 0, 0, 10000
+                runner.x = runner.y = 100
+                runner.npcs = {7: (100, 100)}
+                self.assertTrue(runner._supply(10))
+                runner._send.assert_called_with(33, struct.pack(">h", 7))
+                self.assertTrue(runner._supply(11))
+                runner.shop = {21: {"gold": 700, "gems": 0}}
+                self.assertTrue(runner._supply(12))
+                self.assertTrue(runner._supply(20))
+                runner._send.assert_called_with(6, bytes([0]) + struct.pack(">h", 21))
+                runner.bag, runner.bag_slots = {21: 1}, {21: 3}
+                self.assertTrue(runner._equip_starter_gear(21))
+                runner._send.assert_called_with(-40, bytes([4, 3]))
+            finally:
+                runner.close()
+
     def test_server_route_refusal_blocks_current_travel_edge(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
             runner = BotRunner(BotConfig("Quest", "testuser", "testpass"))
