@@ -205,6 +205,7 @@ class BotRunner:
         self._ai_goal = "quest"
         self._ai_goal_until = 0.0
         self._ai_stat_focus = ""
+        self._on_stopped = None
         self._reconnect_attempt = 0
         self._recovering = False
         self._recover_hp_target = False
@@ -270,6 +271,7 @@ class BotRunner:
                 "stamina": self.stamina, "max_stamina": self.max_stamina,
                 "gold": self.gold, "gems": self.gems, "power": self.power, "potential": self.potential,
                 "ai_installed": MODEL_CLIENT.installed(),
+                "ai_runtime_running": MODEL_CLIENT.running(),
                 "ai_goal": self._ai_goal, "ai_stat_focus": self._ai_stat_focus,
                 "damage": self.damage, "defense": self.defense, "kills": self.kills,
                 "picks": self.picks, "purchases": self.purchases, "mobs": len(self.mobs),
@@ -291,6 +293,8 @@ class BotRunner:
             }
             if include_logs:
                 result["logs"] = list(self.logs)
+                result["ai_history"] = ai_memory.recent(self.id, limit=40)
+                result["ai_busy"] = self._ai_future is not None and not self._ai_future.done()
             return result
 
     @staticmethod
@@ -387,6 +391,9 @@ class BotRunner:
 
     def stop(self) -> None:
         self._stop.set()
+        if self._ai_future is not None:
+            self._ai_future.cancel()
+            self._ai_future = None
         sock = self._socket
         if sock:
             try:
@@ -397,6 +404,11 @@ class BotRunner:
         thread = self._thread
         if thread and thread is not threading.current_thread():
             thread.join(timeout=3)
+        self._notify_stopped()
+
+    def _notify_stopped(self) -> None:
+        if self._on_stopped is not None:
+            self._on_stopped()
 
     def close(self) -> None:
         self.stop()
@@ -601,6 +613,7 @@ class BotRunner:
             with self._lock:
                 self.status = "stopped"
             self.set_action("Đã dừng")
+        self._notify_stopped()
 
     def _packet(self, command: int, payload: bytes) -> None:
         try:
@@ -1256,8 +1269,6 @@ class BotRunner:
             if now >= self._ai_action_cooldown.get("goal:farm", 0):
                 choices.append({"id": "goal:farm", "description":
                                 "Tạm luyện sức mạnh bằng quái phù hợp trong 5 phút, rồi quay lại nhiệm vụ"})
-        else:
-            choices.append({"id": "goal:quest", "description": "Quay lại làm nhiệm vụ hiện tại ngay"})
         stat_costs = {"hp": self.base_hp + 1000, "mp": self.base_mp + 1000,
                       "attack": self.base_damage * 100, "def": (self.base_defense + 5) * 100000}
         if any(0 < cost <= self.potential for cost in stat_costs.values()):
@@ -2304,7 +2315,17 @@ class BotManager:
             if not isinstance(bot_id, str) or not re.fullmatch(r"[0-9a-f]{10}", bot_id):
                 raise ValueError("ID bot đã lưu không hợp lệ")
             config = BotConfig(**record["config"])
-            self._bots[bot_id] = BotRunner(config, bot_id)
+            bot = BotRunner(config, bot_id)
+            bot._on_stopped = self.stop_ai_if_idle
+            self._bots[bot_id] = bot
+
+    def stop_ai_if_idle(self) -> None:
+        with self._lock:
+            active = any(bot.config.mode == "ai" and not bot._stop.is_set()
+                         and bot.status in ("running", "connecting", "reconnecting")
+                         for bot in self._bots.values())
+        if not active:
+            MODEL_CLIENT.stop()
 
     def _save(self) -> None:
         self._store.save([{"id": bot.id, "config": asdict(bot.config)} for bot in self._bots.values()])
@@ -2324,6 +2345,7 @@ class BotManager:
                 existing.add(key)
             created = [BotRunner(config) for config in configs]
             for bot in created:
+                bot._on_stopped = self.stop_ai_if_idle
                 self._bots[bot.id] = bot
             try:
                 self._save()
@@ -2377,6 +2399,7 @@ class BotManager:
         return len(bots)
 
     def update_config(self, bot_id: str, config: BotConfig) -> BotRunner:
+        stop_ai = False
         with self._lock:
             bot = self.get(bot_id)
             old = bot.config
@@ -2389,7 +2412,17 @@ class BotManager:
             except Exception:
                 bot.config = old
                 raise
-            return bot
+            if old.mode == "ai" and config.mode != "ai":
+                if bot._ai_future is not None:
+                    bot._ai_future.cancel()
+                    bot._ai_future = None
+                bot._ai_shop_goal = None
+                stop_ai = True
+            elif old.mode != "ai" and config.mode == "ai":
+                bot._ai_next = 0
+        if stop_ai:
+            self.stop_ai_if_idle()
+        return bot
 
     def close(self) -> None:
         with self._lock:

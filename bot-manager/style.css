@@ -139,6 +139,16 @@ details { border-top:1px solid #2a3d54; padding-top:12px; }.form-body summary { 
 .feature-panel h2 { margin:0 0 8px; font-size:20px; }
 .feature-panel h3 { font-size:15px; margin:22px 0 10px; }
 .feature-panel p,.feature-hint { color:#9eb2ce; font-size:13px; }
+.ai-summary { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0; }
+.ai-summary span { padding:7px 10px; border:1px solid #344b68; border-radius:8px; color:#c9d9ef; background:#102138; font-size:12px; }
+.ai-history { display:grid; gap:10px; max-height:65vh; overflow:auto; padding-right:4px; }
+.ai-entry { border:1px solid #344b68; border-radius:10px; padding:12px 14px; background:#101e31; overflow-wrap:anywhere; }
+.ai-entry-head { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+.ai-entry-head strong { color:#e4ddff; font-size:14px; }
+.ai-entry-head time { color:#8fa8c9; font-size:11px; white-space:nowrap; }
+.ai-entry code { display:inline-block; margin-top:7px; color:#9ee5cf; font-size:11px; }
+.ai-entry p { margin:8px 0 0; color:#c6d8ee; }
+.ai-entry b { color:#e8f0fd; }
 .feature-form { display:grid; gap:12px; margin-top:22px; }
 .feature-form label { display:grid; gap:6px; color:#afc2dc; font-size:12px; font-weight:700; }
 .feature-form input,.feature-form select { width:100%; min-width:0; padding:10px 11px; border:1px solid #3a5270; background:#0d1b2d; border-radius:8px; color:#eef5ff; outline:0; }

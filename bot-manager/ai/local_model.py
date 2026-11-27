@@ -31,6 +31,10 @@ class LocalModel:
     def installed() -> bool:
         return SERVER.is_file() and MODEL.is_file()
 
+    def running(self) -> bool:
+        process = self._process
+        return process is not None and process.poll() is None
+
     def _health(self) -> bool:
         try:
             with urllib.request.urlopen(ENDPOINT + "/health", timeout=2) as response:

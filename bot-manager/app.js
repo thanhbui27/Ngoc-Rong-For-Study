@@ -9,6 +9,7 @@ let bots = [];
 let selected = null;
 let rendered = null;
 let logVersion = null;
+let aiVersion = null;
 let createMode = 'single';
 let view = 'manage';
 let activeTab = 'overview';
@@ -68,6 +69,30 @@ function renderList() {
 function fill(id, value) { $(id).textContent = value ?? '—'; }
 function mapLabel(bot) { return bot.map_id >= 0 ? `${bot.map_name || 'Map'} (ID: ${bot.map_id})` : '—'; }
 
+function aiChoiceLabel(choice) {
+  const [action, value] = String(choice || '').split(':');
+  if (action === 'goal') return value === 'farm' ? 'Chọn luyện sức mạnh' : 'Chọn làm nhiệm vụ';
+  if (action === 'stat') return `Chọn cộng ${statNames[value] || value}`;
+  if (action === 'visit') return value === 'skill' ? 'Đến shop kỹ năng' : 'Đến shop trang bị';
+  return ({buy:'Mua vật phẩm',equip:'Mặc trang bị',learn:'Học kỹ năng',skill:'Chọn kỹ năng',none:'Giữ hành động'})[action] || 'Quyết định AI';
+}
+
+function renderAiHistory(bot) {
+  const botActive = ['running','connecting','reconnecting'].includes(bot.status);
+  const status = !bot.ai_installed ? 'Chưa cài model' : bot.mode !== 'ai' ? 'AI đã tắt cho bot này' : !botActive ? 'Bot đã dừng' : bot.ai_busy ? 'AI đang phân tích' : bot.ai_runtime_running ? 'Model đang chạy' : 'Model sẽ bật khi bot cần';
+  fill('ai-mode-status', status);
+  fill('ai-goal-status', `Mục tiêu: ${bot.ai_goal === 'farm' ? 'luyện sức mạnh' : 'làm nhiệm vụ'}`);
+  fill('ai-stat-status', `Cộng chỉ số: ${statNames[bot.ai_stat_focus] || 'đang chọn'}`);
+  const history = bot.ai_history || [];
+  const version = JSON.stringify(history);
+  if (version === aiVersion) return;
+  aiVersion = version;
+  $('ai-history').innerHTML = history.length ? [...history].reverse().map(entry => {
+    const when = entry.at ? new Date(entry.at).toLocaleString('vi-VN') : 'Chưa ghi thời gian';
+    return `<article class="ai-entry"><div class="ai-entry-head"><strong>${esc(aiChoiceLabel(entry.choice))}</strong><time>${esc(when)}</time></div><code>${esc(entry.choice)}</code><p><b>Lý do:</b> ${esc(entry.reason || 'Không có')}</p><p><b>Kết quả:</b> ${esc(entry.outcome || 'Chưa có')}</p></article>`;
+  }).join('') : '<div class="empty-small">Bot này chưa có quyết định AI. Chọn chế độ AI cục bộ trong Cấu hình để bắt đầu.</div>';
+}
+
 function renderItems(container, items, location, running) {
   const entries = Object.values(items || {}).filter(item => Number(item.count) > 0);
   if (!entries.length) {
@@ -95,7 +120,7 @@ function showTab(tab) {
   document.querySelectorAll('[data-tab]').forEach(button => button.classList.toggle('active', button.dataset.tab === tab));
   $('summary-section').hidden = tab !== 'overview';
   $('logs-section').hidden = !['overview','logs'].includes(tab);
-  for (const name of ['config','character','quest','trade']) $(`${name}-section`).hidden = tab !== name;
+  for (const name of ['config','character','quest','ai','trade']) $(`${name}-section`).hidden = tab !== name;
   $('main-panel')?.scrollTo?.({top:0});
 }
 
@@ -112,7 +137,7 @@ function populateConfig(bot) {
 
 function renderDetail(bot) {
   const changedBot = rendered !== bot.id;
-  if (changedBot) { rendered = bot.id; logVersion = null; $('event-log').scrollTop = 0; populateConfig(bot); showTab('overview'); }
+  if (changedBot) { rendered = bot.id; logVersion = aiVersion = null; $('event-log').scrollTop = 0; populateConfig(bot); showTab('overview'); }
   fill('detail-name', bot.name);
   const avatar = $('character-avatar');
   const avatarFallback = $('character-avatar-fallback');
@@ -191,6 +216,7 @@ function renderDetail(bot) {
     const stat = bot.ai_stat_focus || 'đang chọn';
     fill('quest-hint', `AI cục bộ: ${bot.ai_installed ? 'sẵn sàng' : 'chưa cài model'} · mục tiêu ${goal} · hướng cộng chỉ số ${stat}. ${$('quest-hint').textContent}`);
   }
+  renderAiHistory(bot);
   fill('log-path', bot.log_file);
   $('log-path').title = bot.log_file;
   document.querySelectorAll('[data-command="start"]').forEach(button => button.disabled = ['running','connecting','reconnecting'].includes(bot.status));

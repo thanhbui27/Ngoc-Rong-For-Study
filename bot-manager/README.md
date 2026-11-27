@@ -11,7 +11,7 @@ cd 'D:\Code\game nro\Folder Server\bot-manager'
 python app.py
 ```
 
-Trình duyệt sẽ mở `http://127.0.0.1:8765/`. Có thể dùng `python app.py --port 8766 --no-browser` nếu muốn chọn cổng hoặc không tự mở trình duyệt. Dừng bằng `Ctrl+C`; tất cả socket bot sẽ đóng.
+Trên Windows có thể chạy `bot-run.cmd` thay cho lệnh Python. Trình duyệt sẽ mở `http://127.0.0.1:8765/`. Có thể dùng `python app.py --port 8766 --no-browser` nếu muốn chọn cổng hoặc không tự mở trình duyệt. Dừng bằng `Ctrl+C` trong cửa sổ CMD; tất cả socket bot và model AI cục bộ sẽ đóng.
 
 Trong giao diện, nhập tên bot, tài khoản thử nghiệm, mật khẩu, địa chỉ và cổng game server, rồi bấm **Tạo và chạy bot**. Các nút **Chạy tất cả**, **Dừng tất cả** và **Xóa tất cả** nằm trên đầu danh sách. Xóa tất cả cần xác nhận, dừng các bot và xóa cấu hình đã lưu; log cũ được giữ lại. Chọn **Tạo hàng loạt** để nhập tiền tố tên, tiền tố tài khoản, số bắt đầu và số lượng. Ví dụ `bot` + `abc` + số bắt đầu `123`, số lượng `3` tạo `bot 123`/`abc123`, `bot 124`/`abc124`, `bot 125`/`abc125`. Chọn hệ **Ngẫu nhiên cho từng bot** để chia ngẫu nhiên Trái Đất, Namếc và Xayda cho từng tài khoản. Các bot được khởi chạy cách nhau 0,3 giây để giảm tải đăng nhập. Tối đa 50 bot trong ứng dụng.
 
