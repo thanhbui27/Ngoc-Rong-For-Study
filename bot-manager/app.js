@@ -25,8 +25,9 @@ async function request(path, options = {}) {
 
 function showView(next) {
   view = next;
-  $('nav-manage').classList.toggle('active', next === 'manage');
+  $('nav-manage').classList.toggle('active', next === 'manage' && activeTab !== 'ai');
   $('nav-create').classList.toggle('active', next === 'create');
+  $('nav-ai').classList.toggle('active', next === 'manage' && activeTab === 'ai');
   $('create-view').hidden = next !== 'create';
   $('overview-view').hidden = next !== 'manage' || !selected;
   $('empty-view').hidden = next !== 'manage' || !!selected;
@@ -140,6 +141,8 @@ function renderItems(container, items, location, running) {
 
 function showTab(tab) {
   activeTab = tab;
+  $('nav-ai').classList.toggle('active', view === 'manage' && tab === 'ai');
+  $('nav-manage').classList.toggle('active', view === 'manage' && tab !== 'ai');
   document.querySelectorAll('[data-tab]').forEach(button => button.classList.toggle('active', button.dataset.tab === tab));
   $('summary-section').hidden = tab !== 'overview';
   $('logs-section').hidden = !['overview','logs'].includes(tab);
@@ -322,6 +325,14 @@ async function bulkCommand(action) {
 
 $('nav-manage').onclick = () => showView('manage');
 $('nav-create').onclick = () => showView('create');
+$('nav-ai').onclick = async () => {
+  if (!bots.length) await refresh();
+  if (!selected && bots.length) selected = bots[0].id;
+  if (!selected) { showView('create'); return; }
+  showView('manage');
+  await loadDetail();
+  showTab('ai');
+};
 $('roster-create').onclick = () => showView('create');
 $('empty-create').onclick = () => showView('create');
 $('mode-single').onclick = () => setCreateMode('single');
