@@ -163,6 +163,8 @@ class BotRunner:
         self._shop_current_item = 0
         self._quest_step_done = ""
         self._quest_request_due = 0.0
+        self._karin_boss_id: int | None = None
+        self._karin_boss_pos = (0, 0)
         self._skip_quest_id: int | None = None
         self._skip_quest_due = 0.0
         self._skip_quest_sent = False
@@ -312,6 +314,7 @@ class BotRunner:
             self._shop_phase = self._shop_attempts = 0
             self._quest_step_done = ""
             self._quest_request_due = 0
+            self._karin_boss_id = None
             self._skip_quest_id = None
             self._skip_quest_due = 0
             self._skip_quest_sent = False
@@ -645,6 +648,7 @@ class BotRunner:
                     self._focused_mob = None
                     self._mob_last_killed.clear()
                     self._mob_attack_watch.clear()
+                    self._karin_boss_id = None
                     self.waypoints = data["waypoints"]
                     self._ready = True
                     self._auth_phase = "ready"
@@ -668,8 +672,20 @@ class BotRunner:
             elif command == 32:
                 npc_id, _ = reader.i16(), reader.utf()
                 option_count = reader.u8()
-                for _ in range(option_count):
-                    reader.utf()
+                options = [reader.utf() for _ in range(option_count)]
+                if (npc_id == 18 and self.map_id == 46 and self.task.get("task_id") == 10
+                        and self.task.get("index") == 0):
+                    labels = [option.casefold().replace("\n", " ") for option in options]
+                    selected = next((index for index, label in enumerate(labels)
+                                     if "đồng ý" in label and "giao đấu" in label), None)
+                    if selected is None:
+                        selected = next((index for index, label in enumerate(labels)
+                                         if "thách đấu" in label and "thần mèo" in label), None)
+                    if selected is not None:
+                        self._send(32, struct.pack(">hb", npc_id, selected))
+                        self._quest_request_due = time.monotonic() + 10
+                        self.set_action("Chọn thách đấu Thần Mèo Karin")
+                        return
                 step = self._travel_step
                 if (step and step[2] == "spaceship" and self._travel_phase == "menu"
                         and npc_id == self._travel_npc):
@@ -722,6 +738,8 @@ class BotRunner:
                         mob.hp = hp
                         self.mobs[mob_id].template_id = template
                         self.mobs[mob_id].boss_level = level
+            elif command == -5:
+                self._karin_player_packet(reader)
             elif command == 68:
                 item_map_id, item_id = reader.u16(), reader.u16()
                 x, y, owner_id = reader.i16(), reader.i16(), reader.i32()
@@ -957,6 +975,8 @@ class BotRunner:
         elif sub == 6:
             with self._lock:
                 self.mp = reader.i32()
+        elif sub == 7:
+            self._karin_player_packet(reader)
         elif sub == 15:
             reader.raw(4)
             with self._lock:
@@ -971,6 +991,21 @@ class BotRunner:
                 self.learned_skill_ids.add(skill_id)
                 self._ai_next = 0
             self.log(f"Đã học kỹ năng {ROUTES.skills_by_id.get(skill_id, {}).get('name', skill_id)}")
+
+    def _karin_player_packet(self, reader: Reader) -> None:
+        if self.map_id != 46 or self.task.get("task_id") != 10 or self.task.get("index") != 0:
+            return
+        player_id = reader.i32()
+        reader.raw(11)  # clan, level, invisibility, PK, gender and head
+        name = reader.utf()
+        reader.raw(8)  # HP and maximum HP
+        reader.raw(6)  # body, leg, flag and pet marker
+        x, y = reader.i16(), reader.i16()
+        signed_id = ((self.player_id + 128) % 256) - 128
+        if player_id == -351003 - signed_id and name.casefold() == "karin":
+            self._karin_boss_id = player_id
+            self._karin_boss_pos = (x, y)
+            self.log("Thần Mèo Karin đã xuất hiện; bắt đầu thách đấu")
 
     def _task_title(self) -> str:
         index = self.task.get("index", -1)
@@ -1897,6 +1932,31 @@ class BotRunner:
             if index == 2:
                 self.set_action("Đã lên Tháp Karin; chờ server xác nhận nhiệm vụ")
                 return True
+        if task_id == 10 and index == 0:
+            if self.map_id != 46:
+                return self._travel_to(46, now)
+            if self._karin_boss_id is not None:
+                bx, by = self._karin_boss_pos
+                if (bx - self.x) ** 2 + (by - self.y) ** 2 > 40 ** 2:
+                    self._move_towards(bx, by)
+                    self.set_action("Áp sát Thần Mèo Karin để thách đấu")
+                else:
+                    self._send(-60, struct.pack(">i", self._karin_boss_id))
+                    self.set_action("Đang đánh Thần Mèo Karin")
+                return True
+            npc = self.npcs.get(18)
+            if npc is None:
+                self.set_action("Chờ Thần Mèo Karin xuất hiện trên Tháp Karin")
+                return True
+            if (npc[0] - self.x) ** 2 + (npc[1] - self.y) ** 2 > 55 ** 2:
+                self._move_towards(*npc)
+                self.set_action("Đến gặp Thần Mèo Karin để thách đấu")
+                return True
+            if now >= self._quest_request_due:
+                self._send(33, struct.pack(">h", 18))
+                self._quest_request_due = now + 8
+            self.set_action("Chờ menu thách đấu Thần Mèo Karin")
+            return True
         if task_id == 10 and index == 2 and self.map_id != 47:
             return self._travel_to(47, now)
         if task_id == 11 and index == 0 and self.map_id != mentor_map:

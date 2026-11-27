@@ -518,8 +518,9 @@ public class Service {
     }
 
     public void callTau77(Player player) {
-        if (TaskService.gI().getIdTask(player) >= ConstTask.TASK_9_1
-                && TaskService.gI().getIdTask(player) < ConstTask.TASK_10_2
+        int taskId = TaskService.gI().getIdTask(player);
+        if (((taskId >= ConstTask.TASK_9_1 && taskId <= ConstTask.TASK_9_3)
+                || taskId == ConstTask.TASK_10_1)
                 && BossManager.gI().getBossTau77ByPlayer(player) == null) {
             try {
                 Boss_Tau77 dt = new Boss_Tau77(Util.createIdDuongTank((int) player.id), BossData.TAU_7_7, player.zone,

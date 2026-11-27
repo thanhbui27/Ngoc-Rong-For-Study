@@ -281,6 +281,37 @@ class ProtocolTests(unittest.TestCase):
             finally:
                 runner.close()
 
+    def test_karin_quest_opens_duel_and_attacks_own_boss(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(bot, "LOG_DIR", Path(directory)):
+            runner = BotRunner(BotConfig("Karin", "testuser", "testpass"))
+            runner._send = Mock()
+            try:
+                runner.map_id, runner.x, runner.y = 46, 100, 100
+                runner.player_id = 123
+                runner.npcs = {18: (100, 100)}
+                runner.task = {"task_id": 10, "index": 0, "steps": [
+                    {"map_id": 46, "npc_id": -1, "title": "Đánh thắng Thần mèo"}]}
+                self.assertTrue(runner._quest(10))
+                runner._send.assert_called_with(33, struct.pack(">h", 18))
+                menu = (struct.pack(">h", 18) + java_utf("Thần Mèo") + bytes([4])
+                        + b"".join(java_utf(option) for option in
+                                   ("Tập tự động", "Nhiệm vụ", "Tập luyện", "Thách đấu\nThần Mèo")))
+                runner._packet(32, menu)
+                runner._send.assert_called_with(32, struct.pack(">hb", 18, 3))
+                confirm = (struct.pack(">h", 18) + java_utf("Thách đấu") + bytes([2])
+                           + java_utf("Đồng ý\ngiao đấu") + java_utf("Không đồng ý"))
+                runner._packet(32, confirm)
+                runner._send.assert_called_with(32, struct.pack(">hb", 18, 0))
+                boss_id = -351126
+                boss = (bytes([7]) + struct.pack(">i", boss_id) + bytes(11) + java_utf("Karin")
+                        + struct.pack(">ii", 500, 500) + bytes(6) + struct.pack(">hh", 100, 100))
+                runner._packet(-30, boss)
+                self.assertEqual(runner._karin_boss_id, boss_id)
+                self.assertTrue(runner._quest(20))
+                runner._send.assert_called_with(-60, struct.pack(">i", boss_id))
+            finally:
+                runner.close()
+
     def test_farm_mode_does_not_follow_quest(self):
         config = valid_config({"name": "Farm", "username": "testuser", "password": "testpass",
                                "mode": "farm"})
