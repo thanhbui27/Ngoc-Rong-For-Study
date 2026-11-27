@@ -5115,6 +5115,9 @@ public class NpcFactory {
                         @Override
                         public void openBaseMenu(Player player) {
                             if (canOpenNpc(player)) {
+                                if (TaskService.gI().checkDoneTaskTalkNpc(player, this)) {
+                                    return;
+                                }
                                 if (this.mapId == 47 || this.mapId == 84) {
                                     this.createOtherMenu(player, ConstNpc.BASE_MENU, "Xin chào, cậu muốn tôi giúp gì?",
                                             "Nhiệm vụ\nhàng ngày", "Nhận ngọc\nmiễn phí", "Xem Top\nnăng Động");

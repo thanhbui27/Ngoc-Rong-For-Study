@@ -11,6 +11,7 @@ ROW = re.compile(r"^\((\d+), '((?:''|[^'])*)', '[^']*', \d+, \d+, '([^']*)', '([
 MOB_ROW = re.compile(r"^\((\d+), \d+, '((?:''|[^'])*)', (\d+),")
 NPC_ROW = re.compile(r"^\((\d+), '((?:''|[^'])*)',")
 ITEM_ROW = re.compile(r"^\((\d+), (\d+), \d+, '((?:''|[^'])*)', '((?:''|[^'])*)', (\d+),")
+OPTION_ROW = re.compile(r"^\((\d+), '((?:''|[^'])*)', \d+\)[,;]$")
 MOB_SPAWN = re.compile(r"\[(\d+),(\d+),(\d+),-?\d+,-?\d+\]")
 CAPTION_ROW = re.compile(r"^\((\d+), .*, (\d+)\)[,;]$")
 WAYPOINT = re.compile(r'"([^"\[\]]+)",(-?\d+),(-?\d+),(-?\d+),(-?\d+),([01]),([01]),(-?\d+),(-?\d+),(-?\d+)\]')
@@ -27,6 +28,7 @@ class Routes:
         self.item_descriptions: dict[int, str] = {}
         self.item_types: dict[int, int] = {}
         self.item_icon_ids: dict[int, int] = {}
+        self.option_names: dict[int, str] = {}
         self.avatar_by_head: dict[int, int] = {}
         self.mob_hp: dict[int, int] = {}
         self.map_mobs: dict[int, list[tuple[int, int, int]]] = {}
@@ -38,6 +40,7 @@ class Routes:
         in_captions = False
         in_npcs = False
         in_items = False
+        in_options = False
         in_head_avatars = False
         with seed.open(encoding="utf-8") as source:
             for line in source:
@@ -49,6 +52,17 @@ class Routes:
                 if line.startswith("INSERT INTO `item_template`"):
                     in_items = True
                     in_maps = in_mobs = in_captions = in_npcs = False
+                    continue
+                if line.startswith("INSERT INTO `item_option_template`"):
+                    in_options = True
+                    in_items = in_maps = in_mobs = in_captions = in_npcs = False
+                    continue
+                if in_options:
+                    match = OPTION_ROW.match(line.rstrip())
+                    if match:
+                        self.option_names[int(match.group(1))] = match.group(2).replace("''", "'")
+                    elif line.startswith("CREATE TABLE") or line.strip() == "--":
+                        in_options = False
                     continue
                 if line.startswith("INSERT INTO `head_avatar`"):
                     in_head_avatars = True

@@ -401,6 +401,17 @@ class ProtocolTests(unittest.TestCase):
             client.close()
             server.close()
 
+    def test_item_options_use_server_names_in_bag_box_and_worn_details(self):
+        self.assertEqual(bot.ROUTES.option_names[6], "HP+#")
+        item = {6: {"id": 6, "count": 1,
+                    "options": [{"id": 6, "param": 33}, {"id": 263, "param": 1},
+                                {"id": 264, "param": 0}, {"id": 30, "param": 0},
+                                {"id": 73, "param": 0}]}}
+        labels = [option["label"] for option in BotRunner._named_items(item)[6]["options"]]
+        self.assertEqual(labels, ["HP+33", "Set Gohan",
+                                  "(5 món +300% may mắn, +50% vàng rơi từ quái)",
+                                  "Không thể giao dịch", ""])
+
     def test_route_graph_uses_clean_seed(self):
         routes = Routes()
         self.assertGreater(len(routes.maps), 100)

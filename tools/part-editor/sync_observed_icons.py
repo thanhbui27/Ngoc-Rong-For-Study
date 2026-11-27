@@ -11,7 +11,7 @@ import argparse
 import shutil
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DESTINATION = ROOT / "Server" / "resources" / "normal" / "image"
 PNG_HEADER = b"\x89PNG\r\n\x1a\n"
 

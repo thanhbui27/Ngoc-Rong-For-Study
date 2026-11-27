@@ -11,7 +11,7 @@ import re
 import struct
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT.parent / "NRO-server14-assets" / "game-data" / "part.bin"
 SEEDS = [ROOT / "ngocrong-clean.sql", ROOT / "ngocrong.sql"]
 MIGRATION = ROOT / "db" / "migrations" / "V6__append_observed_server14_parts.sql"

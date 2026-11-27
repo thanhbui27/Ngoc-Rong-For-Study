@@ -43,10 +43,10 @@ See [PART_SYNC.md](PART_SYNC.md) for the SQL reconciliation and its limits.
 To reproduce the reference snapshot from the captured files in this workspace:
 
 ```powershell
-python tools/build_observed_catalog.py '..\NRO-server14-assets\items-from-client.json' '..\NRO-server14-assets\game-data\part.bin'
-python tools/compare_observed_items.py '..\NRO-server14-assets\items-from-client.json'
-python tools/sync_observed_icons.py --server14 '..\NRO-server14-assets' --server15 '..\NRO-server15-assets' --min-id 0
-python tools/sync_observed_data.py --server15 '..\NRO-server15-assets'
+python tools/part-editor/build_observed_catalog.py '..\NRO-server14-assets\items-from-client.json' '..\NRO-server14-assets\game-data\part.bin'
+python tools/part-editor/compare_observed_items.py '..\NRO-server14-assets\items-from-client.json'
+python tools/part-editor/sync_observed_icons.py --server14 '..\NRO-server14-assets' --server15 '..\NRO-server15-assets' --min-id 0
+python tools/part-editor/sync_observed_data.py --server15 '..\NRO-server15-assets'
 ```
 
 The last two commands are dry runs; add `--apply` to copy absent PNGs. Before
@@ -62,7 +62,7 @@ These aliases are visible and purchasable in the admin NPC shop; their tooltip
 marks them as server-14 references. Because the capture lacks verified full
 models, aliases have `part=-1` and do not establish costume or pet appearance.
 Pet aliases retain source type 18.
-Run `python tools/prepare_admin_catalog.py` to audit the generated inputs.
+Run `python tools/part-editor/prepare_admin_catalog.py` to audit the generated inputs.
 
 Migration V14 configures the imported type-18 pets in `pet_follow` using each
 pet's own icon as a single static frame at its measured zoom-1 dimensions.

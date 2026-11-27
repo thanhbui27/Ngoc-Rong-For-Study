@@ -33,6 +33,6 @@ and 17698 have identical x4 PNG bytes. These are shared graphics, not missing
 files; no deduplication changed their ID paths. The 404 selected icons found
 in both server 14 and server 15 downloads at each zoom were byte-identical.
 
-Reproduce with `tools/audit_observed_images.py` (byte hashes) followed by
-`tools/audit_observed_pixels.ps1` (pixel comparison). Neither script writes to
+Reproduce with `tools/part-editor/audit_observed_images.py` (byte hashes) followed by
+`tools/part-editor/audit_observed_pixels.ps1` (pixel comparison). Neither script writes to
 the asset trees.

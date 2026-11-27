@@ -74,7 +74,8 @@ function renderItems(container, items, location, running) {
     return;
   }
   container.innerHTML = entries.map(item => {
-    const options = (item.options || []).map(option => `Chỉ số ${esc(option.id)}: ${esc(option.param)}`).join(' · ');
+    const options = (item.options || []).map(option => option.label ?? `Chỉ số ${option.id}: ${option.param}`)
+      .filter(Boolean).map(esc).join(' · ');
     const action = location === 'box'
       ? `<button class="button" data-item-action="take" data-location="box" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Chuyển vào túi</button>${[0,1,2,3,4].includes(Number(item.type)) ? `<button class="button success" data-item-action="take_equip" data-location="box" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Chuyển & mặc</button>` : `<button class="button success" data-item-action="take_use" data-location="box" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Chuyển & dùng</button>`}<button class="button danger" data-item-action="take_throw" data-location="box" data-item="${esc(item.id)}" ${running ? '' : 'disabled'}>Chuyển & bỏ</button>`
       : location === 'worn'

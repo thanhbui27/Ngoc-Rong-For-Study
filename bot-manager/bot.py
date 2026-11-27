@@ -272,7 +272,12 @@ class BotRunner:
         return {item_id: {**item, "name": ROUTES.item_names.get(item_id, f"Vật phẩm #{item_id}"),
                           "description": ROUTES.item_descriptions.get(item_id, item.get("description", "")),
                           "type": ROUTES.item_types.get(item_id, -1),
-                          "icon_id": ROUTES.item_icon_ids.get(item_id, -1)}
+                          "icon_id": ROUTES.item_icon_ids.get(item_id, -1),
+                          "options": [{**option, "label": (name.replace("#", str(option["param"]))
+                                                  if name else "")}
+                                      for option in item.get("options", [])
+                                      for name in [ROUTES.option_names.get(option["id"],
+                                                   f"Chỉ số {option['id']}: {option['param']}")]]}
                 for item_id, item in items.items()}
 
     def start(self) -> bool:

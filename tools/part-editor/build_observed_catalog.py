@@ -12,7 +12,7 @@ import json
 import shutil
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "Server" / "resources" / "reference" / "server14"
 MIGRATION = ROOT / "db" / "migrations" / "V4__add_server14_reference_catalog.sql"
 SERVER = "dragon14.teamobi.com:18001"

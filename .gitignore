@@ -10,3 +10,4 @@ Server/resources/config/server.properties
 *.xlsx
 .env
 *.review.*
+**/__pycache__/

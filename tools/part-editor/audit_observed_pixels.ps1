@@ -47,7 +47,7 @@ public static class PngPixelCompare {
 }
 '@
 
-$root = Split-Path -Parent $PSScriptRoot
+$root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $audit = Get-Content -LiteralPath $ByteAudit -Raw | ConvertFrom-Json
 $summary = [ordered]@{ icon = [ordered]@{}; data = [ordered]@{} }
 foreach ($zoom in 1..4) {

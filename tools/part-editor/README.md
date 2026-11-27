@@ -1,5 +1,7 @@
 # Part Studio cho BE Ngọc Rồng
 
+Các script chuẩn bị catalog Server 14, đồng bộ part/ảnh và báo cáo audit cũng nằm trong thư mục này. Chạy chúng từ gốc repo, ví dụ `python tools/part-editor/prepare_admin_catalog.py`.
+
 Đây là trang cục bộ; nút **Kết nối server** dùng tài khoản có `is_admin=1`
 để xác thực với action `-126` trong `Controller` của game server. Các thao tác
 đọc/ghi SQL chạy **trên game server** với DB trong `server.properties` của BE.

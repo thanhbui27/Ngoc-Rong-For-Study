@@ -3,7 +3,7 @@
 from pathlib import Path
 import re
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "ngocrong.sql"
 DESTINATION = ROOT / "ngocrong-clean.sql"
 
