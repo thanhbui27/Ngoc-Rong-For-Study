@@ -54,9 +54,10 @@ class ChatGPTModel:
     def __init__(self) -> None:
         self._lock = threading.RLock()
         self._pending: dict | None = None
-        self._state = {"provider": "local", "host_id": "", "active": "", "accounts": {}}
+        self._state = {"provider": "chatgpt", "host_id": "", "active": "", "accounts": {}}
         if STATE.exists():
             self._state.update(json.loads(STATE.read_text(encoding="utf-8")))
+        self._state["provider"] = "chatgpt"
 
     def _save(self) -> None:
         STATE.parent.mkdir(parents=True, exist_ok=True)
@@ -75,11 +76,10 @@ class ChatGPTModel:
                                   "active": client == active} for client, info in self._state["accounts"].items()]}
 
     def set_provider(self, provider: str) -> None:
-        if provider not in ("local", "chatgpt"):
+        if provider != "chatgpt":
             raise ValueError("Nguồn AI không hợp lệ")
         with self._lock:
-            if provider == "chatgpt":
-                self._credentials()
+            self._credentials()
             self._state["provider"] = provider
             self._save()
 

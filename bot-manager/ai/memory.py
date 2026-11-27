@@ -1,4 +1,4 @@
-"""Small per-bot decision journal used as feedback in later local model calls."""
+"""Small per-bot decision journal used as feedback in later ChatGPT calls."""
 
 from __future__ import annotations
 

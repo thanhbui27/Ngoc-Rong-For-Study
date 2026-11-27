@@ -69,40 +69,6 @@ class ProtocolTests(unittest.TestCase):
             finally:
                 runner.close()
 
-    def test_local_model_stops_after_last_ai_bot_stops(self):
-        with tempfile.TemporaryDirectory() as directory, \
-                patch.object(bot, "LOG_DIR", Path(directory) / "logs"), \
-                patch.object(bot.MODEL_CLIENT, "stop") as stop_model:
-            manager = BotManager(ConfigStore(Path(directory) / "state" / "bots.dat"))
-            first, second = manager.create_many([
-                BotConfig("AI 1", "testuser1", "testpass", mode="ai"),
-                BotConfig("AI 2", "testuser2", "testpass", mode="ai"),
-            ])
-            try:
-                for runner in (first, second):
-                    runner._stop.clear()
-                    runner.status = "running"
-                first.stop()
-                stop_model.assert_not_called()
-                second.stop()
-                stop_model.assert_called_once()
-            finally:
-                manager.close()
-
-    def test_switching_last_bot_out_of_ai_mode_stops_model(self):
-        with tempfile.TemporaryDirectory() as directory, \
-                patch.object(bot, "LOG_DIR", Path(directory) / "logs"), \
-                patch.object(bot.MODEL_CLIENT, "stop") as stop_model:
-            manager = BotManager(ConfigStore(Path(directory) / "state" / "bots.dat"))
-            runner = manager.create(BotConfig("AI", "testuser", "testpass", mode="ai"))
-            try:
-                runner._stop.clear()
-                runner.status = "running"
-                manager.update_config(runner.id, valid_config_update(runner.config, {"mode": "auto"}))
-                stop_model.assert_called_once()
-            finally:
-                manager.close()
-
     def test_shop_packet_with_item_options_keeps_following_items_aligned(self):
         payload = bytearray([0, 1]) + java_utf("Trang bị") + bytes([2])
         payload += struct.pack(">HiiBHHBB", 21, 700, 0, 1, 50, 5, 0, 0)

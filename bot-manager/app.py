@@ -15,7 +15,6 @@ from urllib.parse import parse_qs, urlparse
 
 from bot import BotConfig, BotManager, human_nickname
 from ai.chatgpt_model import CHATGPT_MODEL
-from ai.local_model import MODEL_CLIENT
 
 ROOT = Path(__file__).resolve().parent
 MANAGER = BotManager()
@@ -147,8 +146,6 @@ class Handler(BaseHTTPRequestHandler):
             if parts == ["auth", "chatgpt", "callback"]:
                 try:
                     CHATGPT_MODEL.finish_sign_in(parse_qs(urlparse(self.path).query))
-                    if CHATGPT_MODEL.status()["provider"] == "chatgpt":
-                        MODEL_CLIENT.stop()
                     message = "Đã kết nối ChatGPT. Quay lại Bot Manager để chọn model."
                 except Exception as exc:
                     message = "Kết nối ChatGPT thất bại: " + str(exc)
@@ -218,8 +215,6 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(200, {"url": url})
             elif parts == ["api", "ai", "provider"]:
                 CHATGPT_MODEL.set_provider(str(self._body().get("provider", "")))
-                if CHATGPT_MODEL.status()["provider"] == "chatgpt":
-                    MODEL_CLIENT.stop()
                 self._json(200, CHATGPT_MODEL.status())
             elif parts == ["api", "ai", "model"]:
                 CHATGPT_MODEL.select_model(str(self._body().get("model", "")))
@@ -233,16 +228,6 @@ class Handler(BaseHTTPRequestHandler):
                               if item["status"] not in ("running", "connecting", "reconnecting")]
                 MANAGER.start_many(candidates)
                 self._json(200, {"ok": True, "count": len(candidates)})
-            elif parts == ["api", "bots", "ai-all"]:
-                if CHATGPT_MODEL.status()["provider"] != "chatgpt":
-                    raise ValueError("Hãy kết nối và chọn model ChatGPT trước")
-                changed = 0
-                for item in MANAGER.all():
-                    bot = MANAGER.get(item["id"])
-                    if bot.config.mode != "ai":
-                        MANAGER.update_config(item["id"], replace(bot.config, mode="ai"))
-                        changed += 1
-                self._json(200, {"ok": True, "count": changed})
             elif parts == ["api", "bots", "delete-all"]:
                 self._json(200, {"ok": True, "count": MANAGER.remove_all()})
             elif parts == ["api", "bots", "stop-all"]:

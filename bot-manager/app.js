@@ -84,7 +84,7 @@ function aiChoiceLabel(choice) {
 
 function renderAiHistory(bot) {
   const botActive = ['running','connecting','reconnecting'].includes(bot.status);
-  const status = bot.mode !== 'ai' ? 'AI đã tắt cho bot này' : !botActive ? 'Bot đã dừng' : bot.ai_busy ? 'AI đang phân tích' : bot.ai_provider === 'chatgpt' ? 'ChatGPT đã kết nối' : !bot.ai_installed ? 'Chưa cài model' : bot.ai_runtime_running ? 'Model đang chạy' : 'Model sẽ bật khi bot cần';
+  const status = bot.mode !== 'ai' ? 'AI đã tắt cho bot này' : !bot.ai_connected ? 'Chưa kết nối ChatGPT' : !botActive ? 'Bot đã dừng' : bot.ai_busy ? 'AI đang phân tích' : 'Đang dùng ChatGPT';
   fill('ai-mode-status', status);
   fill('ai-goal-status', `Mục tiêu: ${bot.ai_goal === 'farm' ? 'luyện sức mạnh' : 'làm nhiệm vụ'}`);
   fill('ai-stat-status', `Cộng chỉ số: ${statNames[bot.ai_stat_focus] || 'đang chọn'}`);
@@ -103,10 +103,9 @@ async function loadAiConnection() {
     const status = await request('/api/ai/status');
     const version = JSON.stringify(status);
     if (version === aiConnectionVersion) return;
-    fill('ai-provider-status', status.provider === 'chatgpt'
-      ? `Đang dùng ChatGPT${status.email ? ` · ${status.email}` : ''}${status.model ? ` · ${status.model}` : ''}`
-      : `Đang dùng model cục bộ${status.connected ? ` · ChatGPT ${status.email} đã kết nối` : ''}`);
-    $('ai-use-local').disabled = status.provider === 'local';
+    fill('ai-provider-status', status.connected
+      ? `Đã kết nối ChatGPT${status.email ? ` · ${status.email}` : ''}${status.model ? ` · ${status.model}` : ''}`
+      : 'Chưa kết nối ChatGPT');
     $('ai-research').disabled = !status.model;
     fill('ai-research-result', status.research ? `GPT đã ghi nhớ: ${status.research}` : 'Chưa tìm hiểu tài liệu NRO.');
     $('ai-sign-in').textContent = status.connected ? 'Đăng nhập lại ChatGPT' : 'Kết nối ChatGPT';
@@ -255,7 +254,7 @@ function renderDetail(bot) {
   if (bot.mode === 'ai') {
     const goal = bot.ai_goal === 'farm' ? 'luyện sức mạnh' : 'làm nhiệm vụ';
     const stat = bot.ai_stat_focus || 'đang chọn';
-    fill('quest-hint', `AI ${bot.ai_provider === 'chatgpt' ? 'ChatGPT đã kết nối' : (bot.ai_installed ? 'cục bộ sẵn sàng' : 'cục bộ chưa cài model')} · mục tiêu ${goal} · hướng cộng chỉ số ${stat}. ${$('quest-hint').textContent}`);
+    fill('quest-hint', `AI dùng ChatGPT · mục tiêu ${goal} · hướng cộng chỉ số ${stat}. ${$('quest-hint').textContent}`);
   }
   renderAiHistory(bot);
   fill('log-path', bot.log_file);
@@ -415,14 +414,6 @@ $('ai-sign-in').onclick = async () => {
   try {
     const result = await request('/api/ai/sign-in', {method:'POST',body:'{}'});
     window.location.assign(result.url);
-  } catch (error) { fill('ai-connection-notice', error.message); }
-};
-$('ai-use-local').onclick = async () => {
-  try {
-    await request('/api/ai/provider', {method:'POST',body:JSON.stringify({provider:'local'})});
-    aiConnectionVersion = null;
-    await loadAiConnection();
-    await refresh();
   } catch (error) { fill('ai-connection-notice', error.message); }
 };
 $('ai-bot-modes').onchange = async event => {

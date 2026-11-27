@@ -20,7 +20,6 @@ from protocol import ItemMap, Reader, Wire, java_utf, parse_map, parse_player, p
 from movement import MovementUtility
 from routes import Routes
 from storage import ConfigStore
-from ai.local_model import EXECUTOR as AI_EXECUTOR, MODEL_CLIENT
 from ai.chatgpt_model import CHATGPT_MODEL, EXECUTOR as CHATGPT_EXECUTOR
 from ai import memory as ai_memory
 
@@ -206,7 +205,6 @@ class BotRunner:
         self._ai_goal = "quest"
         self._ai_goal_until = 0.0
         self._ai_stat_focus = ""
-        self._on_stopped = None
         self._reconnect_attempt = 0
         self._recovering = False
         self._recover_hp_target = False
@@ -257,6 +255,7 @@ class BotRunner:
 
     def snapshot(self, include_logs: bool = False) -> dict:
         with self._lock:
+            ai_status = CHATGPT_MODEL.status()
             result = {
                 "id": self.id, "name": self.config.name, "username": self.config.username,
                 "host": self.config.host, "port": self.config.port, "mode": self.config.mode,
@@ -271,9 +270,7 @@ class BotRunner:
                 "hp": self.hp, "max_hp": self.max_hp, "mp": self.mp, "max_mp": self.max_mp,
                 "stamina": self.stamina, "max_stamina": self.max_stamina,
                 "gold": self.gold, "gems": self.gems, "power": self.power, "potential": self.potential,
-                "ai_installed": MODEL_CLIENT.installed(),
-                "ai_runtime_running": MODEL_CLIENT.running(),
-                "ai_provider": CHATGPT_MODEL.status()["provider"],
+                "ai_provider": "chatgpt", "ai_connected": ai_status["connected"],
                 "ai_goal": self._ai_goal, "ai_stat_focus": self._ai_stat_focus,
                 "damage": self.damage, "defense": self.defense, "kills": self.kills,
                 "picks": self.picks, "purchases": self.purchases, "mobs": len(self.mobs),
@@ -406,11 +403,6 @@ class BotRunner:
         thread = self._thread
         if thread and thread is not threading.current_thread():
             thread.join(timeout=3)
-        self._notify_stopped()
-
-    def _notify_stopped(self) -> None:
-        if self._on_stopped is not None:
-            self._on_stopped()
 
     def close(self) -> None:
         self.stop()
@@ -615,7 +607,6 @@ class BotRunner:
             with self._lock:
                 self.status = "stopped"
             self.set_action("Đã dừng")
-        self._notify_stopped()
 
     def _packet(self, command: int, payload: bytes) -> None:
         try:
@@ -1432,7 +1423,7 @@ class BotRunner:
             try:
                 decision = self._ai_future.result()
             except Exception as exc:
-                self.log(f"AI cục bộ chưa trả quyết định: {exc}", "error")
+                self.log(f"ChatGPT chưa trả quyết định: {exc}", "error")
                 self._ai_next = now + 120
                 self._ai_shop_goal = None
                 self._ai_shop_phase = ""
@@ -1447,10 +1438,8 @@ class BotRunner:
         if len(choices) <= 1:
             self._ai_next = now + 60
             return bool(self._ai_shop_goal)
-        use_chatgpt = CHATGPT_MODEL.status()["provider"] == "chatgpt"
-        executor = CHATGPT_EXECUTOR if use_chatgpt else AI_EXECUTOR
-        client = CHATGPT_MODEL if use_chatgpt else MODEL_CLIENT
-        self._ai_future = executor.submit(client.decide, self._ai_observation(), choices)
+        self._ai_future = CHATGPT_EXECUTOR.submit(CHATGPT_MODEL.decide,
+                                                  self._ai_observation(), choices)
         self._ai_next = now + 60
         if self._ai_shop_goal:
             self.set_action("AI đang đánh giá trang bị và sách kỹ năng trong shop")
@@ -2321,16 +2310,7 @@ class BotManager:
                 raise ValueError("ID bot đã lưu không hợp lệ")
             config = BotConfig(**record["config"])
             bot = BotRunner(config, bot_id)
-            bot._on_stopped = self.stop_ai_if_idle
             self._bots[bot_id] = bot
-
-    def stop_ai_if_idle(self) -> None:
-        with self._lock:
-            active = any(bot.config.mode == "ai" and not bot._stop.is_set()
-                         and bot.status in ("running", "connecting", "reconnecting")
-                         for bot in self._bots.values())
-        if not active:
-            MODEL_CLIENT.stop()
 
     def _save(self) -> None:
         self._store.save([{"id": bot.id, "config": asdict(bot.config)} for bot in self._bots.values()])
@@ -2350,7 +2330,6 @@ class BotManager:
                 existing.add(key)
             created = [BotRunner(config) for config in configs]
             for bot in created:
-                bot._on_stopped = self.stop_ai_if_idle
                 self._bots[bot.id] = bot
             try:
                 self._save()
@@ -2404,7 +2383,6 @@ class BotManager:
         return len(bots)
 
     def update_config(self, bot_id: str, config: BotConfig) -> BotRunner:
-        stop_ai = False
         with self._lock:
             bot = self.get(bot_id)
             old = bot.config
@@ -2422,11 +2400,8 @@ class BotManager:
                     bot._ai_future.cancel()
                     bot._ai_future = None
                 bot._ai_shop_goal = None
-                stop_ai = True
             elif old.mode != "ai" and config.mode == "ai":
                 bot._ai_next = 0
-        if stop_ai:
-            self.stop_ai_if_idle()
         return bot
 
     def close(self) -> None:
@@ -2435,4 +2410,3 @@ class BotManager:
             bots = list(self._bots.values())
         for bot in bots:
             bot.close()
-        MODEL_CLIENT.stop()
