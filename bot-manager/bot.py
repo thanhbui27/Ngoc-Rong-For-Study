@@ -201,7 +201,7 @@ class BotRunner:
         self._ai_shop_cooldown: dict[str, float] = {}
         self._ai_action_cooldown: dict[str, float] = {}
         self._ai_selected_skill = -1
-        self._ai_feedback: tuple[str, str, dict, float] | None = None
+        self._ai_feedback: tuple[str, str, dict, float, str] | None = None
         self._ai_goal = "quest"
         self._ai_goal_until = 0.0
         self._ai_stat_focus = ""
@@ -1397,7 +1397,7 @@ class BotRunner:
             self._ai_goal = "quest"
             self.log("AI kết thúc lượt luyện sức mạnh; quay lại nhiệm vụ")
         if self._ai_feedback and now - self._ai_feedback[3] >= 3:
-            choice, reason, before, _ = self._ai_feedback
+            choice, reason, before, _, entry_id = self._ai_feedback
             outcome = "Chưa thấy thay đổi từ server"
             if choice.startswith("buy:") and self.bag.get(int(choice.split(":")[1]), 0) > before["count"]:
                 outcome = "Đã mua và nhận vật phẩm"
@@ -1407,7 +1407,8 @@ class BotRunner:
                 outcome = "Server đã cập nhật kỹ năng"
             elif choice.startswith("skill:"):
                 outcome = "Đã gửi lệnh chọn kỹ năng; chờ hiệu quả chiến đấu"
-            ai_memory.append(self.id, choice, reason, outcome)
+            ai_memory.update(self.id, entry_id, outcome,
+                             "completed" if outcome != "Chưa thấy thay đổi từ server" else "no_change")
             if outcome == "Chưa thấy thay đổi từ server":
                 self._ai_action_cooldown[choice] = now + 300
             self._ai_feedback = None
@@ -1423,6 +1424,8 @@ class BotRunner:
             try:
                 decision = self._ai_future.result()
             except Exception as exc:
+                ai_memory.append(self.id, "error", str(exc),
+                                 "Không nhận được quyết định từ ChatGPT", "error")
                 self.log(f"ChatGPT chưa trả quyết định: {exc}", "error")
                 self._ai_next = now + 120
                 self._ai_shop_goal = None
@@ -1450,11 +1453,15 @@ class BotRunner:
         choice = decision["choice"]
         reason = str(decision.get("reason", ""))[:160]
         if choice not in {entry["id"] for entry in self._ai_choices(now)}:
+            ai_memory.append(self.id, choice, reason,
+                             "Bỏ qua vì hành động không còn hợp lệ", "stale")
             self.log(f"AI bỏ hành động đã lỗi thời: {choice}")
             self._ai_shop_goal = None
             self._ai_shop_phase = ""
             return False
         if choice == "none":
+            ai_memory.append(self.id, choice, reason,
+                             "Tiếp tục hành động hiện tại", "completed")
             self._ai_shop_goal = None
             self._ai_shop_phase = ""
             return False
@@ -1462,12 +1469,13 @@ class BotRunner:
             self._ai_goal = choice.split(":", 1)[1]
             self._ai_goal_until = now + 300 if self._ai_goal == "farm" else 0
             self.set_action(f"AI chọn mục tiêu {self._ai_goal}: {reason}")
-            ai_memory.append(self.id, choice, reason, "Đã đổi mục tiêu chơi")
+            ai_memory.append(self.id, choice, reason, "Đã đổi mục tiêu chơi", "completed")
             return True
         if choice.startswith("stat:"):
             self._ai_stat_focus = choice.split(":", 1)[1]
             self.set_action(f"AI chọn hướng cộng chỉ số {self._ai_stat_focus}: {reason}")
-            ai_memory.append(self.id, choice, reason, "Đã đổi hướng xây dựng nhân vật")
+            ai_memory.append(self.id, choice, reason,
+                             "Đã đổi hướng xây dựng nhân vật", "completed")
             return True
         if choice.startswith("visit:"):
             kind = choice.split(":", 1)[1]
@@ -1480,6 +1488,8 @@ class BotRunner:
             self._ai_shop_phase = ""
             self._ai_shop_cooldown[kind] = now + 300
             self.shop = {}
+            ai_memory.append(self.id, choice, reason,
+                             "Đã bắt đầu đi tới cửa hàng", "applied")
             self.set_action(f"AI chọn đến shop {kind}: {reason}")
             return True
         action, value = choice.split(":", 1)
@@ -1501,8 +1511,12 @@ class BotRunner:
             self._send(34, struct.pack(">h", item_id))
             self._ai_selected_skill = item_id
         else:
+            ai_memory.append(self.id, choice, reason,
+                             "Bỏ qua vì dữ liệu hành động không còn hợp lệ", "stale")
             return False
-        self._ai_feedback = (choice, reason, before, now)
+        entry_id = ai_memory.append(self.id, choice, reason,
+                                    "Đã gửi hành động; chờ server xác nhận", "pending")
+        self._ai_feedback = (choice, reason, before, now, entry_id)
         self._ai_shop_goal = None
         self._ai_shop_phase = ""
         self.set_action(f"AI chọn {choice}: {reason}")

@@ -69,6 +69,31 @@ class ProtocolTests(unittest.TestCase):
             finally:
                 runner.close()
 
+    def test_ai_none_response_is_saved_in_history(self):
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.object(bot, "LOG_DIR", Path(directory) / "logs"), \
+                patch.object(bot.ai_memory, "ROOT", Path(directory) / "memory"):
+            runner = BotRunner(BotConfig("AI", "testuser", "testpass", mode="ai"))
+            try:
+                self.assertFalse(runner._ai_apply(
+                    {"choice": "none", "reason": "Tiếp tục nhiệm vụ hiện tại"}, time.time()))
+                history = runner.snapshot(include_logs=True)["ai_history"]
+                self.assertEqual(history[-1]["choice"], "none")
+                self.assertEqual(history[-1]["status"], "completed")
+                self.assertEqual(history[-1]["outcome"], "Tiếp tục hành động hiện tại")
+            finally:
+                runner.close()
+
+    def test_ai_pending_response_is_updated_with_server_outcome(self):
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.object(bot.ai_memory, "ROOT", Path(directory) / "memory"):
+            entry_id = bot.ai_memory.append("abc", "equip:8", "Mặc đồ", "Chờ", "pending")
+            self.assertTrue(bot.ai_memory.update("abc", entry_id, "Đã mặc trang bị", "completed"))
+            history = bot.ai_memory.recent("abc")
+            self.assertEqual(len(history), 1)
+            self.assertEqual(history[0]["outcome"], "Đã mặc trang bị")
+            self.assertEqual(history[0]["status"], "completed")
+
     def test_shop_packet_with_item_options_keeps_following_items_aligned(self):
         payload = bytearray([0, 1]) + java_utf("Trang bị") + bytes([2])
         payload += struct.pack(">HiiBHHBB", 21, 700, 0, 1, 50, 5, 0, 0)

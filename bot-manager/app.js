@@ -79,8 +79,10 @@ function aiChoiceLabel(choice) {
   if (action === 'goal') return value === 'farm' ? 'Chọn luyện sức mạnh' : 'Chọn làm nhiệm vụ';
   if (action === 'stat') return `Chọn cộng ${statNames[value] || value}`;
   if (action === 'visit') return value === 'skill' ? 'Đến shop kỹ năng' : 'Đến shop trang bị';
-  return ({buy:'Mua vật phẩm',equip:'Mặc trang bị',learn:'Học kỹ năng',skill:'Chọn kỹ năng',none:'Giữ hành động'})[action] || 'Quyết định AI';
+  return ({buy:'Mua vật phẩm',equip:'Mặc trang bị',learn:'Học kỹ năng',skill:'Chọn kỹ năng',none:'Giữ hành động',error:'Lỗi ChatGPT'})[action] || 'Quyết định AI';
 }
+
+const aiStatusNames = {received:'Đã nhận',pending:'Chờ server',applied:'Đã áp dụng',completed:'Hoàn tất',no_change:'Không đổi',stale:'Đã lỗi thời',error:'Lỗi'};
 
 function renderAiHistory(bot) {
   const botActive = ['running','connecting','reconnecting'].includes(bot.status);
@@ -94,7 +96,8 @@ function renderAiHistory(bot) {
   aiVersion = version;
   $('ai-history').innerHTML = history.length ? [...history].reverse().map(entry => {
     const when = entry.at ? new Date(entry.at).toLocaleString('vi-VN') : 'Chưa ghi thời gian';
-    return `<article class="ai-entry"><div class="ai-entry-head"><strong>${esc(aiChoiceLabel(entry.choice))}</strong><time>${esc(when)}</time></div><code>${esc(entry.choice)}</code><p><b>Lý do:</b> ${esc(entry.reason || 'Không có')}</p><p><b>Kết quả:</b> ${esc(entry.outcome || 'Chưa có')}</p></article>`;
+    const state = aiStatusNames[entry.status] || 'Đã ghi';
+    return `<article class="ai-entry"><div class="ai-entry-head"><strong>${esc(aiChoiceLabel(entry.choice))}</strong><time>${esc(when)}</time></div><code>${esc(entry.choice)}</code><small class="ai-entry-status">${esc(state)}</small><p><b>Lý do:</b> ${esc(entry.reason || 'Không có')}</p><p><b>Kết quả:</b> ${esc(entry.outcome || 'Chưa có')}</p></article>`;
   }).join('') : '<div class="empty-small">Bot này chưa có quyết định AI. Chọn chế độ AI trong Cấu hình để bắt đầu.</div>';
 }
 
