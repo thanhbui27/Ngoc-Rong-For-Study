@@ -17,6 +17,7 @@ from pathlib import Path
 
 STATE = Path(__file__).resolve().parent / "state" / "chatgpt.json"
 KEYRING_SERVICE = "NroBotManager-ChatGPT"
+KEYRING_VAULT_KEY = "token-vault-key"
 AUTH = "https://auth.openai.com"
 RESOURCE = "https://api.openai.com/v1"
 SCOPES = "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct"
@@ -83,14 +84,42 @@ class ChatGPTModel:
             self._save()
 
     def _credentials(self) -> dict:
-        _, keyring = _dependencies()
         active = self._state["active"]
         if not active:
             raise RuntimeError("Chưa kết nối ChatGPT")
-        raw = keyring.get_password(KEYRING_SERVICE, active)
-        if not raw:
+        path = self._credential_path(active)
+        if not path.exists():
             raise RuntimeError("Phiên ChatGPT đã mất; hãy đăng nhập lại")
-        return json.loads(raw)
+        try:
+            from cryptography.fernet import Fernet
+            raw = Fernet(self._vault_key()).decrypt(path.read_bytes())
+            return json.loads(raw)
+        except Exception as exc:
+            raise RuntimeError("Không đọc được phiên ChatGPT; hãy đăng nhập lại") from exc
+
+    @staticmethod
+    def _credential_path(client_id: str) -> Path:
+        digest = hashlib.sha256(client_id.encode("utf-8")).hexdigest()
+        return STATE.parent / f"credential-{digest}.bin"
+
+    @staticmethod
+    def _vault_key() -> bytes:
+        _, keyring = _dependencies()
+        value = keyring.get_password(KEYRING_SERVICE, KEYRING_VAULT_KEY)
+        if not value:
+            from cryptography.fernet import Fernet
+            value = Fernet.generate_key().decode("ascii")
+            keyring.set_password(KEYRING_SERVICE, KEYRING_VAULT_KEY, value)
+        return value.encode("ascii")
+
+    def _store_credentials(self, client_id: str, record: dict) -> None:
+        from cryptography.fernet import Fernet
+        path = self._credential_path(client_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        encrypted = Fernet(self._vault_key()).encrypt(json.dumps(record).encode("utf-8"))
+        temp = path.with_suffix(".tmp")
+        temp.write_bytes(encrypted)
+        temp.replace(path)
 
     def start_sign_in(self, redirect_uri: str, *, new_account: bool = False) -> str:
         _dependencies()
@@ -119,7 +148,7 @@ class ChatGPTModel:
             return AUTH + "/api/accounts/authorize?" + urllib.parse.urlencode(args)
 
     def finish_sign_in(self, query: dict[str, list[str]]) -> None:
-        jwt, keyring = _dependencies()
+        jwt, _ = _dependencies()
         with self._lock:
             pending, self._pending = self._pending, None
             if (not pending or time.time() >= pending["expires"]
@@ -153,7 +182,7 @@ class ChatGPTModel:
             record = {"access_token": tokens["access_token"], "refresh_token": tokens["refresh_token"],
                       "expires_at": time.time() + int(tokens.get("expires_in", 3600)),
                       "id_token": id_token, "scopes": scopes}
-            keyring.set_password(KEYRING_SERVICE, issued, json.dumps(record))
+            self._store_credentials(issued, record)
             self._state["accounts"][issued] = {"subject": claims["sub"],
                                                  "email": claims.get("email", ""),
                                                  "model": old.get("model", "")}
@@ -173,8 +202,7 @@ class ChatGPTModel:
                 raise RuntimeError("Không gia hạn được phiên ChatGPT; hãy đăng nhập lại")
             record.update(access_token=updated["access_token"], refresh_token=updated["refresh_token"],
                           expires_at=time.time() + int(updated.get("expires_in", 3600)))
-            _, keyring = _dependencies()
-            keyring.set_password(KEYRING_SERVICE, active, json.dumps(record))
+            self._store_credentials(active, record)
             return record["access_token"]
 
     def models(self) -> list[dict]:

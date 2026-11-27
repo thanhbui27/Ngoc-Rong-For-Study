@@ -29,6 +29,17 @@ class ChatGPTModelTests(unittest.TestCase):
         self.assertTrue(query["ext_agent_host_id"][0].startswith("urn:uuid:"))
         self.assertNotIn("access_token", url)
 
+    def test_large_tokens_are_encrypted_on_disk(self):
+        from cryptography.fernet import Fernet
+        self.model._state["active"] = "client"
+        record = {"access_token": "a" * 4000, "refresh_token": "r" * 4000}
+        key = Fernet.generate_key()
+        with patch.object(self.model, "_vault_key", return_value=key):
+            self.model._store_credentials("client", record)
+            path = self.model._credential_path("client")
+            self.assertNotIn(b"aaaa", path.read_bytes())
+            self.assertEqual(self.model._credentials(), record)
+
     def test_decision_uses_responses_stream_and_rejects_unlisted_action(self):
         self.model._state["active"] = "client"
         self.model._state["accounts"]["client"] = {"model": "example-sol"}
