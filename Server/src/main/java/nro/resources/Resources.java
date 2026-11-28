@@ -304,8 +304,9 @@ public class Resources {
         }
         Message msg;
         try {
-            byte[] effData = FileIO.readFile("Eff/effect/x" + session.zoomLevel + "/data/DataEffect_" + idT);
-            byte[] effImg = FileIO.readFile("Eff/effect/x" + session.zoomLevel + "/img/ImgEffect_" + idT + ".png");
+            EffectAssetResolver.Asset asset = EffectAssetResolver.load(java.nio.file.Path.of("Eff/effect"), idT, session.zoomLevel);
+            byte[] effData = asset.data;
+            byte[] effImg = asset.png;
             msg = new Message(-66);
             msg.writer().writeShort(id);
             msg.writer().writeInt(effData.length);

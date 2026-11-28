@@ -22,9 +22,14 @@ trên trang. Trang sẽ tự mở trong trình duyệt. Nếu muốn chạy từ
 & .\tools\part-editor\run.ps1
 ```
 
+Chạy lại lệnh sẽ tự đóng phiên Part Studio cũ của cùng thư mục repo trước khi
+mở phiên mới. Trang cũ và các thay đổi chưa lưu trong trang sẽ mất; đăng nhập
+admin lại ở phiên mới.
+
 Script dùng JDK và JAR phụ thuộc sẵn có trong `Server/target`. Build BE mới
 trước khi triển khai và chạy editor. Nó in URL
-`http://127.0.0.1:8182/?token=...`; mở đúng URL đó. HTTP chỉ lắng nghe trên
+`http://127.0.0.1:8182/?token=...`; nếu cổng 8182 đang được dùng, công cụ tự
+chọn cổng cục bộ khác. Mở đúng URL được in ra. HTTP chỉ lắng nghe trên
 loopback và mọi action cần token ngẫu nhiên của phiên chạy. Không nhập tài
 khoản admin vào file cấu hình hay URL.
 Khi tải lại trang trong lúc `PartStudio.cmd` vẫn chạy, editor tự dùng lại phiên
@@ -147,3 +152,14 @@ action báo lỗi và không có thay đổi nào được ghi.
 
 Nguồn part S14 có 2.097 bản ghi; các ảnh tải từ server 15 có cùng `part.bin`
 trong lần capture, nhưng tên vật phẩm server 15 chưa được xác minh riêng.
+## Audit resource BE và sửa effect theo zoom
+
+Chạy từ gốc repo để đối chiếu file hiện có với SQL seed (không đọc DB đang chạy):
+
+```powershell
+python tools/part-editor/audit_be_assets.py --out "$env:TEMP\be-asset-audit.json"
+```
+
+`be-asset-repair-report.json` lưu kết quả lần rà 28/11/2026 và các nguồn còn thiếu. Các mapping SQL được sửa có điều kiện trong migration V25; cần chạy migration trên DB đích và restart BE để nạp lại. V25 giữ tên item hiện tại.
+
+`EffectAssetResolver` xử lý các bộ effect thiếu zoom khi BE trả gói `-66`: chỉ chọn atlas của cùng Effect ID, khớp toàn bộ data; sửa data lệch khi có đa số nguồn rõ ràng. Pixel được nhân bằng nearest-neighbor theo zoom của client, không ghi đè PNG gốc. Công cụ `ProbeEffectAssets.java` kiểm tra khả năng resolve mà không sửa file nguồn. Nếu thiếu atlas ở mọi zoom, report vẫn ghi thiếu; không thay bằng ảnh khác.

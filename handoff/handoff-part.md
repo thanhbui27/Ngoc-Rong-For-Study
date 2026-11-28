@@ -2,6 +2,15 @@
 
 ## Cập nhật từ luồng Clone Studio
 
+### Sửa dữ liệu BE thiếu — 28/11/2026
+
+- Đã audit file BE thực tế và `ngocrong-clean.sql` bằng `tools/part-editor/audit_be_assets.py`. Dùng bộ đọc SQL `tools/clone-server/sql_seed.py` để giữ đúng escape MySQL (`\r\n` trong JSON DATA là khoảng trắng, không phải part hỏng). Report gọn tại `tools/part-editor/be-asset-repair-report.json`; đây không phải kết quả đọc DB đang chạy.
+- `EffectAssetResolver` được nối vào `Resources.effData`: chọn frame data theo đa số nghiêm ngặt (ít nhất 2 nguồn), giữ bộ được yêu cầu nếu không đủ bằng chứng. Khi thiếu atlas của một zoom, chỉ dùng atlas cùng Effect ID có data byte-identical rồi nhân pixel bằng nearest-neighbor ở runtime. Không đổi sang effect khác hoặc ghi lại PNG gốc. Probe trên tài nguyên thật sửa được 13 cặp ID/zoom: 8 cặp thiếu atlas và 5 bộ x2 có data lệch. Effect #72/#73/#1000 chưa có atlas khớp để khôi phục.
+- V25 `repair_stale_visual_mappings`: xóa có điều kiện 6 mapping cải trang cũ đang trỏ vào sách/hộp quà/item trống; giữ mapping khi item hiện là type 5 hoặc part đã được sửa. Xóa pet_follow/mini_pet cũ chỉ khi item đã được V24 nhận diện thành cải trang đúng tên/icon nguồn. Dragon #2097 có ảnh thật 17×10 ở x1, được sửa khai báo thành 1 frame tĩnh thay vì 75×75×8. Migration không sửa NAME của item.
+- Không tìm thấy nguồn ảnh thiếu của mini pet #1322 (Image ID 20831), 10 bộ cờ, 18 tên sprite, 3 quái #28/#29/#30 và nhiều pet/custom costume trong các thư mục `D:\Code\game nro` hoặc lịch sử Git đã kiểm tra. Người dùng xác nhận không có bộ resource gốc khác. Không nhân bản nhân vật/ảnh khác ID để lấp chỗ trống; các bộ này vẫn còn thiếu nguồn.
+- V25 **chưa áp dụng DB thật**: cấu hình hiện trỏ localhost:3306/ngocrong nhưng cổng không mở. Không dùng Docker. BE cần build/restart để dùng resolver mới, và chạy migration trên DB đích để nhận thay đổi SQL. V23/V24 cũng chưa được agent chạy trong phiên.
+- Đã compile `Resources.java` cùng resolver bằng JDK với JAR dependency sẵn có. Test JUnit cho resolver và V25 chạy trên H2 in-memory (không dùng Docker/dữ liệu thật); kiểm tra byte/zoom, không lấy nhầm atlas, bảo vệ mapping tùy chỉnh và chạy SQL lặp lại. Test parser kiểm tra escape MySQL và JSON.
+
 - `origin/main` đã có `a951a32e5`: Clone Studio tự gắn part sau khi clone hoặc mở bản lưu dựa trên mapping tham chiếu và toàn bộ frame khớp; giữ mapping đã lưu. Chi tiết, kiểm tra và giới hạn ở `handoff/handoff-tool-clone.md`. Thay đổi này không ghi DB từ UI clone.
 - Đã push V23 (`3579a3fd6`) đối chiếu/nhập part và ghi `cai_trang`, V24 (`3c9df80a8`) upsert 487 cải trang Server 14 vào `item_template` theo ID nguồn và ghi `cai_trang`. Người dùng cho phép ghi đè item trùng ID; có thể đổi một ID pet cũ thành cải trang. V24 chưa dọn mapping `mini_pet`/`pet_follow` cũ cho ID bị ghi đè.
 - **Chưa chạy hai migration trên DB thật**; lần kiểm tra chưa có MySQL Windows đang nghe hoặc CLI khả dụng. Người dùng yêu cầu **không dùng Docker**. Không báo DB đã cập nhật chỉ vì migration đã push. Cần xác định DB đích khi tiếp tục áp dụng.
