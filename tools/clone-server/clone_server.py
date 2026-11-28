@@ -27,7 +27,7 @@ def save(path: Path, data: bytes) -> None:
     temporary.replace(path)
 
 
-def connect(host: str, port: int, zoom: int, version: str, timeout: float):
+def connect(host: str, port: int, zoom: int, version: str, timeout: float, require_resources: bool = True):
     sock = socket.create_connection((host, port), timeout=timeout)
     try:
         sock.settimeout(timeout)
@@ -41,6 +41,8 @@ def connect(host: str, port: int, zoom: int, version: str, timeout: float):
         info = bytes((2, 4, zoom, 0)) + struct.pack(">ii", 1280, 720) + bytes((0, 1))
         info += struct.pack(">H", len(platform)) + platform
         wire.send(-29, info)
+        if not require_resources:
+            return sock, wire, {"route": route, "resource_version": None, "image_versions": None}
         image_versions = None
         for _ in range(100):
             command, payload = wire.read()
@@ -295,6 +297,10 @@ def main() -> None:
     parser.add_argument("--timeout", type=float, default=20)
     parser.add_argument("--batch-size", type=int, default=50)
     parser.add_argument("--skip-maps", action="store_true", help="Skip per-map raw tile packets")
+    parser.add_argument("--skip-extra", action="store_true", help="Skip dynamic effects, mobs, flags and named images")
+    parser.add_argument("--extra-only", action="store_true", help="Load extra assets into an existing capture")
+    parser.add_argument("--effect-range", default="0:300", help="Dynamic effect IDs, inclusive START:END (max 2000 IDs)")
+    parser.add_argument("--sprite-names", default="", help="Extra comma-separated image-by-name candidates")
     args = parser.parse_args()
     if not args.server:
         args.server = input("Server (HOST:PORT): ").strip()
@@ -310,6 +316,12 @@ def main() -> None:
         if args.max_files is not None and args.max_files < 1:
             raise ValueError("Max files must be positive")
         image_range = None
+        effect_start, effect_end = map(int, args.effect_range.split(":"))
+        if not 0 <= effect_start <= effect_end <= 32767 or effect_end - effect_start >= 2000:
+            raise ValueError("Effect range must contain 1..2000 IDs within 0..32767")
+        sprite_names = [value.strip() for value in args.sprite_names.split(",") if value.strip()]
+        if len(sprite_names) > 500 or any(not re.fullmatch(r"[\w.-]{1,120}", name, re.ASCII) for name in sprite_names):
+            raise ValueError("Invalid sprite names (letters, numbers, underscore, dot and hyphen only)")
         if args.image_range:
             start, end = (int(value) for value in args.image_range.split(":"))
             if start < 0 or end < start or end > 100000:
@@ -333,6 +345,27 @@ def main() -> None:
     def write_report() -> None:
         save(out / "report.json", (json.dumps(report, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
 
+    if args.extra_only:
+        if not previous_report.is_file():
+            parser.error("--extra-only requires an existing report.json")
+        report = json.loads(previous_report.read_text(encoding="utf-8"))
+    from capture_extra import capture, default_names
+    def extra(zoom):
+        try:
+            value = capture(out, host, port, zoom, args.version, args.timeout,
+                            range(effect_start, effect_end + 1), default_names() + sprite_names)
+            report.setdefault("extra_assets", {})[str(zoom)] = value
+        except (OSError, ValueError, KeyError, IndexError, struct.error) as error:
+            report.setdefault("extra_assets", {})[str(zoom)] = {"error": str(error)}
+        write_report()
+
+    if args.extra_only:
+        for zoom in zooms:
+            extra(zoom)
+        report["extra_updated_utc"] = datetime.now(timezone.utc).isoformat()
+        write_report()
+        return
+
     first = True
     for zoom in zooms:
         print(f"Connecting to {host}:{port}, zoom {zoom}", flush=True)
@@ -353,6 +386,11 @@ def main() -> None:
                         report["updates"] = get_update_packets(wire, out, (6, 7, 8))
                         report["updates"]["decoded_items"] = decode_items(
                             out / "raw" / "updates", out / "decoded" / "items.json")
+                        from extended_data import decode_templates
+                        try:
+                            report["templates"] = decode_templates(out)
+                        except (ValueError, IndexError) as error:
+                            report["templates"] = {"error": str(error)}
                     except (OSError, ValueError, TimeoutError, ConnectionError) as error:
                         report["updates"] = {"error": str(error)}
                     write_report()
@@ -397,6 +435,8 @@ def main() -> None:
                 write_report()
         except (OSError, ValueError, TimeoutError, ConnectionError) as error:
             row["error"] = str(error)
+        if not args.skip_extra and "error" not in row:
+            extra(zoom)
         write_report()
     report["finished_utc"] = datetime.now(timezone.utc).isoformat()
     try:

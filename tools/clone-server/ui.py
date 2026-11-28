@@ -17,6 +17,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from clone_server import parse_address
 from auto_mapping import link
+from extended_data import decode_templates, decode_saved_assets, read_json, write_json
+import extended_studio
 from studio_data import catalog, costume, map_detail, mapping_path, part, save_mapping
 
 HERE = Path(__file__).resolve().parent
@@ -51,6 +53,11 @@ def select_project(out: Path, server: str, require_report: bool = False) -> dict
         if RUN["process"] is not None and RUN["process"].poll() is None:
             raise RuntimeError("Hãy dừng lượt clone trước khi đổi thư mục")
         if existing:
+            try:
+                decode_templates(out)
+            except (ValueError, IndexError) as error:
+                write_json(out / "decoded/templates-error.json", {"error": str(error)})
+            decode_saved_assets(out)
             link(out)
         RUN.update(process=None, state="loaded" if existing else "idle", started=None, ended=None,
                    server=server, out=str(out), exit_code=None, log=deque(maxlen=500))
@@ -87,7 +94,7 @@ def snapshot() -> dict:
         if decoded.is_dir():
             result["files"] = [{"name": path.name, "path": "decoded/" + path.name, "bytes": path.stat().st_size}
                                for path in sorted(decoded.glob("*.json")) if path.is_file()]
-        for name in ("costume-parts.json", "mini-pet-parts.json"):
+        for name in ("costume-parts.json", "mini-pet-parts.json", "item-visuals.json", "map-tilesets.json"):
             mapping_file = root / "mappings" / name
             if mapping_file.is_file():
                 result["files"].append({"name": name, "path": "mappings/" + name,
@@ -111,6 +118,13 @@ def validate(config: dict) -> tuple[str, Path, list[str]]:
                "--icons", icons]
     if config.get("skip_maps") is True:
         command.append("--skip-maps")
+    for key, flag in (("skip_extra", "--skip-extra"), ("extra_only", "--extra-only")):
+        if config.get(key) is True:
+            command.append(flag)
+    if config.get("effect_range"):
+        command.extend(("--effect-range", str(config["effect_range"])))
+    if config.get("sprite_names"):
+        command.extend(("--sprite-names", str(config["sprite_names"])))
     for key, flag, minimum in (("max_icons", "--max-icons", 0), ("max_files", "--max-files", 1)):
         raw = config.get(key)
         if raw not in (None, ""):
@@ -149,6 +163,13 @@ def follow(process: subprocess.Popen) -> None:
 
 
 class Handler(BaseHTTPRequestHandler):
+    def handle(self):
+        try:
+            super().handle()
+        except ConnectionError:
+            # Browsers cancel pending image requests when switching project/tab.
+            return
+
     def log_message(self, format: str, *args) -> None:
         return
 
@@ -179,6 +200,41 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)
+        elif parsed.path == "/extended.js":
+            data = (HERE / "extended.js").read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/javascript; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+        elif parsed.path in ("/api/extended", "/api/asset-file", "/api/tileset"):
+            with LOCK:
+                out = RUN["out"]
+            try:
+                if not out:
+                    raise ValueError("Hãy mở bản lưu trước")
+                params = parse_qs(parsed.query)
+                root = Path(out)
+                if parsed.path == "/api/tileset":
+                    self.send_json(200, extended_studio.tileset(root, params.get("path", [""])[0]))
+                    return
+                if parsed.path == "/api/asset-file":
+                    path = extended_studio.asset_path(root, params.get("path", [""])[0])
+                    data = path.read_bytes()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "image/png")
+                    self.send_header("Content-Length", str(len(data)))
+                    self.end_headers()
+                    self.wfile.write(data)
+                    return
+                kind = params.get("kind", [""])[0]
+                if "id" in params:
+                    value = extended_studio.detail(root, kind, params["id"][0], int(params.get("zoom", ["4"])[0]))
+                else:
+                    value = extended_studio.catalog(root, kind, params.get("query", [""])[0], int(params.get("offset", ["0"])[0]))
+                self.send_json(200, value)
+            except (OSError, ValueError, KeyError, IndexError) as error:
+                self.send_json(400, {"error": str(error)})
         elif parsed.path == "/api/status":
             self.send_json(200, snapshot())
         elif parsed.path == "/api/download":
@@ -189,6 +245,7 @@ class Handler(BaseHTTPRequestHandler):
                        "decoded/effect.json", "decoded/image.json", "decoded/skill.json",
                        "decoded/items.json", "decoded/map-names.json", "mappings/costume-parts.json",
                        "mappings/mini-pet-parts.json"}
+            allowed.update({"decoded/npc.json", "decoded/mob.json", "decoded/templates-error.json", "mappings/item-visuals.json", "mappings/map-tilesets.json"})
             if not out or name not in allowed:
                 self.send_error(404)
                 return
@@ -292,7 +349,7 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("Request không hợp lệ")
             if self.path == "/api/start":
                 server, out = project_out(payload)
-                if (out / "report.json").is_file() and payload.get("force") is not True:
+                if (out / "report.json").is_file() and payload.get("force") is not True and payload.get("extra_only") is not True:
                     self.send_json(200, {**select_project(out, server, require_report=True), "reused": True})
                     return
                 server, out, command = validate(payload)
@@ -332,6 +389,41 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_json(200, {"path": result.stdout.strip(), **selected})
                 else:
                     self.send_json(200, {"path": "", "cancelled": True})
+            elif self.path == "/api/import-assets":
+                from import_assets import import_assets
+                with LOCK:
+                    out = RUN["out"]
+                    if not out or (RUN["process"] is not None and RUN["process"].poll() is None):
+                        raise RuntimeError("Mở bản lưu và dừng clone trước khi nhập asset")
+                    result = import_assets(Path(out), Path(str(payload.get("source", ""))))
+                self.send_json(200, result)
+            elif self.path == "/api/map-tileset":
+                with LOCK:
+                    out = RUN["out"]
+                    if not out or (RUN["process"] is not None and RUN["process"].poll() is None):
+                        raise RuntimeError("Mở bản lưu và dừng clone trước khi lưu tileset")
+                    root = Path(out)
+                    map_id, selected = int(payload.get("map_id", -1)), str(payload.get("tileset", ""))
+                    if not 0 <= map_id < len(read_json(root / "decoded/map-names.json", [])):
+                        raise ValueError("Map ID không hợp lệ")
+                    if selected:
+                        extended_studio.tileset(root, selected)
+                    path = root / "mappings/map-tilesets.json"
+                    mappings = read_json(path, {})
+                    mappings[str(map_id)] = selected
+                    write_json(path, mappings)
+                self.send_json(200, {"ok": True})
+            elif self.path == "/api/item-visuals":
+                with LOCK:
+                    out = RUN["out"]
+                    if payload.get("out") and Path(payload["out"]).resolve() != Path(out or ".").resolve():
+                        raise ValueError("Đã đổi thư mục bản clone; hãy mở lại item")
+                    if RUN["process"] is not None and RUN["process"].poll() is None:
+                        raise RuntimeError("Hãy dừng clone trước khi lưu mapping")
+                    if not out:
+                        raise ValueError("Hãy mở bản lưu trước")
+                    result = extended_studio.save_bindings(Path(out), int(payload.get("item_id", -1)), payload.get("layers"))
+                self.send_json(200, {"layers": result})
             elif self.path == "/api/mapping":
                 with LOCK:
                     out = RUN["out"]

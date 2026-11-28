@@ -7,6 +7,7 @@ from pathlib import Path
 
 from clone_server import save
 from reference_mappings import for_clone
+from extended_studio import bindings
 
 TYPES = {0: "Đầu", 1: "Thân", 2: "Chân", 3: "Phụ"}
 ITEM_TYPES = {5: "Cải trang", 18: "Mini pet", 21: "Mini pet", 72: "Pet đi theo"}
@@ -63,6 +64,15 @@ def costume(root: Path, item_id: int) -> dict:
         item["template_part"] = {"id": candidate, "type": records[candidate]["type"],
                                  "type_name": TYPES.get(records[candidate]["type"], "Khác")}
     item["suggested"] = None
+    item["visual_layers"] = bindings(root, item_id)
+    if kind in (0, 1) and item["template_part"] and item["template_part"]["type"] == (1 if kind == 0 else 2):
+        item["equipment_parts"] = {"head": 0, "body": candidate if kind == 0 else 1,
+                                   "leg": candidate if kind == 1 else 2}
+    if kind in (23, 24) and candidate >= 0 and str(item_id) not in read_json(root / "mappings/item-visuals.json", {}):
+        item["visual_layers"] = [{"kind": "sprite", "id": f"mount_{candidate}_0", "dx": 0, "dy": 0, "behind": True},
+                                 {"kind": "sprite", "id": f"mount_{candidate}_1", "dx": 0, "dy": 0, "behind": False}]
+    if kind in (11, 23, 24) and item["visual_layers"]:
+        item["equipment_parts"] = {"head": 0, "body": 1, "leg": 2}
     if 0 <= candidate and candidate + 2 < len(records) and [records[candidate + i]["type"] for i in range(3)] == [0, 1, 2]:
         item["suggested"] = {"head": candidate, "body": candidate + 1, "leg": candidate + 2}
     return item
@@ -118,6 +128,12 @@ def catalog(root: Path, kind: str, query: str = "", limit: int = 100, offset: in
             source = [row for row in all_items if row["type"] == 72]
         elif category == "all":
             source = all_items
+        elif category == "equipment":
+            source = [row for row in all_items if row["type"] in (0, 1)]
+        elif category == "mount":
+            source = [row for row in all_items if row["type"] in (23, 24)]
+        elif category == "flag":
+            source = [row for row in all_items if row["type"] == 11]
         elif category == "featured":
             source = [row for row in all_items if row["type"] in ITEM_TYPES]
         else:
@@ -148,7 +164,8 @@ def map_detail(root: Path, map_id: int) -> dict:
     if not 0 <= map_id < len(names):
         raise ValueError(f"Không có map #{map_id}")
     path = root / "raw" / "maps" / f"{map_id:03}.bin"
-    result = {"id": map_id, "name": names[map_id], "has_tiles": path.is_file()}
+    result = {"id": map_id, "name": names[map_id], "has_tiles": path.is_file(),
+              "tileset": read_json(root / "mappings/map-tilesets.json", {}).get(str(map_id), "")}
     if path.is_file():
         data = path.read_bytes()
         if len(data) < 3 or data[0] != 10:

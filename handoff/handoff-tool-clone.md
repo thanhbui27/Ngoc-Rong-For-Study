@@ -1,5 +1,17 @@
 # Bàn giao Clone Studio — 28/11/2026
 
+## Cập nhật mở rộng animation sau a951a32e5
+
+- Đã thêm tab **Effect · NPC · Quái · Skill**, bộ đọc `extended_data.py`, catalog `extended_studio.py`, renderer `extended.js`, capture `capture_extra.py` và importer `import_assets.py`. Các phần mô tả giới hạn cũ bên dưới cần đọc cùng cập nhật này.
+- Giải mã trọn packet `sub6`: bản clone hiện có 88 NPC với part/menu và 100 mẫu quái. NPC chạy Đứng/Chạy theo CharInfo. Có preview 193 effect thường (22 bản ghi trống), 157 skill paint, 67 dart, 1 arrow. Skill dùng chỉ số mảng effectId−1 / dartType / arrowId−1 giống Unity; preview không mô phỏng chiến đấu và đường bay tới mục tiêu.
+- Áo/quần có part được ráp lên nhân vật. Effect, sprite, cờ, sprite sheet pet có thể gắn bằng lớp vào item, chỉnh dx/dy và trước/sau nhân vật, lưu `mappings/item-visuals.json` (tối đa 8 lớp). Các liên kết không có trong packet vẫn phải xác nhận thủ công. Mount có part dùng tên `mount_<part>_0/1`; legacy chưa có part dùng lựa chọn sprite rõ ràng.
+- Map hỗ trợ texture thật từ 128 lựa chọn tileset của bản clone; hỗ trợ file strip và `ID$tile.png`. Lựa chọn lưu ở `mappings/map-tilesets.json`; packet tile không chỉ ra tileset. Đã kiểm tra map 0 với `resources/zoom4/x4/t/1`: 0 ô thiếu texture. Chưa dựng nền và nước động từ dữ liệu phiên vào map.
+- Capture mặc định thêm effect `-66`, quái `11`, cờ `-62/-63`, ảnh có tên `66`. CLI có `--extra-only`, `--skip-extra`, `--effect-range`, `--sprite-names`; UI có tải bổ sung và cùng tùy chọn. Batch 24, timeout hữu hạn, lưu raw trước khi decode, giữ ID thiếu/lỗi trong `report.extra_assets`, bỏ qua asset đã có đủ JSON/PNG. Kết nối bổ sung không cần chờ thông báo phiên bản resource. Không login hoặc dùng Docker.
+- Đã thử tải bổ sung x4 từ Server 14: không lấy được asset nào trong các nhóm động, report ghi timeout. Probe riêng nhận handshake, `-111/-74/-29` nhưng không nhận phản hồi effect/quái/sprite đã thử. Đây là giới hạn quan sát của phiên hiện tại, không kết luận server vĩnh viễn không hỗ trợ.
+- Đã nhập nguồn BE cục bộ `Server/resources/normal` vào bản clone ngoài Git để có dữ liệu xem: x4 hiện có 62 effect atlas, 79 quái, 102 bộ cờ, 95 sprite có tên và 5 pet sheet. Tổng 343 bản ghi nguồn riêng; nhãn source được giữ trong JSON/UI. Pet tham chiếu #2097 có PNG 68×40 không khớp khai báo 75×75×8 ở x1, preview báo sai kích thước; bốn pet sheet còn lại có PNG đúng cấu trúc. Không tự gắn dữ liệu tham chiếu này vào item Server 14.
+- Kiểm tra: 13 unittest qua (renumber/mapping, template, atlas byte/short, packet flag/sprite, raw/resume capture, đường dẫn, tileset và nhập nguồn riêng); Python compile và JS syntax qua. Đã chạy trình duyệt Edge headless thật: NPC/effect/phát frame/áo quần, effect atlas/quái/cờ/aura từ nguồn riêng, map texture, lưu lớp effect rồi mở lại trên fixture tạm; không có lỗi JavaScript. Đã xem screenshot NPC, quái và map. Trình kiểm thử dùng playwright-core cài tạm, không thêm dependency cho sản phẩm.
+- Bản clone và các asset nhập vẫn ngoài Git tại `D:\Code\game nro\clone test`. Muốn dùng trên máy khác cần capture hoặc nhập resource tương ứng; code không đóng gói toàn bộ PNG vào repo.
+
 ## Mục tiêu và trạng thái
 
 Clone Studio tải dữ liệu mà client NRO ẩn danh nhận được từ một game server, lưu bản gốc và JSON đã giải mã, rồi cho duyệt part, ảnh, item, cải trang, pet và map trên UI cục bộ. Code ở `tools/clone-server/`, hướng dẫn sử dụng ở `tools/clone-server/README.md`. Launcher Windows ở `CloneStudio.cmd` và `tools/clone-server/run.cmd`.

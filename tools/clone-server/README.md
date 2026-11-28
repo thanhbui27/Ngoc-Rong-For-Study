@@ -20,7 +20,28 @@ Sau khi clone hoặc **Mở bản lưu**, các tab riêng cho phép:
 - **Item · Cải trang · Pet:** lọc cải trang type 5, mini pet type 18/21, pet đi theo type 72 hoặc xem mọi item. Xem icon, `part_id` từ server và các part đã có mapping; chọn đầu/thân/chân để ráp preview. Chọn hành động **Đứng** hoặc **Chạy** rồi bấm **Phát**. Preview dùng quy tắc frame trong Unity `Char.updateCharStand` và `Char.updateCharRun` với nhịp `FixedUpdate` 20 ms ở tốc độ 1×; các dáng khác vẫn chọn thủ công. Mini pet được vẽ theo thứ tự lớp trong `Char.paintCharBody`. **Dừng** hoặc đổi item sẽ ngắt phát. Mapping tự lưu nằm trong `mappings/costume-parts.json` hoặc `mappings/mini-pet-parts.json` của bản clone. Tab không ghi vào DB/game server. Type 72 dùng `pet_follow` và sprite riêng nên chỉ hiện icon item khi bản clone không chứa sprite đó.
   Sau mỗi lượt clone, tool tự gắn part từ các mapping đã xác nhận của bản clone tham chiếu khi item khớp tên/loại/giới tính/icon và từng part khớp toàn bộ frame; ID part có thể khác. Nếu icon đổi, tool chỉ đối chiếu theo tên khi bộ ba part có đủ frame trùng khớp và không bị trùng tên với bộ khác. Tool cũng dùng `part_id` của item type 5 để gắn đầu khi hợp lệ, và vẫn đối chiếu SQL seed cục bộ. Nó không đoán thân/chân chỉ vì ID nằm cạnh đầu. Mapping đã lưu thủ công được giữ nguyên. Mở một bản clone cũ trong UI cũng chạy bước tự gắn này. Kết quả từng lượt clone nằm ở `report.json` mục `auto_linked_parts`; item chưa đủ bằng chứng vẫn để người dùng chọn trong preview.
   Tab còn đối chiếu `ngocrong-clean.sql` cục bộ: cải trang phải trùng ID/type/tên/icon/`part_id` và toàn bộ frame part; mini pet phải trùng tên/giới tính và toàn bộ frame của cả ba part. Đây là **SQL seed trong repo**, không phải SQL tải từ server nhập vào. Bản Server 14 đang có 282 mapping cải trang (207 bộ đủ ba part) và 19 bộ mini pet đạt điều kiện. Mapping tự lưu được ưu tiên. Cải trang chỉ thay đầu được ráp với part thân/chân nền #1/#2 để xem nhân vật; phần nền không được lưu. Item chưa có mapping sẽ hiện icon và ghi rõ nguồn ảnh.
-- **Map:** tìm map theo tên/ID và xem lưới tile ID từ packet map. Màu trong preview giúp phân biệt tile; không phải texture map thật của game.
+- **Map:** tìm map theo tên/ID, xem lưới màu hoặc chọn tileset đã tải để vẽ texture thật. Hỗ trợ ảnh strip dọc, thư mục tile riêng và tên file `tileset$tile.png` của Unity. Bấm **Lưu tileset cho map** để ghi lựa chọn vào `mappings/map-tilesets.json`; packet tile không chứa liên kết tileset nên tool không tự đoán. Nền/hiệu ứng nước cần thêm dữ liệu của phiên vào map.
+
+## Effect, NPC, quái, skill và phụ kiện
+
+Tab **Effect · NPC · Quái · Skill** có tìm kiếm, tải thêm danh sách, chọn zoom, phóng hình, lật hướng, chọn frame/dãy hành động và phát/dừng animation. FPS 50 tương ứng nhịp 20 ms; có thể giảm để xem chậm.
+
+- **NPC:** giải mã trực tiếp head/body/leg và menu từ packet map-template `sub6`. Bản clone cũ cũng được giải mã khi mở, không cần tải lại. Chọn Đứng/Chạy để ráp bằng CharInfo.
+- **Effect thường:** chạy các frame và tọa độ trong `effect.json`, dùng anchor giữa ảnh giống Unity. Bản ghi không có frame được báo rõ.
+- **Effect động/quái:** tải atlas và dữ liệu riêng, đọc các biến thể tọa độ byte/short, ráp từng mảnh theo dx/dy, phát sequence và các dãy action của boss. Dữ liệu gốc vẫn giữ khi gặp định dạng chưa hỗ trợ.
+- **Skill:** ráp dáng nhân vật và ba lớp effect theo từng stage đứng/trên không; liên kết effect/dart/arrow theo chỉ số mảng của Unity. Dart xem được ảnh đầu/đuôi/viền theo hướng ngang; đây là preview asset, không phải mô phỏng chiến đấu hay đường bay tới mục tiêu.
+- **Cờ/sprite:** phát dãy Image ID của cờ và frame dọc của sprite có tên (mount/aura/set_eff...). Áo/quần có part hợp lệ được ráp lên nhân vật trong tab Item. Thú cưỡi có `part_id` được liên kết tên `mount_<part>_0/1` theo Unity khi server cung cấp ảnh; các bộ legacy cần chọn sprite tương ứng.
+- **Gắn vào item:** chọn item ở tab Item, chọn effect/sprite/cờ/resource ở tab animation rồi **Thêm lớp**. Chỉnh dx/dy và trước/sau nhân vật. Pet dạng sprite sheet dùng Image ID, rộng/cao theo x1, số frame và dãy frame (ví dụ `0,1,2,1`). Mapping ở `mappings/item-visuals.json`, tối đa 8 lớp; có thể xóa từng lớp hoặc xóa hết. Tool không đoán effect sở hữu bởi item nào chỉ từ ID ảnh.
+
+Mỗi lượt clone mặc định tải thêm gói effect `-66`, quái `11`, cờ `-62/-63` và sprite có tên `66`, theo từng batch 24 yêu cầu. **Chỉ tải bổ sung animation** tiếp tục bản lưu hiện có mà không tải lại toàn bộ icon/resource. Có thể chọn bỏ qua, nhập dải effect hoặc thêm tên sprite. Phiên ẩn danh có thể không nhận được các gói này; `report.json.extra_assets` ghi các ID thiếu và lỗi. Tên mount/aura phổ biến là ứng viên dò, không phải liên kết đã xác minh. Phạm vi mặc định không bao quát mọi ID custom.
+
+```powershell
+python tools/clone-server/clone_server.py --server HOST:PORT --out "D:\captures\server" --extra-only --zooms 4 --effect-range 200:350 --sprite-names aura_30_0,aura_30_1
+```
+
+`--skip-extra` bỏ các gói bổ sung khi cần capture ngắn. Dữ liệu ở `raw/animations/zoomN/`, JSON ở `decoded/animations/zoomN/`, PNG ở `assets/zoomN/`. Mở lại bản lưu sẽ thử giải mã raw animation chưa có JSON.
+
+**Nhập asset cục bộ** nhận đường dẫn thư mục resource BE có `effect_data`/`monster_data`, `image/1..4`, và tùy chọn `ibn.json`. Nếu có seed `ngocrong-clean.sql` trong gốc repo tương ứng, tool cũng đọc cấu hình cờ, pet sheet và số frame ảnh có tên; ảnh có tên ở `resources/ThanhBN/img_by_name/xN` cũng được hỗ trợ. Asset này nằm trong nhóm **Asset cục bộ · nguồn riêng**, có nhãn nguồn rõ ràng và không tự ghi đè asset tải từ server hay tự gắn vào item. Kích thước sheet sai sẽ được báo trong preview. Không có thao tác DB trong các bước này.
 
 ## Dòng lệnh
 
@@ -45,7 +66,7 @@ Tool gửi các yêu cầu đọc như client: gói `-87` chứa `dart/arrow/eff
 Ví dụ chạy ngắn để kiểm tra kết nối:
 
 ```powershell
-python tools/clone-server/clone_server.py --server dragon14.teamobi.com:18001 --zooms 1 --max-files 2 --max-icons 5 --skip-maps
+python tools/clone-server/clone_server.py --server dragon14.teamobi.com:18001 --zooms 1 --max-files 2 --max-icons 5 --skip-maps --skip-extra
 ```
 
 Đọc lại 6 file `.bin` đã có mà không kết nối server:
