@@ -1,7 +1,7 @@
-const studio = {tab:'clone', poses:[], partCache:new Map(), selectedCostume:null, selectedPart:null, epoch:0, costumeAnimation:null, costumeRenderSeq:0, costumeRequestSeq:0};
+const studio = {tab:'clone', poses:[], partCache:new Map(), imageCache:new Map(), selectedCostume:null, selectedPart:null, epoch:0, costumeAnimation:null, costumeRenderSeq:0, costumeRequestSeq:0};
 window.addEventListener('clone-project-change',()=>{
   stopCostumeAnimation();studio.costumeRenderSeq++;studio.costumeRequestSeq++;
-  studio.epoch++;studio.partCache.clear();studio.selectedCostume=null;studio.selectedPart=null;
+  studio.epoch++;studio.partCache.clear();studio.imageCache.clear();studio.selectedCostume=null;studio.selectedPart=null;
   for(const id of ['partList','costumeList','mapList','partFrames'])$(id).replaceChildren();
   for(const id of ['partTotal','costumeTotal','mapTotal','partMeta','mapMeta'])$(id).textContent='';
   $('partTitle').textContent='Chọn một part';$('costumeName').textContent='Chọn item';$('mapTitle').textContent='Chọn map';
@@ -113,8 +113,14 @@ function renderPartFrames(){
 $('partZoom').onchange=()=>{renderPartFrames();drawCurrentParts();};
 
 function canvasEmpty(canvas){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#65809e66';ctx.beginPath();ctx.moveTo(45,190);ctx.lineTo(255,190);ctx.stroke();return ctx;}
-function loadImage(url){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=url;});}
-async function drawComposite(canvas,ids,poseIndex,preferred,isCurrent=()=>true,displayScale=1){
+function loadImage(url){
+  if(studio.imageCache.has(url))return studio.imageCache.get(url);
+  const result=new Promise(resolve=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=url;});
+  studio.imageCache.set(url,result);
+  if(studio.imageCache.size>256)studio.imageCache.delete(studio.imageCache.keys().next().value);
+  return result;
+}
+async function drawComposite(canvas,ids,poseIndex,preferred,isCurrent=()=>true,displayScale=1,miniPet=false){
   if(!isCurrent())return '';
   const epoch=studio.epoch;
   const ctx=canvasEmpty(canvas),pose=studio.poses[poseIndex]||studio.poses[0];
@@ -125,7 +131,10 @@ async function drawComposite(canvas,ids,poseIndex,preferred,isCurrent=()=>true,d
     try{const value=await getPart(id);if(epoch!==studio.epoch||!isCurrent())return '';if(value.type!==kind){issues.push('Part '+slot+' #'+id+' sai loại');continue;}parts[slot]=value;}
     catch(error){if(!isCurrent())return '';issues.push(error.message);}
   }
-  for(const [slot,poseSlot] of [['head',0],['leg',1],['body',2]]){
+  const layers=miniPet?[['leg',1],['body',2],['head',0]]:[['head',0],['leg',1],['body',2]];
+  for(const [slot,poseSlot] of layers){
+    // Char.paintCharBody skips the MiniPet head on jump/fall/roll poses.
+    if(miniPet&&slot==='head'&&[7,8,12,23].includes(poseIndex))continue;
     const value=parts[slot];if(!value)continue;
     const [frameIndex,offsetX,offsetY]=pose[poseSlot];const frame=value.frames[frameIndex];
     if(!frame){issues.push(slot+' thiếu frame '+frameIndex);continue;}
@@ -151,22 +160,30 @@ $('composeDraw').onclick=drawCurrentParts;
 $('composePose').onchange=drawCurrentParts;
 
 function stopCostumeAnimation(){
-  if(studio.costumeAnimation?.timer)clearTimeout(studio.costumeAnimation.timer);
+  if(studio.costumeAnimation?.frame)cancelAnimationFrame(studio.costumeAnimation.frame);
   studio.costumeAnimation=null;
-  $('costumePlay').textContent='Phát frame';
+  $('costumePlay').textContent='Phát';
+}
+function unityPoseForAction(action,tick){
+  // Char starts with cp1=0, then increments before choosing cf on each FixedUpdate.
+  const cp1=(tick+1)%(action==='stand'?31:10);
+  return action==='stand'?(cp1%15<5?0:1):2+(cp1>>1);
 }
 function toggleCostumeAnimation(){
   if(studio.costumeAnimation){stopCostumeAnimation();return;}
-  if(!studio.selectedCostume||!studio.poses.length)return;
-  const playback={timer:null};studio.costumeAnimation=playback;
+  if(!studio.selectedCostume||!studio.poses.length||$('costumePlay').disabled)return;
+  const playback={frame:0,start:performance.now(),lastPose:-1};studio.costumeAnimation=playback;
   $('costumePlay').textContent='Dừng';
-  async function tick(){
+  function tick(now){
     if(studio.costumeAnimation!==playback)return;
-    $('costumePose').value=String((Number($('costumePose').value)+1)%studio.poses.length);
-    await drawCurrentCostume();
-    if(studio.costumeAnimation===playback)playback.timer=setTimeout(tick,Number($('costumeSpeed').value));
+    const gameTick=Math.floor((now-playback.start)*Number($('costumeSpeed').value)/20);
+    const pose=unityPoseForAction($('costumeAction').value,gameTick);
+    if(pose!==playback.lastPose){
+      playback.lastPose=pose;$('costumePose').value=String(pose);drawCurrentCostume();
+    }
+    playback.frame=requestAnimationFrame(tick);
   }
-  playback.timer=setTimeout(tick,Number($('costumeSpeed').value));
+  tick(playback.start);
 }
 $('costumePlay').onclick=toggleCostumeAnimation;
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCostumeAnimation();});
@@ -186,21 +203,22 @@ async function studioCostume(id){
       const fromTemplate=key==='head'&&value.type===5&&value.template_part?.type===0?value.part_id:'';
       $('costume'+key[0].toUpperCase()+key.slice(1)).value=effective?.[key]??fromTemplate;
     }
+    $('costumePose').value=String(unityPoseForAction($('costumeAction').value,0));
     const canMap=[5,18,21].includes(value.type);
-    $('costumePlay').disabled=!canMap;
     for(const key of ['Head','Body','Leg'])$('costume'+key).disabled=!canMap;
     $('costumeSuggest').disabled=!canMap||!value.suggested;
     $('costumeSave').disabled=!canMap;
     $('costumeToPart').disabled=!canMap;
     studioMessage('costumeMessage',!canMap?'Item này chỉ preview icon; không dùng mapping part đầu/thân/chân.':value.suggested?'Gợi ý liền kề #'+value.suggested.head+' / #'+value.suggested.body+' / #'+value.suggested.leg+' (chưa xác minh là cùng item).':'Không có bộ part liền kề đúng loại để gợi ý.');
-    drawCurrentCostume();
+    await drawCurrentCostume();
   }catch(error){if(epoch===studio.epoch&&requestSeq===studio.costumeRequestSeq)studioMessage('costumeMessage',error.message);}
 }
 async function drawCurrentCostume(){
   const selected=studio.selectedCostume;if(!selected)return;
   const epoch=studio.epoch,renderSeq=++studio.costumeRenderSeq,ids=composeIds('costume'),zoom=Number($('costumeZoom').value);
   const isCurrent=()=>epoch===studio.epoch&&renderSeq===studio.costumeRenderSeq&&studio.selectedCostume?.id===selected.id;
-  $('costumeFrameStatus').textContent=studio.poses.length?'Frame '+(Number($('costumePose').value)+1)+' / '+studio.poses.length:'';
+  $('costumePlay').disabled=![5,18,21].includes(selected.type)||Object.values(ids).every(id=>id<0)||!studio.poses.length;
+  $('costumeFrameStatus').textContent=studio.poses.length?'Dáng '+String(Number($('costumePose').value)).padStart(2,'0'):'';
   if(![5,18,21].includes(selected.type)||Object.values(ids).every(id=>id<0)){
     const canvas=$('costumeCanvas'),ctx=canvasEmpty(canvas);
     const order=[zoom,4,3,2,1].filter((value,index,array)=>array.indexOf(value)===index);
@@ -220,7 +238,7 @@ async function drawCurrentCostume(){
   }
   const displayIds={...ids},base=[];
   if(selected.type===5)for(const [slot,partId] of [['head',0],['body',1],['leg',2]])if(displayIds[slot]<0){displayIds[slot]=partId;base.push(slot+' #'+partId);}
-  const note=await drawComposite($('costumeCanvas'),displayIds,Number($('costumePose').value),zoom,isCurrent,Number($('costumeDisplayScale').value));
+  const note=await drawComposite($('costumeCanvas'),displayIds,Number($('costumePose').value),zoom,isCurrent,Number($('costumeDisplayScale').value),[18,21].includes(selected.type));
   if(isCurrent()){
     const complete=Object.values(ids).every(id=>id>=0);
     studioMessage('costumePreviewNote',(complete?'Preview bộ part: ':base.length?'Preview với part nền tham khảo ('+base.join(', ')+'): ':'Preview part hiện có: ')+note+(complete?'':base.length?' Các part nền không được lưu vào mapping cải trang.':' Bộ mini pet này chưa đủ mapping.'));
@@ -229,7 +247,10 @@ async function drawCurrentCostume(){
 $('costumeSuggest').onclick=()=>{const value=studio.selectedCostume?.suggested;if(!value)return;stopCostumeAnimation();for(const key of ['head','body','leg'])$('costume'+key[0].toUpperCase()+key.slice(1)).value=value[key];drawCurrentCostume();};
 $('costumeSave').onclick=async()=>{if(!studio.selectedCostume)return;try{const result=await post('/api/mapping',{item_id:studio.selectedCostume.id,mapping:composeIds('costume')});studio.selectedCostume.mapping=result.mapping;studioMessage('costumeMessage','Đã lưu '+result.path+' · chỉ là mapping cục bộ.');studioCatalog('costume');}catch(error){studioMessage('costumeMessage',error.message);}};
 $('costumeToPart').onclick=()=>{for(const key of ['head','body','leg'])$('compose'+key[0].toUpperCase()+key.slice(1)).value=$('costume'+key[0].toUpperCase()+key.slice(1)).value;studioTab('parts');drawCurrentParts();};
-$('costumePose').onchange=drawCurrentCostume;$('costumeDisplayScale').onchange=drawCurrentCostume;$('costumeZoom').onchange=()=>{if(studio.selectedCostume){$('costumeIcon').src=imageUrl(studio.selectedCostume.icon_id,Number($('costumeZoom').value));drawCurrentCostume();}};
+$('costumeAction').onchange=()=>{stopCostumeAnimation();$('costumePose').value=String(unityPoseForAction($('costumeAction').value,0));drawCurrentCostume();};
+$('costumePose').onchange=()=>{stopCostumeAnimation();drawCurrentCostume();};
+$('costumeSpeed').onchange=()=>{if(studio.costumeAnimation){stopCostumeAnimation();toggleCostumeAnimation();}};
+$('costumeDisplayScale').onchange=drawCurrentCostume;$('costumeZoom').onchange=()=>{if(studio.selectedCostume){$('costumeIcon').src=imageUrl(studio.selectedCostume.icon_id,Number($('costumeZoom').value));drawCurrentCostume();}};
 for(const key of ['Head','Body','Leg'])$('costume'+key).onchange=()=>{stopCostumeAnimation();drawCurrentCostume();};
 
 async function studioMap(id){
@@ -255,5 +276,5 @@ studioApi('/api/poses').then(value=>{
   for(const select of [$('composePose'),$('costumePose')])for(let index=0;index<studio.poses.length;index++){
     const option=document.createElement('option');option.value=String(index);option.textContent='Dáng '+String(index).padStart(2,'0');select.append(option);
   }
-  if(studio.selectedCostume)drawCurrentCostume();
+  if(studio.selectedCostume){$('costumePose').value=String(unityPoseForAction($('costumeAction').value,0));drawCurrentCostume();}
 }).catch(error=>studioMessage('composeNote',error.message));
