@@ -61,6 +61,11 @@ public final class CostumeAppearance {
 
     private static int partType(int id) {
         Part part = PartManager.getInstance().find(id);
-        return part == null ? -1 : part.getType();
+        if (part == null || part.getPartData() == null) return -1;
+        for (int[] frame : part.getPartData()) {
+            if (frame != null && frame.length > 0 && frame[0] > 0
+                    && !VisualEquipment.icon(frame[0])) return -1;
+        }
+        return part.getType();
     }
 }

@@ -80,6 +80,16 @@ public class FlagBagService {
         }
     }
 
+    public FlagBag forItem(nro.models.item.ItemTemplate item) {
+        if (item == null || (item.type != 11 && item.type != 17)) return null;
+        FlagBag flag = getFlagBag(item.part);
+        if (flag == null && (item.part == 201 || item.part == 207)) {
+            flag = new FlagBag();
+            flag.id = item.part;
+        }
+        return nro.models.item.VisualEquipment.flag(flag) ? flag : null;
+    }
+
     public FlagBag getFlagBag(int id) {
         for (FlagBag fb : Manager.FLAGS_BAGS) {
             if (fb.id == id) {

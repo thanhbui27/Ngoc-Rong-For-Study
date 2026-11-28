@@ -685,7 +685,7 @@ public class Player {
 
     public byte getAura() {
         if (this.effectSkill != null && this.effectSkill.isBienHinh) {
-            return ConstPlayer.AURABIENHINH[this.gender][this.effectSkill.levelBienHinh - 1];
+            return readyAura(ConstPlayer.AURABIENHINH[this.gender][this.effectSkill.levelBienHinh - 1]);
         }
         // if (fusion != null && fusion.typeFusion != ConstPlayer.NON_FUSION) {
         // if (inventory != null && pet != null && inventory.itemsBody.size() > 5 &&
@@ -702,7 +702,7 @@ public class Player {
         if (inventory != null && inventory.itemsBody.size() > 5 && inventory.itemsBody.get(5).isNotNullItem()) {
             Short equippedItemId = inventory.itemsBody.get(5).template.id;
             if (equippedItemId == 1315 || equippedItemId == 1317) {
-                return 13;
+                return readyAura(13);
             }
         }
         CollectionBook book = getCollectionBook();
@@ -712,10 +712,15 @@ public class Player {
                     .findAny()
                     .orElse(null);
             if (card != null) {
-                return (byte) card.getCardTemplate().getAura();
+                return readyAura(card.getCardTemplate().getAura());
             }
         }
         return -1;
+    }
+
+    private byte readyAura(int id) {
+        return id >= 0 && id <= Byte.MAX_VALUE && nro.models.item.VisualEquipment.namedPair("aura_", id)
+                ? (byte) id : -1;
     }
 
     public byte getEffFront() {
@@ -959,69 +964,26 @@ public class Player {
     }
 
     public short getFlagBag() {
-        if (this.isHoldBlackBall) {
-            return 31;
-        } else if (this.isHoldNamecBall) {
-            return 30;
-        } else if (this.inventory.itemsBody.size() >= 9 && this.inventory.itemsBody.get(8).isNotNullItem()) {
-            FlagBag f = FlagBagService.gI().getFlagBagByName(this.inventory.itemsBody.get(8).template.name);
-            if (f != null) {
-                return (short) f.id;
+        if (isHoldBlackBall) return 31;
+        if (isHoldNamecBall) return 30;
+        if (inventory != null && inventory.itemsBody.size() > 8) {
+            Item item = inventory.itemsBody.get(8);
+            if (item.isNotNullItem()) {
+                FlagBag flag = FlagBagService.gI().forItem(item.template);
+                if (flag != null) return (short) flag.id;
             }
-        } else if (TaskService.gI().getIdTask(this) == ConstTask.TASK_3_2) {
-            return 28;
-        } else if (this.clan != null) {
-            return (short) this.clan.imgId;
         }
-        return -1;
+        if (TaskService.gI().getIdTask(this) == ConstTask.TASK_3_2) return 28;
+        return clan == null ? -1 : (short) clan.imgId;
     }
 
     public short getMount() {
-        if (this.isVersionAbove(220)) {
-            for (Item item : inventory.itemsBody) {
-                if (item.isNotNullItem()) {
-                    if (item.template.type == 24) {
-                        if (item.template.gender == 3 || item.template.gender == this.gender) {
-                            return item.template.id;
-                        } else {
-                            return -1;
-                        }
-                    }
-                    if (item.template.type == 23) {
-                        if (item.template.id < 500) {
-                            return item.template.id;
-                        } else {
-                            Object mount = DataGame.MAP_MOUNT_NUM.get(String.valueOf(item.template.id));
-                            if (mount == null) {
-                                return -1;
-                            }
-                            return (short) mount;
-                        }
-                    }
-                }
-            }
-        } else {
-            for (Item item : inventory.itemsBag) {
-                if (item.isNotNullItem()) {
-                    if (item.template.type == 24) {
-                        if (item.template.gender == 3 || item.template.gender == this.gender) {
-                            return item.template.id;
-                        } else {
-                            return -1;
-                        }
-                    }
-                    if (item.template.type == 23) {
-                        if (item.template.id < 500) {
-                            return item.template.id;
-                        } else {
-                            Object mount = DataGame.MAP_MOUNT_NUM.get(String.valueOf(item.template.id));
-                            if (mount == null) {
-                                return -1;
-                            }
-                            return (short) mount;
-                        }
-                    }
-                }
+        List<Item> items = isVersionAbove(220) ? inventory.itemsBody : inventory.itemsBag;
+        for (Item item : items) {
+            if (item.isNotNullItem()) {
+                short mount = nro.models.item.VisualEquipment.mount(item.template, gender,
+                        nro.models.item.VisualEquipment::mountImages);
+                if (mount >= 0) return mount;
             }
         }
         return -1;

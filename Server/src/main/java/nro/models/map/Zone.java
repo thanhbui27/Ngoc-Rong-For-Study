@@ -651,7 +651,8 @@ public class Zone {
         }
 
         Service.getInstance().sendFlagPlayerToMe(plReceive, plInfo);
-        if (plInfo.isPl() && plInfo.inventory.itemsBody.get(12).isNotNullItem()) {
+        if (plInfo.isPl() && plInfo.inventory.itemsBody.get(12).isNotNullItem()
+                && plInfo.inventory.itemsBody.get(12).template.type == 39) {
             Service.getInstance().sendTitleRv1(plInfo, plReceive,
                     (short) (plInfo.inventory.itemsBody.get(12).template.part));
         }

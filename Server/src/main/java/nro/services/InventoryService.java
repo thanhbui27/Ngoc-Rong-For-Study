@@ -416,6 +416,15 @@ public class InventoryService {
             byte type = item.getType();
             if (item.isNotNullItem()) {
                 if (type == 5 && !costumeReady(player, item)) return sItem;
+                boolean missing = ((type == 23 || type == 24) && nro.models.item.VisualEquipment.mount(
+                        item.template, player.gender, nro.models.item.VisualEquipment::mountImages) < 0)
+                        || ((type == 11 || type == 17) && FlagBagService.gI().forItem(item.template) == null)
+                        || (type == 39 && !nro.models.item.VisualEquipment.effect(item.template.part));
+                if (missing) {
+                    Service.gI().sendThongBaoOK(player.isPet ? ((Pet) player).master : player,
+                            "Vật phẩm " + item.getId() + " chưa có đủ dữ liệu ngoại hình, chưa thể trang bị.");
+                    return sItem;
+                }
                 if (type == 72 && !player.isPet) {
                     List<Item> itemsBody = player.inventory.itemsBody;
                     if (itemsBody.size() > 10) {

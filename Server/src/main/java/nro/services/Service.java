@@ -124,18 +124,8 @@ public class Service {
     public void sendTitleRv1(Player player, Player p2, int part) {
         Message me;
         try {
-            me = new Message(-128);
-            me.writer().writeByte(0);
-            me.writer().writeInt((int) player.id);
-            if (player.partDanhHieu >= 60) {
-                me.writer().writeShort(part);
-            }
-            me.writer().writeShort(part);
-            me.writer().writeByte(1);
-            me.writer().writeByte(-1);
-            me.writer().writeShort(50);
-            me.writer().writeByte(-1);
-            me.writer().writeByte(-1);
+            if (!nro.models.item.VisualEquipment.effect(part)) return;
+            me = TitlePacket.add(player.id, part);
             p2.sendMessage(me);
             me.cleanup();
         } catch (Exception e) {
@@ -174,18 +164,8 @@ public class Service {
     public void sendTitle1(Player player, int part) {
         Message me;
         try {
-            me = new Message(-128);
-            me.writer().writeByte(0);
-            me.writer().writeInt((int) player.id);
-            if (player.titleitem) {
-                me.writer().writeShort(part);
-            }
-            me.writer().writeShort(part);
-            me.writer().writeByte(1);
-            me.writer().writeByte(-1);
-            me.writer().writeShort(50);
-            me.writer().writeByte(-1);
-            me.writer().writeByte(-1);
+            if (!nro.models.item.VisualEquipment.effect(part)) return;
+            me = TitlePacket.add(player.id, part);
             this.sendMessAllPlayerInMap(player, me);
             me.cleanup();
 

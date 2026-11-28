@@ -1,0 +1,78 @@
+--- a/Assets/Scripts/Char.cs
++++ b/Assets/Scripts/Char.cs
+@@ -4905,6 +4905,17 @@
+ 		}
+ 	}
+ 
++    public void clearWearableTitle()
++    {
++        eDanhHieu = null;
++    }
++
++    public void setWearableTitle(int id, int layer, int loop, int loopCount)
++    {
++        eDanhHieu = new Effect(id, cx, cH_new, layer, loop, loopCount);
++        eDanhHieu.timeExist = long.MaxValue;
++    }
++
+ 	public void setDefaultPart()
+ 	{
+ 		setDefaultWeapon();
+--- a/Assets/Scripts/Controller.cs
++++ b/Assets/Scripts/Controller.cs
+@@ -1353,6 +1353,7 @@
+                         @char = ((num24 != Char.myCharz().charID) ? GameScr.findCharInMap(num24) : Char.myCharz());
+                         @char.bag = num25;
+                         @char.updateBagPreviewBase(num25);
++                        for (int oldEffect = 201; oldEffect < 255; oldEffect++) @char.removeEffChar(0, oldEffect);
+                         if (@char.bag >= 201 && @char.bag < 255)
+                         {
+                             Effect effect = new Effect(@char.bag, @char, 2, -1, 10, 1);
+@@ -2826,7 +2827,7 @@
+                     Char.myCharz().setResetPoint(msg.reader().readShort(), msg.reader().readShort());
+                     break;
+                 case -128:
+-                    messageNotLogin(msg);
++                    readWearableEffect(msg);
+                     break;
+                 case -28:
+                     messageNotMap(msg);
+@@ -5425,6 +5426,30 @@
+         }
+     }
+ 
++    // Wearable title packets use -128; login/server-list packets use -29.
++    public void readWearableEffect(Message msg)
++    {
++        int action = msg.reader().readByte();
++        int playerId = msg.reader().readInt();
++        Char actor = playerId == Char.myCharz().charID ? Char.myCharz() : GameScr.findCharInMap(playerId);
++        if (action == 2)
++        {
++            GameCanvas.danhHieu.remove(playerId + string.Empty);
++            if (actor != null) actor.clearWearableTitle();
++            return;
++        }
++        if (action != 0) return;
++        int effectId = msg.reader().readShort();
++        int layer = msg.reader().readByte();
++        int loop = msg.reader().readByte();
++        int loopCount = msg.reader().readShort();
++        msg.reader().readByte();
++        msg.reader().readByte();
++        if (actor == null || effectId < 0) return;
++        GameCanvas.danhHieu.remove(playerId + string.Empty);
++        actor.setWearableTitle(effectId, layer, loop, loopCount);
++    }
++
+     public void messageNotLogin(Message msg)
+     {
+         try
+@@ -5828,6 +5853,7 @@
+                             @char.idAuraEff = msg.reader().readShort();
+                             @char.idEff_Set_Item = msg.reader().readSByte();
+                             @char.idHat = msg.reader().readShort();
++                            for (int oldEffect = 201; oldEffect < 255; oldEffect++) @char.removeEffChar(0, oldEffect);
+                             if (@char.bag >= 201)
+                             {
+                                 Effect effect = new Effect(@char.bag, @char, 2, -1, 10, 1);

@@ -968,7 +968,10 @@ public class Controller {
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
-                    Service.getInstance().sendTitle1(player, (short) player.inventory.itemsBody.get(12).template.part);
+                    if (player.inventory.itemsBody.get(12).isNotNullItem()
+                            && player.inventory.itemsBody.get(12).template.type == 39) {
+                        Service.getInstance().sendTitle1(player, player.inventory.itemsBody.get(12).template.part);
+                    }
                 } catch (Exception e) {
                 }
             }).start();

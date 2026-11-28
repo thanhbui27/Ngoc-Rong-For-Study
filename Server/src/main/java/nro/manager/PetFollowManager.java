@@ -2,8 +2,6 @@ package nro.manager;
 
 import nro.jdbc.DBService;
 import nro.models.player.PetFollow;
-import nro.models.item.ItemTemplate;
-import nro.server.Manager;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -44,29 +42,17 @@ public class PetFollowManager extends AbsManager<PetFollow> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        // Type-72 pets can use their item icon as a static follow image until
-        // an animated pet_follow sprite is configured.
-        for (ItemTemplate item : Manager.ITEM_TEMPLATES) {
-            if (item.type != 72) {
-                continue;
-            }
-            PetFollow configured = findByID(item.id);
-            if (configured != null && hasValidSprite(configured)) {
-                continue;
-            }
-            int[] size = iconSize(item.iconID);
-            if (size != null) {
-                if (configured != null) {
-                    remove(configured);
-                }
-                add(new PetFollow(item.id, item.iconID, size[0], size[1], (byte) 1));
-            }
+        // A same-numbered icon may belong to an unrelated source pack. Only use
+        // explicitly configured, complete sprites; a static pet must be configured
+        // with frame=1 in pet_follow, not inferred from its inventory icon.
+        for (PetFollow pet : new java.util.ArrayList<>(list)) {
+            if (!hasValidSprite(pet)) remove(pet);
         }
     }
 
     private static boolean hasValidSprite(PetFollow pet) {
         int[] size = iconSize(pet.getIconID());
-        return size != null && pet.getNFrame() > 0 && pet.getWidth() == size[0]
+        return size != null && nro.models.item.VisualEquipment.icon(pet.getIconID()) && pet.getNFrame() > 0 && pet.getWidth() == size[0]
                 && pet.getHeight() > 0 && (long) pet.getHeight() * pet.getNFrame() <= size[1];
     }
 

@@ -80,3 +80,36 @@ Các ô body là vị trí trang bị, còn `type` là loại item; đừng dùn
 1. Xem `git status` và `tools/part-editor/README.md`; kiểm tra process cổng 8182 để tái dùng phiên editor hiện có thay vì mở trùng.
 2. Nếu sửa UI, kiểm tra cú pháp JavaScript trong `<script>` của `index.html` và thao tác preview bằng một item hiện có. Nếu sửa action/SQL, build BE và xác nhận bản deploy đang chạy hỗ trợ action mới trước khi thử ghi thật.
 3. Khi kiểm chứng lưu, chọn item thử phù hợp hoặc môi trường dữ liệu cô lập; đọc lại item từ SQL và restart BE rồi thử trong Unity. Chưa có kiểm thử ghi DB hoặc preview trực tiếp mới nào được thực hiện trong lượt viết handoff này.
+
+
+## 2026-11-28 — V30, remaining wearable visuals
+
+- User explicitly chose: costumes with only an avatar and no model stay blocked;
+  do not synthesize head-only costumes. Fourteen IDs remain blocked; see
+  `tools/part-editor/visual-equipment-audit.json` for the exact lists.
+- Recovered 7 Cumber costume links from `BossData.CUMBER/CUMBER2` (full parts
+  1387/1388/1389 and 1390/1388/1389). Fixed the two missing Cumber item icons.
+- Mini pet 1322 now uses copy-on-write body 2686. Missing pose 20831 repeats its
+  own pose 20830; unsupported poses use its own neutral frame instead of human
+  image 34. This is a degraded same-pet animation, not a recovered original frame.
+- Broly 2148 icon 32602 comes from his own head 18591. Missing icons for 1315/1316
+  come from their currently configured model parts (32613/32614); names unchanged.
+- Mounts resolve `30000 + template.part` for types 23/24. Six missing mount sets
+  use their own object icon as a static front; mount 66 keeps its animated front.
+- Repaired back-accessory part collisions; preserved matching original animations,
+  allocated 27 static same-item flags 110–136, and blocked 7 unrecoverable entries.
+  Effect accessories 201/205/207 use their native effects. No name-based fallback.
+- Titles write exactly one effect ID. Apply `tools/client-patches/wearable-titles.patch`
+  to other Unity checkouts. Ten titles have icons taken from their own effect art;
+  title 1308 stays blocked because it incorrectly referenced Halloween (87).
+- Type-72 followers require valid, explicitly configured sprites at every zoom.
+  Twelve unavailable/wrong pets stay blocked, including 2097 (blue arm image collision).
+  Working full animated followers: 2105, 2107, 2116, 2118.
+- Auras 1/10 get transparent missing layers while keeping their existing artwork.
+  Entirely missing aura sets 11/12 are suppressed; there is no substitute effect.
+- SQL V30 applied through the existing DBeaver tunnel, with no Docker. Read-only
+  visual backups and rehearsal exports are under `%TEMP%/nro-remaining-visuals`.
+  Both rehearsal runs produced identical catalog contents. Data/item versions 31/29.
+- Reproduce inspection with `audit_visual_equipment.py --snapshot EXPORT --output REPORT`;
+  `repair_remaining_visuals.py` documents the source-to-output asset derivation and
+  requires the pre-V30 export. The JSON repair manifest lists only task-related assets.
