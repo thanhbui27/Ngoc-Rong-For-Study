@@ -150,10 +150,11 @@ class ChatGPTModel:
     def finish_sign_in(self, query: dict[str, list[str]]) -> None:
         jwt, _ = _dependencies()
         with self._lock:
-            pending, self._pending = self._pending, None
+            pending = self._pending
             if (not pending or time.time() >= pending["expires"]
                     or not secrets.compare_digest(query.get("state", [""])[0], pending["state"])):
                 raise ValueError("Phiên đăng nhập không hợp lệ hoặc đã hết hạn")
+            self._pending = None
             if query.get("error"):
                 raise ValueError("Bạn chưa cấp quyền dùng gói ChatGPT")
             code = query.get("code", [""])[0]

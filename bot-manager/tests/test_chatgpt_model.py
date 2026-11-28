@@ -29,6 +29,13 @@ class ChatGPTModelTests(unittest.TestCase):
         self.assertTrue(query["ext_agent_host_id"][0].startswith("urn:uuid:"))
         self.assertNotIn("access_token", url)
 
+    def test_wrong_state_does_not_cancel_valid_sign_in(self):
+        url = self.model.start_sign_in("http://127.0.0.1:8765/auth/chatgpt/callback")
+        expected_state = parse_qs(urlparse(url).query)["state"][0]
+        with self.assertRaises(ValueError):
+            self.model.finish_sign_in({"state": ["unrelated-callback"]})
+        self.assertEqual(self.model._pending["state"], expected_state)
+
     def test_large_tokens_are_encrypted_on_disk(self):
         from cryptography.fernet import Fernet
         self.model._state["active"] = "client"

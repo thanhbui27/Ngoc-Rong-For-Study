@@ -1,0 +1,82 @@
+[
+  {
+    "imageId": 32592,
+    "source": "body-01-dung.png",
+    "sizeX4": [
+      104,
+      128
+    ]
+  },
+  {
+    "imageId": 32593,
+    "source": "leg-01-chan-dung.png",
+    "sizeX4": [
+      68,
+      36
+    ]
+  },
+  {
+    "imageId": 32594,
+    "source": "leg-02-chay.png",
+    "sizeX4": [
+      100,
+      120
+    ]
+  },
+  {
+    "imageId": 32595,
+    "source": "leg-03-chay.png",
+    "sizeX4": [
+      124,
+      116
+    ]
+  },
+  {
+    "imageId": 32596,
+    "source": "leg-04-chay.png",
+    "sizeX4": [
+      120,
+      124
+    ]
+  },
+  {
+    "imageId": 32597,
+    "source": "leg-05-chay.png",
+    "sizeX4": [
+      116,
+      120
+    ]
+  },
+  {
+    "imageId": 32598,
+    "source": "leg-06-chay.png",
+    "sizeX4": [
+      120,
+      124
+    ]
+  },
+  {
+    "imageId": 32599,
+    "source": "leg-07-nhay.png",
+    "sizeX4": [
+      100,
+      120
+    ]
+  },
+  {
+    "imageId": 32600,
+    "source": "leg-08-roi.png",
+    "sizeX4": [
+      120,
+      148
+    ]
+  },
+  {
+    "imageId": 32601,
+    "source": "icon-dau.png",
+    "sizeX4": [
+      72,
+      72
+    ]
+  }
+]
