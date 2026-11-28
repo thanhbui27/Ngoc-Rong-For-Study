@@ -108,16 +108,19 @@ public class Service {
     }
 
     public void removeTitle1(Player player) {
-        Message me;
+        if (player.inventory == null || player.inventory.itemsBody.size() <= 12) return;
+        Item title = player.inventory.itemsBody.get(12);
+        if (title.isNotNullItem() && title.template.type == 39) removeTitleEffect(player, title.template.part);
+    }
+
+    public void removeTitleEffect(Player player, int part) {
+        if (part < 0) return;
         try {
-            me = new Message(-128);
-            me.writer().writeByte(2);
-            me.writer().writeInt((int) player.id);
-            player.getSession().sendMessage(me);
-            this.sendMessAllPlayerInMap(player, me);
-            me.cleanup();
+            Message message = TitlePacket.remove(player.id, part);
+            this.sendMessAllPlayerInMap(player, message);
+            message.cleanup();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error(Service.class, e);
         }
     }
 
@@ -134,31 +137,7 @@ public class Service {
     }
 
     public void removeTitle(Player player) {
-        Message me;
-        try {
-            me = new Message(-128);
-            me.writer().writeByte(2);
-            me.writer().writeInt((int) player.id);
-            player.getSession().sendMessage(me);
-            this.sendMessAllPlayerInMap(player, me);
-            me.cleanup();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void removeFoot1(Player player) {
-        Message me;
-        try {
-            me = new Message(-128);
-            me.writer().writeByte(1);
-            me.writer().writeInt((int) player.id);
-            player.getSession().sendMessage(me);
-            this.sendMessAllPlayerInMap(player, me);
-            me.cleanup();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        removeTitle1(player);
     }
 
     public void sendTitle1(Player player, int part) {
@@ -175,24 +154,7 @@ public class Service {
     }
 
     public void sendTitle(Player player, int id) {
-        Message me;
-        try {
-            me = new Message(-128);
-            me.writer().writeByte(0);
-            me.writer().writeInt((int) player.id);
-            switch (id) {
-            }
-            me.writer().writeByte(1);
-            me.writer().writeByte(-1);
-            me.writer().writeShort(50);
-            me.writer().writeByte(-1);
-            me.writer().writeByte(-1);
-            this.sendMessAllPlayerInMap(player, me);
-            me.cleanup();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        sendTitle1(player, id);
     }
 
     public void showListBoss(Player pl) {

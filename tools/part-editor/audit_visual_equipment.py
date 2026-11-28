@@ -10,7 +10,7 @@ def audit(snapshot, server):
     flags = {int(r['id']): r for r in data['flag_bag']}
     names = {r['name']: int(r['n_frame']) for r in data['img_by_name']}
     mappings = {k: {int(r['id_temp']): r for r in data[k]} for k in ['cai_trang', 'mini_pet', 'pet_follow']}
-    report = {'ready': {}, 'blocked': {}, 'bad_slot_mappings': [], 'missing_named_files': []}
+    report = {'ready': {}, 'blocked': {}, 'bad_slot_mappings': [], 'missing_named_files': [], 'missing_ready_icons': []}
 
     def icon(id):
         return id >= 0 and all((server / f'resources/normal/image/{z}/icon/{id}.png').is_file() for z in range(1, 5))
@@ -67,6 +67,8 @@ def audit(snapshot, server):
             ready = part >= 0 and effect(part)
         if category:
             report['ready' if ready else 'blocked'].setdefault(category, []).append(id)
+            if ready and not icon(int(i['icon_id'])):
+                report['missing_ready_icons'].append({'item': id, 'icon': int(i['icon_id']), 'category': category})
     for name in names:
         missing = [z for z in range(1, 5) if not (server / f'resources/ThanhBN/img_by_name/x{z}/{name}.png').is_file()]
         if missing:

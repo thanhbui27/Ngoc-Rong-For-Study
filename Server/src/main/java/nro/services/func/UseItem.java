@@ -523,7 +523,6 @@ public class UseItem {
                                 break;
                             case 39:
                                 InventoryService.gI().itemBagToBody(pl, indexBag);
-                                Service.getInstance().sendTitle1(pl, item.template.part);
                                 break;
                         }
                 }

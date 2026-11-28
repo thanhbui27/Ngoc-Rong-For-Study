@@ -298,12 +298,12 @@ public class Controller {
                     break;
                 case -62:
                     if (player != null) {
-                        FlagBagService.gI().sendIconFlagChoose(player, _msg.reader().readByte());
+                        FlagBagService.gI().sendIconFlagChoose(player, _msg.reader().readUnsignedByte());
                     }
                     break;
                 case -63:
                     if (player != null) {
-                        FlagBagService.gI().sendIconEffectFlag(player, _msg.reader().readByte());
+                        FlagBagService.gI().sendIconEffectFlag(player, _msg.reader().readUnsignedByte());
                     }
                     break;
                 case Cmd.BACKGROUND_TEMPLATE:

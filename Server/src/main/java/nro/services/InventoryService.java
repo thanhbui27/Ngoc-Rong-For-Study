@@ -548,7 +548,9 @@ public class InventoryService {
                 PlayerService.gI().sendPetFollow(player);
             }
             if (item.template.type == 39) {
-                Service.getInstance().removeTitle1(player);
+                if (itemSwap.isNotNullItem() && itemSwap.template.type == 39) {
+                    Service.getInstance().removeTitleEffect(player, itemSwap.template.part);
+                }
                 Service.getInstance().sendTitle1(player, item.template.part);
             }
             sendItemBags(player);
@@ -574,7 +576,6 @@ public class InventoryService {
             }
             if (item.template.type == 39) {
                 Service.getInstance().removeTitle1(player);
-                Service.getInstance().removeFoot1(player);
             }
             player.inventory.itemsBody.set(index, emptySlot);
             if (index == 10) {
@@ -714,7 +715,6 @@ public class InventoryService {
             player.inventory.itemsBody.set(index, emptySlot);
             if (item.template.type == 39) {
                 Service.getInstance().removeTitle1(player);
-                Service.getInstance().removeFoot1(player);
             }
             if (index == 10) {
                 player.setPetFollow(null);

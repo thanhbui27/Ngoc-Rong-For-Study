@@ -99,7 +99,7 @@ Các ô body là vị trí trang bị, còn `type` là loại item; đừng dùn
 - Repaired back-accessory part collisions; preserved matching original animations,
   allocated 27 static same-item flags 110–136, and blocked 7 unrecoverable entries.
   Effect accessories 201/205/207 use their native effects. No name-based fallback.
-- Titles write exactly one effect ID. Apply `tools/client-patches/wearable-titles.patch`
+- Titles write exactly one effect ID (12-byte add, 7-byte targeted remove). Apply `tools/client-patches/wearable-titles.patch`
   to other Unity checkouts. Ten titles have icons taken from their own effect art;
   title 1308 stays blocked because it incorrectly referenced Halloween (87).
 - Type-72 followers require valid, explicitly configured sprites at every zoom.
@@ -113,3 +113,9 @@ Các ô body là vị trí trang bị, còn `type` là loại item; đừng dùn
 - Reproduce inspection with `audit_visual_equipment.py --snapshot EXPORT --output REPORT`;
   `repair_remaining_visuals.py` documents the source-to-output asset derivation and
   requires the pre-V30 export. The JSON repair manifest lists only task-related assets.
+
+- Follow-up: `Controller2` already parses -128 through `sbyte.MinValue`. The primary
+  controller now skips rereading it. Title removal uses action 1 + its effect ID,
+  preserving other effects; bag updates remove only the previous bag effect instead
+  of clearing the whole 201–254 range (which also contains title IDs 214/215/217/218).
+  Removed the redundant title emission in UseItem after a rejected equipment change.

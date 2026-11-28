@@ -16,7 +16,14 @@ public final class TitlePacket {
         msg.writer().writeByte(-1);
         msg.writer().writeShort(50);
         msg.writer().writeByte(-1);
-        msg.writer().writeByte(-1);
+        return msg;
+    }
+
+    public static Message remove(long player, int effect) throws IOException {
+        Message msg = new Message(-128);
+        msg.writer().writeByte(1);
+        msg.writer().writeInt((int) player);
+        msg.writer().writeShort(effect);
         return msg;
     }
 }
