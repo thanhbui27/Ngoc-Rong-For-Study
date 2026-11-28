@@ -16,6 +16,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from clone_server import parse_address
+from auto_mapping import link
 from studio_data import catalog, costume, map_detail, mapping_path, part, save_mapping
 
 HERE = Path(__file__).resolve().parent
@@ -49,6 +50,8 @@ def select_project(out: Path, server: str, require_report: bool = False) -> dict
     with LOCK:
         if RUN["process"] is not None and RUN["process"].poll() is None:
             raise RuntimeError("Hãy dừng lượt clone trước khi đổi thư mục")
+        if existing:
+            link(out)
         RUN.update(process=None, state="loaded" if existing else "idle", started=None, ended=None,
                    server=server, out=str(out), exit_code=None, log=deque(maxlen=500))
     return {"ok": True, "out": str(out), "existing": existing, "server": server}

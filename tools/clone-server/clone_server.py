@@ -318,6 +318,14 @@ def main() -> None:
     except ValueError as error:
         parser.error(str(error))
     out = args.out or Path(__file__).resolve().parents[3] / "NRO-clones" / f"{host}-{port}"
+    previous_report = out / "report.json"
+    if previous_report.is_file():
+        try:
+            previous_server = json.loads(previous_report.read_text(encoding="utf-8")).get("server")
+        except (OSError, ValueError) as error:
+            parser.error(f"Cannot read existing report.json: {error}")
+        if previous_server and previous_server != args.server:
+            parser.error(f"Output folder belongs to {previous_server}; choose a new --out for {args.server}")
     out.mkdir(parents=True, exist_ok=True)
     report = {"server": args.server, "started_utc": datetime.now(timezone.utc).isoformat(),
               "source": "anonymous_client_protocol", "zooms": {}, "game_data": None,
@@ -391,6 +399,11 @@ def main() -> None:
             row["error"] = str(error)
         write_report()
     report["finished_utc"] = datetime.now(timezone.utc).isoformat()
+    try:
+        from auto_mapping import link
+        report["auto_linked_parts"] = link(out)
+    except (OSError, ValueError, KeyError, IndexError) as error:
+        report["auto_linked_parts"] = {"error": str(error)}
     write_report()
     print(f"Report: {out / 'report.json'}")
     if all("error" in row for row in report["zooms"].values()):
