@@ -119,3 +119,7 @@ Các ô body là vị trí trang bị, còn `type` là loại item; đừng dùn
   preserving other effects; bag updates remove only the previous bag effect instead
   of clearing the whole 201–254 range (which also contains title IDs 214/215/217/218).
   Removed the redundant title emission in UseItem after a rejected equipment change.
+
+- Follow-up for rương: retain the removed title's effect ID before clearing its body
+  slot; refresh map appearances and flag bags after body→box moves. This keeps
+  boxed titles, mounts and back accessories from remaining visible to observers.
