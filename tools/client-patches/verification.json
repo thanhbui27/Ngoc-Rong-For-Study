@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "item": 1317,
+  "preview": [
+    553,
+    551,
+    2156
+  ],
+  "equippedAfterClose": [
+    553,
+    551,
+    2156
+  ],
+  "deployedCommit": "ab387c953d2497304404b731ba56d36c29b4b05d",
+  "deploymentRun": "https://github.com/thanhbui27/Ngoc-Rong-For-Study/actions/runs/46133840196",
+  "sqlVersion": 29,
+  "partCount": 2686,
+  "clientDataVersion": 30,
+  "javaTestsPassed": 13,
+  "cloneTestsPassed": 15,
+  "unityRegressionChecksPassed": 5
+}
