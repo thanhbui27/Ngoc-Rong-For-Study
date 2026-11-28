@@ -5,7 +5,7 @@ import nro.consts.ConstAchive;
 import nro.consts.ConstItem;
 import nro.consts.ConstNpc;
 import nro.jdbc.daos.PlayerDAO;
-import nro.models.item.CaiTrang;
+import nro.models.item.CostumeAppearance;
 import nro.models.item.Item;
 import nro.models.item.ItemOption;
 import nro.models.item.ItemTemplate;
@@ -316,13 +316,13 @@ public class ShopService {
                             msg.writer().writeShort(option.param);
                         }
                         msg.writer().writeByte(itemShop.isNew ? 1 : 0);
-                        CaiTrang caiTrang = Manager.gI().getCaiTrangByItemId(itemShop.temp.id);
+                        int[] caiTrang = CostumeAppearance.forPlayer(player, itemShop.temp);
                         msg.writer().writeByte(caiTrang != null ? 1 : 0);
                         if (caiTrang != null) {
-                            msg.writer().writeShort(caiTrang.getID()[0]);
-                            msg.writer().writeShort(caiTrang.getID()[1]);
-                            msg.writer().writeShort(caiTrang.getID()[2]);
-                            msg.writer().writeShort(caiTrang.getID()[3]);
+                            msg.writer().writeShort(caiTrang[0]);
+                            msg.writer().writeShort(caiTrang[1]);
+                            msg.writer().writeShort(caiTrang[2]);
+                            msg.writer().writeShort(caiTrang[3]);
                         }
                     }
                 }
@@ -357,13 +357,13 @@ public class ShopService {
                             msg.writer().writeShort(option.param);
                         }
                         msg.writer().writeByte(itemShop.isNew ? 1 : 0);
-                        CaiTrang caiTrang = Manager.gI().getCaiTrangByItemId(itemShop.temp.id);
+                        int[] caiTrang = CostumeAppearance.forPlayer(player, itemShop.temp);
                         msg.writer().writeByte(caiTrang != null ? 1 : 0);
                         if (caiTrang != null) {
-                            msg.writer().writeShort(caiTrang.getID()[0]);
-                            msg.writer().writeShort(caiTrang.getID()[1]);
-                            msg.writer().writeShort(caiTrang.getID()[2]);
-                            msg.writer().writeShort(caiTrang.getID()[3]);
+                            msg.writer().writeShort(caiTrang[0]);
+                            msg.writer().writeShort(caiTrang[1]);
+                            msg.writer().writeShort(caiTrang[2]);
+                            msg.writer().writeShort(caiTrang[3]);
                         }
                     }
                 }
@@ -680,13 +680,13 @@ public class ShopService {
                     msg.writer().writeShort(io.param);
                 }
                 msg.writer().writeByte(1);
-                CaiTrang ct = Manager.gI().getCaiTrangByItemId(item.template.id);
+                int[] ct = CostumeAppearance.forPlayer(player, item.template);
                 msg.writer().writeByte(ct != null ? 1 : 0);
                 if (ct != null) {
-                    msg.writer().writeShort(ct.getID()[0]);
-                    msg.writer().writeShort(ct.getID()[1]);
-                    msg.writer().writeShort(ct.getID()[2]);
-                    msg.writer().writeShort(ct.getID()[3]);
+                    msg.writer().writeShort(ct[0]);
+                    msg.writer().writeShort(ct[1]);
+                    msg.writer().writeShort(ct[2]);
+                    msg.writer().writeShort(ct[3]);
                 }
             }
             player.sendMessage(msg);
@@ -773,13 +773,13 @@ public class ShopService {
                 msg.writer().writeShort(item.quantity);
                 //
                 msg.writer().writeByte(0);
-                CaiTrang ct = Manager.gI().getCaiTrangByItemId(item.template.id);
+                int[] ct = CostumeAppearance.forPlayer(player, item.template);
                 msg.writer().writeByte(ct != null ? 1 : 0);
                 if (ct != null) {
-                    msg.writer().writeShort(ct.getID()[0]);
-                    msg.writer().writeShort(ct.getID()[1]);
-                    msg.writer().writeShort(ct.getID()[2]);
-                    msg.writer().writeShort(ct.getID()[3]);
+                    msg.writer().writeShort(ct[0]);
+                    msg.writer().writeShort(ct[1]);
+                    msg.writer().writeShort(ct[2]);
+                    msg.writer().writeShort(ct[3]);
                 }
             }
             player.sendMessage(msg);

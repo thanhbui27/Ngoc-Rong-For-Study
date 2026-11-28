@@ -1,3 +1,14 @@
+## Cập nhật 28/11 — sửa item hiển thị khác khi dùng
+
+- DB live qua tunnel DBeaver đã áp dụng V26–V29: `mini_pet` 49 → 119 hàng (118 đúng type, 1 hàng cũ type 0 không được loader sử dụng), `part` 2539 → 2686; `cai_trang` 1007 → 1012. Thêm 70 mapping, sửa 5 pet cũ 1224/1225/1226/1243/1244 bị đụng ID part. Không đổi tên/icon/type item, part cũ hoặc 12 mapping pet đã tùy chỉnh hành động.
+- V29 sửa 8 cải trang 1317/1731/2040/2041/2064/2098/2124/2608 sau khi đối chiếu icon với PNG đầu/thân/chân. Không lấy ID ảnh gần nhau làm bằng chứng cùng nhân vật. Các bộ 1272/2122/2123 giữ cách căn frame riêng; 2148 là Broly custom, icon dùng lại mẫu Broly khác nên cần icon đúng bộ để hoàn thiện.
+- `CostumeAppearance` dùng chung quy tắc cho shop và nhân vật: chỉ type 5 dùng `cai_trang`, slot trống về đầu/áo/quần thật, kiểm tra đúng loại part. Quần đi biển 691–693 dùng part chân 700/702 thay vì bị đọc thành đầu. Item thiếu ngoại hình không được mặc nhưng vẫn chuyển rương → túi bình thường.
+- `MiniPetManager` chỉ nạp item type 18/21 với đúng loại part và đủ PNG x1–x4. Pet 1322 thiếu Image 20831 cả bốn zoom nên chưa dùng được; không có nguồn ảnh thay thế.
+- Unity ngoài repo đã sửa `NroHihi/Assets/Scripts/Char.cs`: preview mới không giữ bộ trước và đóng panel khôi phục cả bag=-1. Patch và 5 kiểm tra tại `tools/client-patches/`; Unity đã biên dịch và pass cả 5.
+- Audit tái lập: `ReadVisualDatabase.java` đọc qua tunnel có sẵn (không Docker); `audit_visual_identity.py` xuất `visual-identity-report.json`. Hiện 1052 ánh xạ khớp nguồn, 12 biến thể pet chủ đích, 0 sai slot, 0 mini pet thiếu mapping. Còn 21 cải trang chưa có mapping được xác minh và 1 Image ID thiếu nguồn; không tự đoán ảnh.
+- Kiểm thử SQL V26/V27/V28/V29 trên bảng TEMP hai lần, không ghi bảng thật trong bước thử; đối chiếu sau apply giữ toàn bộ part cũ và các bảng item/flag/ảnh tên; V29 chỉ sửa đúng 8 mapping cải trang đã xác minh.
+- Deploy có lựa chọn `--skip-database-backup` cho DB đã backup và áp dụng đủ migration; lựa chọn này không gọi Docker và từ chối deploy nếu còn migration pending. Actions manual input `skip_database_backup=true`; push thông thường vẫn giữ backup như cũ.
+
 # Bàn giao Part Studio — cập nhật 28/11/2026
 
 ## Cập nhật từ luồng Clone Studio

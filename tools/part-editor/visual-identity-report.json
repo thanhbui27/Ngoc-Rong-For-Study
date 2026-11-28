@@ -1,0 +1,307 @@
+{
+  "counts": {
+    "item_template": 2722,
+    "cai_trang": 1012,
+    "mini_pet": 119,
+    "part": 2686
+  },
+  "missing_costumes": [
+    {
+      "id": 628,
+      "name": "Cải trang Hải Tặc"
+    },
+    {
+      "id": 1254,
+      "name": "Gohan Zombie"
+    },
+    {
+      "id": 1256,
+      "name": "Cumber"
+    },
+    {
+      "id": 1264,
+      "name": "Cumber"
+    },
+    {
+      "id": 1274,
+      "name": "Cải trang Cumber"
+    },
+    {
+      "id": 1275,
+      "name": "Cải trang Cumber SSJ"
+    },
+    {
+      "id": 1303,
+      "name": "Bình"
+    },
+    {
+      "id": 1415,
+      "name": "Cải trang Dr Myuu"
+    },
+    {
+      "id": 1790,
+      "name": "CT Đặng Văn Chiến"
+    },
+    {
+      "id": 1991,
+      "name": "Thủy Thủ Mặt Trăng"
+    },
+    {
+      "id": 2000,
+      "name": "Cải trang Vegeta Hakai"
+    },
+    {
+      "id": 2044,
+      "name": "Cải trang Iron Man"
+    },
+    {
+      "id": 2046,
+      "name": "Cải trang Super Cumber"
+    },
+    {
+      "id": 2047,
+      "name": "Cải trang Kamin"
+    },
+    {
+      "id": 2081,
+      "name": "Cải trang zenno"
+    },
+    {
+      "id": 2288,
+      "name": "Cải trang Hải Tặc"
+    },
+    {
+      "id": 2500,
+      "name": "Cải trang Cumber"
+    },
+    {
+      "id": 2501,
+      "name": "Cải trang Cumber SSJ"
+    },
+    {
+      "id": 2522,
+      "name": "Cải trang Dr Myuu"
+    },
+    {
+      "id": 2627,
+      "name": "CT Đặng Văn Chiến"
+    },
+    {
+      "id": 2707,
+      "name": "Thủy Thủ Mặt Trăng"
+    }
+  ],
+  "missing_mini_pets": [],
+  "wrong_part_slots": [],
+  "inactive_foreign_mappings": [
+    {
+      "table": "cai_trang",
+      "item": 1118
+    },
+    {
+      "table": "cai_trang",
+      "item": 1119
+    },
+    {
+      "table": "cai_trang",
+      "item": 1120
+    },
+    {
+      "table": "cai_trang",
+      "item": 1121
+    },
+    {
+      "table": "cai_trang",
+      "item": 1159
+    },
+    {
+      "table": "cai_trang",
+      "item": 1160
+    },
+    {
+      "table": "cai_trang",
+      "item": 1161
+    },
+    {
+      "table": "cai_trang",
+      "item": 1286
+    },
+    {
+      "table": "cai_trang",
+      "item": 1290
+    },
+    {
+      "table": "cai_trang",
+      "item": 1291
+    },
+    {
+      "table": "cai_trang",
+      "item": 1292
+    },
+    {
+      "table": "cai_trang",
+      "item": 1293
+    },
+    {
+      "table": "cai_trang",
+      "item": 1342
+    },
+    {
+      "table": "cai_trang",
+      "item": 1343
+    },
+    {
+      "table": "cai_trang",
+      "item": 1347
+    },
+    {
+      "table": "cai_trang",
+      "item": 1349
+    },
+    {
+      "table": "cai_trang",
+      "item": 1351
+    },
+    {
+      "table": "cai_trang",
+      "item": 1352
+    },
+    {
+      "table": "cai_trang",
+      "item": 1364
+    },
+    {
+      "table": "cai_trang",
+      "item": 2004
+    },
+    {
+      "table": "mini_pet",
+      "item": 1273
+    }
+  ],
+  "missing_images": [
+    {
+      "image": 20831,
+      "zooms": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "items": [
+        1322
+      ]
+    }
+  ],
+  "source_matches": 1052,
+  "source_differences": [
+    {
+      "item": 2646,
+      "source": 1818,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2647,
+      "source": 1819,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2663,
+      "source": 1870,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2664,
+      "source": 1871,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2716,
+      "source": 2019,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2718,
+      "source": 2025,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2722,
+      "source": 2036,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2723,
+      "source": 2037,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2724,
+      "source": 2038,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2736,
+      "source": 2072,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2738,
+      "source": 2077,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    },
+    {
+      "item": 2744,
+      "source": 2094,
+      "slots": [
+        "head",
+        "body",
+        "leg"
+      ]
+    }
+  ]
+}

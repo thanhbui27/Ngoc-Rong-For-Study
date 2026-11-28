@@ -4,6 +4,7 @@ import nro.consts.ConstItem;
 import nro.manager.PetFollowManager;
 import nro.manager.MiniPetManager;
 import nro.models.item.Item;
+import nro.models.item.CostumeAppearance;
 import nro.models.item.ItemOption;
 import nro.models.item.ItemTemplate;
 import nro.models.item.MinipetTemplate;
@@ -402,11 +403,19 @@ public class InventoryService {
                 && mapping.getLeg() >= 0;
     }
 
+    private boolean costumeReady(Player player, Item item) {
+        if (CostumeAppearance.isReady(item.template)) return true;
+        Service.getInstance().sendThongBaoOK(player.isPet ? ((Pet) player).master : player,
+                "Cải trang " + item.getId() + " chưa có đủ dữ liệu ngoại hình, chưa thể mặc.");
+        return false;
+    }
+
     private Item putItemBody(Player player, Item item) {
         Item sItem = item;
         try {
             byte type = item.getType();
             if (item.isNotNullItem()) {
+                if (type == 5 && !costumeReady(player, item)) return sItem;
                 if (type == 72 && !player.isPet) {
                     List<Item> itemsBody = player.inventory.itemsBody;
                     if (itemsBody.size() > 10) {
@@ -506,7 +515,7 @@ public class InventoryService {
             boolean miniPet = usesMiniPet(item.template);
             if ((item.template.type == 18 || item.template.type == 21) && !miniPet) {
                 Service.getInstance().sendThongBaoOK(player,
-                        "Pet " + item.getId() + " chưa có đủ part trong mini_pet.");
+                        "Pet " + item.getId() + " chưa có đủ dữ liệu hình ảnh hoặc part.");
                 return;
             }
             if (item.template.type == 72) {
@@ -627,7 +636,8 @@ public class InventoryService {
         Item item = player.inventory.itemsBox.get(index);
         if (item.isNotNullItem()) {
             boolean done = false;
-            if (item.template.type >= 0 && item.template.type <= 5 || item.template.type == 32) {
+            if ((item.template.type >= 0 && item.template.type <= 5 || item.template.type == 32)
+                    && (item.template.type != 5 || CostumeAppearance.isReady(item.template))) {
                 Item itemBody = player.inventory.itemsBody.get(item.template.type == 32 ? 6 : item.template.type);
                 if (!itemBody.isNotNullItem()) {
                     if (item.template.gender == player.gender || item.template.gender == 3) {

@@ -1,0 +1,108 @@
+--- a/Assets/Scripts/Char.cs
++++ b/Assets/Scripts/Char.cs
+@@ -7544,56 +7544,51 @@
+ 		sleepEff = false;
+ 	}
+ 
++	private bool hasPartPreviewBase;
++
+ 	public void setPartOld()
+ 	{
++		if (hasPartPreviewBase) return;
+ 		headTemp = head;
+ 		bodyTemp = body;
+ 		legTemp = leg;
+ 		bagTemp = bag;
++		hasPartPreviewBase = true;
+ 	}
+ 
+ 	public void setPartTemp(int head, int body, int leg, int bag)
+ 	{
+-		if (head != -1)
+-		{
+-			this.head = head;
+-		}
+-		if (body != -1)
+-		{
+-			this.body = body;
+-		}
+-		if (leg != -1)
+-		{
+-			this.leg = leg;
+-		}
+-		if (bag != -1)
+-		{
+-			this.bag = bag;
+-		}
++		if (!hasPartPreviewBase) setPartOld();
++		// Missing slots belong to the equipped character, never the last preview.
++		this.head = head >= 0 ? head : headTemp;
++		this.body = body >= 0 ? body : bodyTemp;
++		this.leg = leg >= 0 ? leg : legTemp;
++		this.bag = bag >= 0 ? bag : bagTemp;
++	}
++
++	// Server updates received while the shop is open become the new equipped base.
++	public void updatePartPreviewBase(int head, int body, int leg)
++	{
++		if (!hasPartPreviewBase) return;
++		if (head >= 0) headTemp = head;
++		if (body >= 0) bodyTemp = body;
++		if (leg >= 0) legTemp = leg;
++	}
++
++	public void updateBagPreviewBase(int bag)
++	{
++		if (hasPartPreviewBase) bagTemp = bag;
+ 	}
+ 
+ 	public void resetPartTemp()
+ 	{
+-		if (headTemp != -1)
+-		{
+-			head = headTemp;
+-			headTemp = -1;
+-		}
+-		if (bodyTemp != -1)
+-		{
+-			body = bodyTemp;
+-			bodyTemp = -1;
+-		}
+-		if (legTemp != -1)
+-		{
+-			leg = legTemp;
+-			legTemp = -1;
+-		}
+-		if (bagTemp != -1)
+-		{
+-			bag = bagTemp;
+-			bagTemp = -1;
+-		}
++		if (!hasPartPreviewBase) return;
++		head = headTemp;
++		body = bodyTemp;
++		leg = legTemp;
++		bag = bagTemp;
++		headTemp = bodyTemp = legTemp = bagTemp = -1;
++		hasPartPreviewBase = false;
+ 	}
+ 
+ 	public Effect getEffById(int id)
+--- a/Assets/Scripts/Controller.cs
++++ b/Assets/Scripts/Controller.cs
+@@ -609,6 +609,7 @@
+                                 {
+                                     @char.leg = num137;
+                                 }
++                                @char.updatePartPreviewBase(num135, num136, num137);
+                             }
+                         }
+                         if (b50 == -1 && @char != null)
+@@ -1351,6 +1352,7 @@
+                         @char = null;
+                         @char = ((num24 != Char.myCharz().charID) ? GameScr.findCharInMap(num24) : Char.myCharz());
+                         @char.bag = num25;
++                        @char.updateBagPreviewBase(num25);
+                         if (@char.bag >= 201 && @char.bag < 255)
+                         {
+                             Effect effect = new Effect(@char.bag, @char, 2, -1, 10, 1);

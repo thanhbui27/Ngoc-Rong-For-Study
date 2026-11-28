@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      skip_database_backup:
+        description: 'DB already backed up and migrated; deploy without invoking Docker'
+        type: boolean
+        default: false
+        required: false
 
 concurrency:
   group: nro-production
@@ -29,7 +35,12 @@ jobs:
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
+          SKIP_DATABASE_BACKUP: ${{ inputs.skip_database_backup || false }}
         run: |
+          deploy_command='cd /opt/apps/Ngoc-Rong-For-Study && ./deploy.sh'
+          if [[ "$SKIP_DATABASE_BACKUP" == true ]]; then
+            deploy_command="$deploy_command --skip-database-backup"
+          fi
           ssh -o BatchMode=yes \
             "$VPS_USER@$VPS_HOST" \
-            'cd /opt/apps/Ngoc-Rong-For-Study && ./deploy.sh'
+            "$deploy_command"

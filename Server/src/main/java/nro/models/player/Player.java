@@ -11,6 +11,7 @@ import nro.data.DataGame;
 import nro.dialog.ConfirmDialog;
 import nro.models.clan.Buff;
 import nro.models.item.CaiTrang;
+import nro.models.item.CostumeAppearance;
 import nro.models.item.FlagBag;
 import nro.models.boss.event.EscortedBoss;
 import nro.models.clan.Clan;
@@ -802,8 +803,8 @@ public class Player {
             if (checkSkinFusionNew()) {
                 return 1398;
             } else if (checkSkinFusion()) {
-                CaiTrang ct = Manager.gI().getCaiTrangByItemId(inventory.itemsBody.get(5).template.id);
-                return (short) (ct.getID()[0] != -1 ? ct.getID()[0] : inventory.itemsBody.get(5).template.part);
+                int[] appearance = CostumeAppearance.forPlayer(this, inventory.itemsBody.get(5).template);
+                return appearance == null ? this.head : (short) appearance[0];
             } else if (fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE) {
                 return idOutfitFusion[this.gender == ConstPlayer.NAMEC ? 2 : 0][0];
             } else if (fusion.typeFusion == ConstPlayer.HOP_THE_PORATA) {
@@ -812,13 +813,11 @@ public class Player {
                 return idOutfitFusion[3 + this.gender][0];
             }
         } else if (inventory != null && inventory.itemsBody.get(5).isNotNullItem()) {
-            CaiTrang ct = Manager.gI().getCaiTrangByItemId(inventory.itemsBody.get(5).template.id);
             if (checkSkinFusion()) {
                 return this.head;
             }
-            if (ct != null) {
-                return (short) (ct.getID()[0] != -1 ? ct.getID()[0] : inventory.itemsBody.get(5).template.part);
-            }
+            int[] appearance = CostumeAppearance.forPlayer(this, inventory.itemsBody.get(5).template);
+            if (appearance != null) return (short) appearance[0];
         }
         return this.head;
     }
@@ -876,7 +875,6 @@ public class Player {
                 return idOutfitFusion[3 + this.gender][1];
             }
         } else if (inventory != null && inventory.itemsBody.get(5).isNotNullItem()) {
-            CaiTrang ct = Manager.gI().getCaiTrangByItemId(inventory.itemsBody.get(5).template.id);
             if (checkSkinFusion()) {
                 if (inventory != null && inventory.itemsBody.get(0).isNotNullItem()) {
                     if (inventory != null && inventory.itemsBody.get(0).isNotNullItem()) {
@@ -884,9 +882,8 @@ public class Player {
                     }
                 }
             }
-            if (ct != null && ct.getID()[1] != -1) {
-                return (short) ct.getID()[1];
-            }
+            int[] appearance = CostumeAppearance.forPlayer(this, inventory.itemsBody.get(5).template);
+            if (appearance != null) return (short) appearance[1];
         }
         if (inventory != null && inventory.itemsBody.get(0).isNotNullItem()) {
             return inventory.itemsBody.get(0).template.part;
@@ -952,10 +949,8 @@ public class Player {
                     return inventory.itemsBody.get(1).template.part;
                 }
             }
-            CaiTrang ct = Manager.gI().getCaiTrangByItemId(inventory.itemsBody.get(5).template.id);
-            if (ct != null && ct.getID()[2] != -1) {
-                return (short) ct.getID()[2];
-            }
+            int[] appearance = CostumeAppearance.forPlayer(this, inventory.itemsBody.get(5).template);
+            if (appearance != null) return (short) appearance[2];
         }
         if (inventory != null && inventory.itemsBody.get(1).isNotNullItem()) {
             return inventory.itemsBody.get(1).template.part;

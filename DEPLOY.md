@@ -724,3 +724,12 @@ Backup là bản sao để khôi phục khi lỗi; nó không làm DB tự quay 
 - [ ] Workflow tồn tại trên **GitHub `main`** và run mới thành công; SHA trên VPS đúng phiên bản mong muốn.
 - [ ] Các PAT từng lộ đã thu hồi; không có secret trong Git hoặc log.
 - [ ] Có bản sao JAR/DB và quy trình rollback đã được diễn tập trên dữ liệu cô lập.
+
+### Deploy khi DB đã backup và áp dụng đủ migration (không gọi Docker)
+
+Trong Actions → **Deploy Ngoc Rong** → **Run workflow**, bật
+`skip_database_backup` chỉ khi DB đã được backup và đã áp dụng đủ SQL của commit.
+Script chạy migration dry-run sau khi build và dừng nếu còn migration pending;
+chế độ này không chạy chương trình backup dùng Docker và không ghi migration.
+SSH trực tiếp tương đương: `./deploy.sh --skip-database-backup`.
+Các lần push tự deploy vẫn backup và chạy migration như trước.
