@@ -1,0 +1,74 @@
+{
+  "passed": true,
+  "deployedCommit": "063dcda078d9d8ed5c97211a5bab17304353bdc7",
+  "deploymentRun": "https://github.com/thanhbui27/Ngoc-Rong-For-Study/actions/runs/46141188953",
+  "sqlVersion": 30,
+  "clientDataVersion": 31,
+  "clientItemVersion": 29,
+  "gameChecks": {
+    "passed": true,
+    "testedItems": [
+      1256,
+      1322,
+      1021,
+      1131,
+      1293,
+      1161
+    ],
+    "icons": [
+      32602,
+      32613,
+      32614
+    ],
+    "equipmentRestored": true
+  },
+  "nativeEffectIsolation": {
+    "passed": true,
+    "checks": 2
+  },
+  "iconDownloadProof": {
+    "32602": {
+      "matchesPushedPng": true,
+      "sha256": "2de72fdca39c54de96242b6b71e6186d7cafc47eaafd4a49abb4b685ffa36e2b"
+    },
+    "32613": {
+      "matchesPushedPng": true,
+      "sha256": "64634d3e26a384fb062c9a7ecee79e3054e1982fddd848ff02538ce0d2276482"
+    },
+    "32614": {
+      "matchesPushedPng": true,
+      "sha256": "160ae6c98f44f7e09a62e578dead69deee34ee888fdda4979296f4770376f9af"
+    }
+  },
+  "catalog": {
+    "ready": {
+      "costumes": 996,
+      "mounts": 26,
+      "backs": 122,
+      "mini_pets": 118,
+      "titles": 10,
+      "follow_pets": 4
+    },
+    "blocked": {
+      "costumes": 14,
+      "backs": 7,
+      "titles": 1,
+      "follow_pets": 12
+    }
+  },
+  "validation": {
+    "javaFocusedTests": 17,
+    "isolatedSqlRunsWithIdenticalContents": 2,
+    "missingInventoryIconsAmongUsableVisuals": 0
+  },
+  "gameCheckDeployments": {
+    "1256,1322,1021,1131": "46fa1ab4a",
+    "1293,1161": "063dcda07"
+  },
+  "limitations": [
+    "14 costumes with only an avatar/missing model remain blocked, per user instruction",
+    "12 missing/wrong follow pets, 7 missing back accessories and title 1308 remain blocked",
+    "6 mount sets and 27 back accessories use static artwork belonging to that same item",
+    "Pet 1322 repeats its own pose 20830 in place of missing original pose 20831"
+  ]
+}

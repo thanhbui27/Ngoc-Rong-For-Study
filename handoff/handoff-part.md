@@ -123,3 +123,25 @@ Các ô body là vị trí trang bị, còn `type` là loại item; đừng dùn
 - Follow-up for rương: retain the removed title's effect ID before clearing its body
   slot; refresh map appearances and flag bags after body→box moves. This keeps
   boxed titles, mounts and back accessories from remaining visible to observers.
+
+
+### Final deployed verification (18:53, 2026-11-28)
+
+- Pushed/deployed source through `063dcda07`; successful no-Docker workflow run
+  `46141188953`. The following documentation-only commit records the evidence.
+- Cleared RMS cache with a sibling backup and downloaded it again. Account is
+  logged in at Thần Mèo admin, đảo Kame; restored its equipment after the tests.
+  The user changed costume/mount/mini-pet while testing; those newer choices were
+  preserved in the final run. Test purchases are retained in the character's rương.
+- Native gameplay checks passed: 1256 Cumber full outfit; 1322 werewolf mini-pet;
+  1021 Mjolnir flag 69; 1131 mount 30012 including both downloaded layers;
+  1293 title effect 88, including immediate removal on body→box and restoration;
+  1161 back flag 128 with its correct own-image response (unsigned flag request).
+- Two native packet regression checks passed: targeted title removal retains the
+  bag effect; bag updates retain a title whose effect ID lies in 201–254.
+- All three model-derived inventory portraits (32602/32613/32614) downloaded from
+  the deployed server match the pushed PNG bytes exactly. The final catalog audit
+  has zero missing inventory icons among ready visuals and no wrong-slot mappings.
+- Evidence: `tools/client-patches/visual-equipment-verification.json`. The local
+  one-use Unity editor helper has unsubscribed itself; its login request file was
+  deleted immediately after use. Temporary DB credential copy was removed.
